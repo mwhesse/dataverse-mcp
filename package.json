@@ -1,0 +1,33 @@
+{
+  "name": "mcp-dataverse-server",
+  "version": "0.1.0",
+  "description": "MCP server for Dataverse schema operations",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "dev": "tsc --watch",
+    "start": "node build/index.js",
+    "test:server": "node test-server.cjs",
+    "test:auth": "node test-auth.cjs"
+  },
+  "keywords": [
+    "mcp",
+    "dataverse",
+    "power-platform",
+    "schema"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@types/dotenv": "^8.2.3",
+    "axios": "^1.6.0",
+    "dotenv": "^16.6.1",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
