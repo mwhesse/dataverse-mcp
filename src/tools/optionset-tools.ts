@@ -158,53 +158,54 @@ export function updateOptionSetTool(server: McpServer, client: DataverseClient) 
           await client.patchMetadata(`GlobalOptionSetDefinitions(Name='${params.name}')`, updateData);
         }
 
-        // Add new options
+        // Add new options using InsertOptionValue action
         if (params.addOptions && params.addOptions.length > 0) {
           for (const option of params.addOptions) {
-            const optionData = {
+            const insertOptionData = {
+              OptionSetName: params.name,
               Value: option.value,
               Label: createLocalizedLabel(option.label),
               Description: option.description ? createLocalizedLabel(option.description) : undefined,
               Color: option.color
             };
 
-            await client.postMetadata(
-              `GlobalOptionSetDefinitions(Name='${params.name}')/Options`,
-              optionData
-            );
+            await client.callAction("InsertOptionValue", insertOptionData);
           }
         }
 
-        // Update existing options
-        if (params.updateOptions && params.updateOptions.length > 0) {
-          for (const option of params.updateOptions) {
-            const optionUpdateData: any = {};
-            
-            if (option.label) {
-              optionUpdateData.Label = createLocalizedLabel(option.label);
-            }
-            if (option.description) {
-              optionUpdateData.Description = createLocalizedLabel(option.description);
-            }
-            if (option.color) {
-              optionUpdateData.Color = option.color;
-            }
-
-            if (Object.keys(optionUpdateData).length > 0) {
-              await client.patchMetadata(
-                `GlobalOptionSetDefinitions(Name='${params.name}')/Options(${option.value})`,
-                optionUpdateData
-              );
-            }
-          }
-        }
-
-        // Remove options
+        // Remove options using DeleteOptionValue action
         if (params.removeOptions && params.removeOptions.length > 0) {
           for (const optionValue of params.removeOptions) {
-            await client.deleteMetadata(
-              `GlobalOptionSetDefinitions(Name='${params.name}')/Options(${optionValue})`
-            );
+            const deleteOptionData = {
+              OptionSetName: params.name,
+              Value: optionValue
+            };
+
+            await client.callAction("DeleteOptionValue", deleteOptionData);
+          }
+        }
+
+        // Note: UpdateOptionValue action doesn't exist in the Web API
+        // To update existing options, you need to delete and re-add them
+        if (params.updateOptions && params.updateOptions.length > 0) {
+          for (const option of params.updateOptions) {
+            // First delete the existing option
+            const deleteOptionData = {
+              OptionSetName: params.name,
+              Value: option.value
+            };
+            await client.callAction("DeleteOptionValue", deleteOptionData);
+
+            // Then add it back with updated values
+            const insertOptionData = {
+              OptionSetName: params.name,
+              Value: option.value,
+              Label: option.label ? createLocalizedLabel(option.label) : undefined,
+              Description: option.description ? createLocalizedLabel(option.description) : undefined,
+              Color: option.color
+            };
+
+            await client.callAction("InsertOptionValue", insertOptionData);
           }
         }
 
@@ -286,29 +287,14 @@ export function listOptionSetsTool(server: McpServer, client: DataverseClient) {
     },
     async (params) => {
       try {
+        // Note: $filter is not supported on GlobalOptionSetDefinitions
         let queryParams: Record<string, any> = {
           $select: "Name,DisplayName,Description,IsCustomOptionSet,IsManaged,IsGlobal,OptionSetType"
         };
 
-        let filters: string[] = [];
-        
-        if (params.customOnly) {
-          filters.push("IsCustomOptionSet eq true");
-        }
-        
-        if (!params.includeManaged) {
-          filters.push("IsManaged eq false");
-        }
-
-        // Only include global option sets by default
-        filters.push("IsGlobal eq true");
-
-        if (params.filter) {
-          filters.push(params.filter);
-        }
-
-        if (filters.length > 0) {
-          queryParams.$filter = filters.join(" and ");
+        // Add top parameter if specified
+        if (params.top) {
+          queryParams.$top = params.top;
         }
 
         const result = await client.getMetadata<ODataResponse<OptionSetMetadata>>(
@@ -359,8 +345,9 @@ export function getOptionSetOptionsTool(server: McpServer, client: DataverseClie
     },
     async (params) => {
       try {
+        // Get the option set with its options - this should work as we've seen it does
         const result = await client.getMetadata<OptionSetMetadata>(
-          `GlobalOptionSetDefinitions(Name='${params.name}')?$expand=Options`
+          `GlobalOptionSetDefinitions(Name='${params.name}')`
         );
 
         const options = result.Options?.map(option => ({

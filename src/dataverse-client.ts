@@ -250,4 +250,37 @@ export class DataverseClient {
 
     await metadataClient.delete(endpoint);
   }
+
+  // Action-specific method for calling Dataverse actions
+  async callAction<T = any>(actionName: string, data?: any): Promise<T> {
+    const actionClient = axios.create({
+      baseURL: `${this.config.dataverseUrl}/api/data/v9.2/`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'OData-MaxVersion': '4.0',
+        'OData-Version': '4.0'
+      }
+    });
+
+    // Add error interceptor
+    actionClient.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.data?.error) {
+          const dataverseError = error.response.data as DataverseError;
+          throw new Error(`Dataverse API Error: ${dataverseError.error.message} (Code: ${dataverseError.error.code})`);
+        }
+        throw error;
+      }
+    );
+
+    await this.ensureAuthenticated();
+    if (this.authToken) {
+      actionClient.defaults.headers.Authorization = `Bearer ${this.authToken.access_token}`;
+    }
+
+    const response: AxiosResponse<T> = await actionClient.post(actionName, data);
+    return response.data;
+  }
 }
