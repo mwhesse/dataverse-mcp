@@ -242,7 +242,36 @@ The following specific scenarios have been successfully tested and verified:
 4. Click **Add**
 5. **Copy the secret value immediately** (you won't be able to see it again)
 
-### 3. Get Required Information
+### 3. Create Application User in Dataverse
+
+**Critical Step**: You must create an Application User in your Dataverse environment and assign appropriate permissions.
+
+1. **Navigate to Dataverse Admin Center**
+   - Go to [Power Platform Admin Center](https://admin.powerplatform.microsoft.com)
+   - Select your environment
+   - Go to **Settings** > **Users + permissions** > **Application users**
+
+2. **Create Application User**
+   - Click **+ New app user**
+   - Click **+ Add an app**
+   - Search for and select your Azure app registration (by Client ID)
+   - Enter a **Business unit** (usually the root business unit)
+   - Click **Create**
+
+3. **Assign Security Roles**
+   - Select the newly created application user
+   - Click **Manage roles**
+   - Assign appropriate security roles based on your needs:
+     - **System Administrator**: Full access (recommended for development/testing)
+     - **System Customizer**: Schema operations without data access
+     - **Custom Role**: Create specific permissions for production use
+
+4. **Verify Application User Status**
+   - Ensure the application user is **Enabled**
+   - Verify it shows as **Application** type (not **User**)
+   - Note the **Application ID** matches your Azure app registration Client ID
+
+### 4. Get Required Information
 
 You'll need:
 - **Tenant ID**: Found in Azure AD > Overview
@@ -535,9 +564,14 @@ The server includes comprehensive error handling:
    - Check that the app registration is properly configured
 
 2. **Permission Denied**
-   - Verify that an application user has been created in Dataverse for your app registration
-   - Check if the application user has appropriate security roles (e.g., System Administrator)
-   - Ensure the application user is enabled and not disabled
+   - **Verify Application User Exists**: Check that an application user has been created in Dataverse for your app registration
+   - **Check Security Roles**: Ensure the application user has appropriate security roles:
+     - **System Administrator**: Required for full schema operations
+     - **System Customizer**: Minimum for table/column operations
+     - **Environment Maker**: May be needed for solution operations
+   - **Verify User Status**: Ensure the application user is enabled and not disabled
+   - **Check Business Unit**: Verify the application user is assigned to the correct business unit
+   - **Validate Client ID**: Confirm the Application ID in Dataverse matches your Azure app registration Client ID
 
 3. **Entity Not Found**
    - Verify entity logical names are correct
