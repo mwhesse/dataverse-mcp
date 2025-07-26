@@ -5,6 +5,20 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2025-01-26
+
+### Added
+- **Team Management System** - Complete team operations with 9 comprehensive tools
+  - `create_dataverse_team` - Create teams with various types and configurations
+  - `get_dataverse_team` - Retrieve detailed team information
+  - `update_dataverse_team` - Update team properties and settings
+  - `delete_dataverse_team` - Delete teams
+  - `list_dataverse_teams` - List teams with advanced filtering
+  - `add_members_to_team` - Add users as team members
+  - `remove_members_from_team` - Remove users from teams
+  - `get_team_members` - Retrieve all members of a team
+  - `convert_owner_team_to_access_team` - Convert owner teams to access teams
+
 ## [0.1.3] - 2025-01-26
 
 ### Added
@@ -22,11 +36,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `remove_role_from_user` - Remove security roles from users
   - `assign_role_to_team` - Assign security roles to teams
   - `remove_role_from_team` - Remove security roles from teams
+
 - Comprehensive testing suite for role operations
+- Project changelog following Keep a Changelog format
 
 ### Changed
-- Updated documentation with security role operations
+- Updated documentation with team and security role operations
 - Enhanced installation instructions for better clarity
+- Added comprehensive usage examples for team management
+- Updated API reference to include team-tools.ts
 
 ## [0.1.2] - 2025-01-26
 

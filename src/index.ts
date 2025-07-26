@@ -61,6 +61,17 @@ import {
   assignRoleToTeamTool,
   removeRoleFromTeamTool
 } from "./tools/role-tools.js";
+import {
+  createTeamTool,
+  getTeamTool,
+  updateTeamTool,
+  deleteTeamTool,
+  listTeamsTool,
+  addMembersToTeamTool,
+  removeMembersFromTeamTool,
+  getTeamMembersTool,
+  convertOwnerTeamToAccessTeamTool
+} from "./tools/team-tools.js";
 
 // Environment variables for Dataverse authentication
 const DATAVERSE_URL = process.env.DATAVERSE_URL;
@@ -145,6 +156,19 @@ assignRoleToUserTool(server, dataverseClient);
 removeRoleFromUserTool(server, dataverseClient);
 assignRoleToTeamTool(server, dataverseClient);
 removeRoleFromTeamTool(server, dataverseClient);
+
+// Register team tools
+createTeamTool(server, dataverseClient);
+getTeamTool(server, dataverseClient);
+updateTeamTool(server, dataverseClient);
+deleteTeamTool(server, dataverseClient);
+listTeamsTool(server, dataverseClient);
+
+// Register team membership tools
+addMembersToTeamTool(server, dataverseClient);
+removeMembersFromTeamTool(server, dataverseClient);
+getTeamMembersTool(server, dataverseClient);
+convertOwnerTeamToAccessTeamTool(server, dataverseClient);
 
 // Start the server
 const transport = new StdioServerTransport();

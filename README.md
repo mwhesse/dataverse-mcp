@@ -11,6 +11,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Option Set Operations](#option-set-operations)
   - [Solution & Publisher Operations](#solution--publisher-operations)
   - [Security Role Operations](#security-role-operations)
+  - [Team Operations](#team-operations)
 - [Solution-Based Architecture](#solution-based-architecture)
   - [Key Benefits](#key-benefits)
   - [Solution Workflow](#solution-workflow)
@@ -37,6 +38,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Creating Relationships](#creating-relationships)
   - [Managing Option Sets](#managing-option-sets)
   - [Managing Security Roles](#managing-security-roles)
+  - [Managing Teams](#managing-teams)
 - [Authentication](#authentication)
 - [Error Handling](#error-handling)
 - [Security Considerations](#security-considerations)
@@ -115,6 +117,17 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **remove_role_from_user** - Remove security roles from users
 - **assign_role_to_team** - Assign security roles to teams
 - **remove_role_from_team** - Remove security roles from teams
+
+### Team Operations
+- **create_dataverse_team** - Create new teams with various types and configurations
+- **get_dataverse_team** - Retrieve team metadata and details
+- **update_dataverse_team** - Update team properties and settings
+- **delete_dataverse_team** - Delete teams
+- **list_dataverse_teams** - List teams with filtering options
+- **add_members_to_team** - Add users as team members
+- **remove_members_from_team** - Remove users from teams
+- **get_team_members** - Retrieve all members of a team
+- **convert_owner_team_to_access_team** - Convert owner teams to access teams
 
 ## Solution-Based Architecture
 
@@ -644,6 +657,62 @@ await use_mcp_tool("dataverse", "get_role_privileges", {
 });
 ```
 
+### Managing Teams
+
+```typescript
+// Create a new team
+await use_mcp_tool("dataverse", "create_dataverse_team", {
+  name: "Development Team",
+  description: "Team for software development activities",
+  administratorId: "admin-user-guid-here",
+  teamType: "0", // Owner team
+  membershipType: "0", // Members and guests
+  emailAddress: "devteam@company.com"
+});
+
+// Get team information
+await use_mcp_tool("dataverse", "get_dataverse_team", {
+  teamId: "team-guid-here"
+});
+
+// List teams with filtering
+await use_mcp_tool("dataverse", "list_dataverse_teams", {
+  teamType: "0", // Owner teams only
+  excludeDefault: true,
+  top: 20
+});
+
+// Add members to a team
+await use_mcp_tool("dataverse", "add_members_to_team", {
+  teamId: "team-guid-here",
+  memberIds: ["user-guid-1", "user-guid-2", "user-guid-3"]
+});
+
+// Get team members
+await use_mcp_tool("dataverse", "get_team_members", {
+  teamId: "team-guid-here"
+});
+
+// Remove members from a team
+await use_mcp_tool("dataverse", "remove_members_from_team", {
+  teamId: "team-guid-here",
+  memberIds: ["user-guid-1", "user-guid-2"]
+});
+
+// Update team properties
+await use_mcp_tool("dataverse", "update_dataverse_team", {
+  teamId: "team-guid-here",
+  name: "Updated Development Team",
+  description: "Updated description for the development team",
+  emailAddress: "newdevteam@company.com"
+});
+
+// Convert owner team to access team
+await use_mcp_tool("dataverse", "convert_owner_team_to_access_team", {
+  teamId: "owner-team-guid-here"
+});
+```
+
 ## Authentication
 
 The server uses **Client Credentials flow** (Server-to-Server authentication) with Azure AD. This provides:
@@ -714,6 +783,7 @@ For detailed parameter information for each tool, refer to the tool definitions 
 - [`src/tools/optionset-tools.ts`](src/tools/optionset-tools.ts) - Option set operations
 - [`src/tools/solution-tools.ts`](src/tools/solution-tools.ts) - Solution and publisher operations
 - [`src/tools/role-tools.ts`](src/tools/role-tools.ts) - Security role operations
+- [`src/tools/team-tools.ts`](src/tools/team-tools.ts) - Team operations
 
 ## Solution Management Best Practices
 
