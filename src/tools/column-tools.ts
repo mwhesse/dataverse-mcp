@@ -167,19 +167,33 @@ export function createColumnTool(server: McpServer, client: DataverseClient) {
 
           case "Picklist":
             attributeDefinition["@odata.type"] = "Microsoft.Dynamics.CRM.PicklistAttributeMetadata";
-            if (params.options && params.options.length > 0) {
+            if (params.optionSetName) {
+              // Reference an existing global option set using the MetadataId
+              // First get the option set to retrieve its MetadataId
+              try {
+                const globalOptionSet = await client.getMetadata(
+                  `GlobalOptionSetDefinitions(Name='${params.optionSetName}')`
+                );
+                attributeDefinition["GlobalOptionSet@odata.bind"] = `/GlobalOptionSetDefinitions(${globalOptionSet.MetadataId})`;
+              } catch (error) {
+                throw new Error(`Global option set '${params.optionSetName}' not found: ${error instanceof Error ? error.message : 'Unknown error'}`);
+              }
+            } else if (params.options && params.options.length > 0) {
+              // Create a new local option set
               attributeDefinition.OptionSet = {
                 "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
-                Name: params.optionSetName || `${params.entityLogicalName}_${params.logicalName}`,
+                Name: `${params.entityLogicalName}_${params.logicalName}`,
                 DisplayName: createLocalizedLabel(`${params.displayName} Options`),
                 IsGlobal: false,
-                OptionSetType: 0, // Picklist
+                OptionSetType: "Picklist", // Use string value instead of numeric
                 Options: params.options.map(option => ({
                   Value: option.value,
                   Label: createLocalizedLabel(option.label),
                   Description: option.description ? createLocalizedLabel(option.description) : undefined
                 }))
               };
+            } else {
+              throw new Error("Either optionSetName (for global option set) or options array (for local option set) is required for Picklist columns");
             }
             break;
 
