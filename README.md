@@ -342,7 +342,7 @@ npm run build
 
 3. Copy the full path to the built `index.js` file:
    - The server will be built to the `build/` directory
-   - Copy the complete file path (e.g., `/Users/yourname/path/to/mcp-dataverse-dotnet/build/index.js`)
+   - Copy the complete file path (e.g., `/Users/yourname/path/to/mcp-dataverse/build/index.js`)
    - You'll use this path in your MCP configuration file
 
 4. Configure the MCP server in your MCP settings file using the copied path (see [Configuration](#configuration) section below for details)
