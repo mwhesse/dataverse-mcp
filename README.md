@@ -112,7 +112,7 @@ The following specific scenarios have been successfully tested and verified:
    - Global option set reference using existing "Colors" option set
 
 6. **Lookup Column Creation** ✅
-   - Cross-table reference (MCT Test 2 → MCT Test)
+   - Cross-table reference (MCP Test 2 → MCP Test)
    - Automatic relationship creation
 
 ### Column Operations Status
