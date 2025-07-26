@@ -46,6 +46,21 @@ import {
   getSolutionContextTool,
   clearSolutionContextTool
 } from "./tools/solution-tools.js";
+import {
+  createRoleTool,
+  getRoleTool,
+  updateRoleTool,
+  deleteRoleTool,
+  listRolesTool,
+  addPrivilegesToRoleTool,
+  removePrivilegeFromRoleTool,
+  replaceRolePrivilegesTool,
+  getRolePrivilegesTool,
+  assignRoleToUserTool,
+  removeRoleFromUserTool,
+  assignRoleToTeamTool,
+  removeRoleFromTeamTool
+} from "./tools/role-tools.js";
 
 // Environment variables for Dataverse authentication
 const DATAVERSE_URL = process.env.DATAVERSE_URL;
@@ -111,6 +126,25 @@ listPublishersTool(server, dataverseClient);
 setSolutionContextTool(server, dataverseClient);
 getSolutionContextTool(server, dataverseClient);
 clearSolutionContextTool(server, dataverseClient);
+
+// Register role tools
+createRoleTool(server, dataverseClient);
+getRoleTool(server, dataverseClient);
+updateRoleTool(server, dataverseClient);
+deleteRoleTool(server, dataverseClient);
+listRolesTool(server, dataverseClient);
+
+// Register role privilege tools
+addPrivilegesToRoleTool(server, dataverseClient);
+removePrivilegeFromRoleTool(server, dataverseClient);
+replaceRolePrivilegesTool(server, dataverseClient);
+getRolePrivilegesTool(server, dataverseClient);
+
+// Register role assignment tools
+assignRoleToUserTool(server, dataverseClient);
+removeRoleFromUserTool(server, dataverseClient);
+assignRoleToTeamTool(server, dataverseClient);
+removeRoleFromTeamTool(server, dataverseClient);
 
 // Start the server
 const transport = new StdioServerTransport();

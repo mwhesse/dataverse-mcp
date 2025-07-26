@@ -10,6 +10,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Relationship Operations](#relationship-operations)
   - [Option Set Operations](#option-set-operations)
   - [Solution & Publisher Operations](#solution--publisher-operations)
+  - [Security Role Operations](#security-role-operations)
 - [Solution-Based Architecture](#solution-based-architecture)
   - [Key Benefits](#key-benefits)
   - [Solution Workflow](#solution-workflow)
@@ -35,6 +36,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Adding Columns to a Table](#adding-columns-to-a-table)
   - [Creating Relationships](#creating-relationships)
   - [Managing Option Sets](#managing-option-sets)
+  - [Managing Security Roles](#managing-security-roles)
 - [Authentication](#authentication)
 - [Error Handling](#error-handling)
 - [Security Considerations](#security-considerations)
@@ -52,6 +54,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Creating a Release](#creating-a-release)
   - [Automated GitHub Releases](#automated-github-releases)
   - [Manual Release Process](#manual-release-process)
+- [Changelog](#changelog)
 - [License](#license)
 - [Support](#support)
 
@@ -97,6 +100,21 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **set_solution_context** - Set active solution for schema operations
 - **get_solution_context** - View current solution context
 - **clear_solution_context** - Remove solution context
+
+### Security Role Operations
+- **create_dataverse_role** - Create new security roles
+- **get_dataverse_role** - Retrieve security role metadata
+- **update_dataverse_role** - Update security role properties
+- **delete_dataverse_role** - Delete custom security roles
+- **list_dataverse_roles** - List security roles with filtering options
+- **add_privileges_to_role** - Add privileges to a security role
+- **remove_privilege_from_role** - Remove privileges from a security role
+- **replace_role_privileges** - Replace all privileges for a security role
+- **get_role_privileges** - Retrieve all privileges for a security role
+- **assign_role_to_user** - Assign security roles to users
+- **remove_role_from_user** - Remove security roles from users
+- **assign_role_to_team** - Assign security roles to teams
+- **remove_role_from_team** - Remove security roles from teams
 
 ## Solution-Based Architecture
 
@@ -574,6 +592,58 @@ await use_mcp_tool("dataverse", "create_dataverse_optionset", {
 });
 ```
 
+### Managing Security Roles
+
+```typescript
+// Create a new security role
+await use_mcp_tool("dataverse", "create_dataverse_role", {
+  name: "Project Manager",
+  description: "Role for project managers with specific permissions",
+  appliesTo: "Project management team members",
+  isAutoAssigned: false,
+  isInherited: "1",
+  summaryOfCoreTablePermissions: "Read/Write access to project-related tables"
+});
+
+// Get security role information
+await use_mcp_tool("dataverse", "get_dataverse_role", {
+  roleId: "role-guid-here"
+});
+
+// List security roles
+await use_mcp_tool("dataverse", "list_dataverse_roles", {
+  customOnly: true,
+  includeManaged: false,
+  top: 20
+});
+
+// Add privileges to a role
+await use_mcp_tool("dataverse", "add_privileges_to_role", {
+  roleId: "role-guid-here",
+  privileges: [
+    { privilegeId: "privilege-guid-1", depth: "Global" },
+    { privilegeId: "privilege-guid-2", depth: "Local" }
+  ]
+});
+
+// Assign role to a user
+await use_mcp_tool("dataverse", "assign_role_to_user", {
+  roleId: "role-guid-here",
+  userId: "user-guid-here"
+});
+
+// Assign role to a team
+await use_mcp_tool("dataverse", "assign_role_to_team", {
+  roleId: "role-guid-here",
+  teamId: "team-guid-here"
+});
+
+// Get role privileges
+await use_mcp_tool("dataverse", "get_role_privileges", {
+  roleId: "role-guid-here"
+});
+```
+
 ## Authentication
 
 The server uses **Client Credentials flow** (Server-to-Server authentication) with Azure AD. This provides:
@@ -639,10 +709,11 @@ DEBUG=true node build/index.js
 For detailed parameter information for each tool, refer to the tool definitions in the source code:
 
 - [`src/tools/table-tools.ts`](src/tools/table-tools.ts) - Table operations
-- [`src/tools/column-tools.ts`](src/tools/column-tools.ts) - Column operations  
+- [`src/tools/column-tools.ts`](src/tools/column-tools.ts) - Column operations
 - [`src/tools/relationship-tools.ts`](src/tools/relationship-tools.ts) - Relationship operations
 - [`src/tools/optionset-tools.ts`](src/tools/optionset-tools.ts) - Option set operations
 - [`src/tools/solution-tools.ts`](src/tools/solution-tools.ts) - Solution and publisher operations
+- [`src/tools/role-tools.ts`](src/tools/role-tools.ts) - Security role operations
 
 ## Solution Management Best Practices
 
@@ -694,6 +765,22 @@ This allows each developer to maintain their own solution context while preventi
 3. Make your changes
 4. Add tests if applicable
 5. Submit a pull request
+
+## Changelog
+
+For a detailed history of changes, new features, and bug fixes, see the [CHANGELOG.md](CHANGELOG.md) file.
+
+### Recent Updates
+
+- **v0.1.2**: Added comprehensive Security Role Management system with 13 new tools
+- **v0.1.1**: Introduced Solution-Based Architecture with persistent context
+- **v0.1.0**: Initial release with core table, column, relationship, and option set operations
+
+The changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format and includes:
+- **Added**: New features and capabilities
+- **Changed**: Modifications to existing functionality
+- **Fixed**: Bug fixes and corrections
+- **Security**: Security-related updates
 
 ## Releasing
 
