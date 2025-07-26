@@ -72,6 +72,17 @@ import {
   getTeamMembersTool,
   convertOwnerTeamToAccessTeamTool
 } from "./tools/team-tools.js";
+import {
+  createBusinessUnitTool,
+  getBusinessUnitTool,
+  updateBusinessUnitTool,
+  deleteBusinessUnitTool,
+  listBusinessUnitsTool,
+  getBusinessUnitHierarchyTool,
+  setBusinessUnitParentTool,
+  getBusinessUnitUsersTool,
+  getBusinessUnitTeamsTool
+} from "./tools/businessunit-tools.js";
 
 // Environment variables for Dataverse authentication
 const DATAVERSE_URL = process.env.DATAVERSE_URL;
@@ -169,6 +180,19 @@ addMembersToTeamTool(server, dataverseClient);
 removeMembersFromTeamTool(server, dataverseClient);
 getTeamMembersTool(server, dataverseClient);
 convertOwnerTeamToAccessTeamTool(server, dataverseClient);
+
+// Register business unit tools
+createBusinessUnitTool(server, dataverseClient);
+getBusinessUnitTool(server, dataverseClient);
+updateBusinessUnitTool(server, dataverseClient);
+deleteBusinessUnitTool(server, dataverseClient);
+listBusinessUnitsTool(server, dataverseClient);
+
+// Register business unit hierarchy and relationship tools
+getBusinessUnitHierarchyTool(server, dataverseClient);
+setBusinessUnitParentTool(server, dataverseClient);
+getBusinessUnitUsersTool(server, dataverseClient);
+getBusinessUnitTeamsTool(server, dataverseClient);
 
 // Start the server
 const transport = new StdioServerTransport();

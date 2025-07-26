@@ -5,6 +5,35 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2025-01-26
+
+### Added
+- **Business Unit Management System** - Complete business unit operations with 9 comprehensive tools
+  - `create_dataverse_businessunit` - Create business units with comprehensive address and contact information
+  - `get_dataverse_businessunit` - Retrieve detailed business unit metadata and configuration
+  - `update_dataverse_businessunit` - Update business unit properties, addresses, and organizational settings
+  - `delete_dataverse_businessunit` - Delete business units with proper dependency handling
+  - `list_dataverse_businessunits` - List business units with advanced filtering and sorting options
+  - `get_businessunit_hierarchy` - Retrieve hierarchical structure and relationships between business units
+  - `set_businessunit_parent` - Change parent business unit for organizational restructuring
+  - `get_businessunit_users` - Get users associated with business units (with subsidiary inclusion option)
+  - `get_businessunit_teams` - Get teams associated with business units (with subsidiary inclusion option)
+
+- **Comprehensive Business Unit Features**
+  - Full address management (Address 1 and Address 2) with geographic coordinates
+  - Contact information including phone, fax, email, and website details
+  - Financial information with cost center and credit limit tracking
+  - Organizational details including division name and stock exchange information
+  - Hierarchical business unit structure with parent-child relationships
+  - Integration with user and team management systems
+  - Support for Microsoft Dataverse business unit hierarchy functions
+
+### Changed
+- Updated README.md with comprehensive business unit operations documentation
+- Added business unit management examples and usage patterns
+- Enhanced API reference to include businessunit-tools.ts
+- Updated table of contents to include Business Unit Operations section
+
 ## [0.1.4] - 2025-01-26
 
 ### Added
@@ -36,7 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `remove_role_from_user` - Remove security roles from users
   - `assign_role_to_team` - Assign security roles to teams
   - `remove_role_from_team` - Remove security roles from teams
-
 - Comprehensive testing suite for role operations
 - Project changelog following Keep a Changelog format
 

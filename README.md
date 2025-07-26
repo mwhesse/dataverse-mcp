@@ -12,6 +12,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Solution & Publisher Operations](#solution--publisher-operations)
   - [Security Role Operations](#security-role-operations)
   - [Team Operations](#team-operations)
+  - [Business Unit Operations](#business-unit-operations)
 - [Solution-Based Architecture](#solution-based-architecture)
   - [Key Benefits](#key-benefits)
   - [Solution Workflow](#solution-workflow)
@@ -39,6 +40,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Managing Option Sets](#managing-option-sets)
   - [Managing Security Roles](#managing-security-roles)
   - [Managing Teams](#managing-teams)
+  - [Managing Business Units](#managing-business-units)
 - [Authentication](#authentication)
 - [Error Handling](#error-handling)
 - [Security Considerations](#security-considerations)
@@ -128,6 +130,17 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **remove_members_from_team** - Remove users from teams
 - **get_team_members** - Retrieve all members of a team
 - **convert_owner_team_to_access_team** - Convert owner teams to access teams
+
+### Business Unit Operations
+- **create_dataverse_businessunit** - Create new business units with comprehensive address and contact information
+- **get_dataverse_businessunit** - Retrieve business unit metadata and details
+- **update_dataverse_businessunit** - Update business unit properties, addresses, and settings
+- **delete_dataverse_businessunit** - Delete business units
+- **list_dataverse_businessunits** - List business units with filtering and sorting options
+- **get_businessunit_hierarchy** - Retrieve the hierarchical structure of business units
+- **set_businessunit_parent** - Change the parent business unit in the hierarchy
+- **get_businessunit_users** - Get users associated with a business unit (with subsidiary option)
+- **get_businessunit_teams** - Get teams associated with a business unit (with subsidiary option)
 
 ## Solution-Based Architecture
 
@@ -713,6 +726,86 @@ await use_mcp_tool("dataverse", "convert_owner_team_to_access_team", {
 });
 ```
 
+### Managing Business Units
+
+```typescript
+// Create a new business unit with comprehensive information
+await use_mcp_tool("dataverse", "create_dataverse_businessunit", {
+  name: "Sales Division",
+  description: "Business unit for sales operations",
+  divisionName: "Sales",
+  emailAddress: "sales@company.com",
+  costCenter: "SALES-001",
+  creditLimit: 100000,
+  parentBusinessUnitId: "parent-bu-guid-here",
+  // Address information
+  address1_name: "Sales Office",
+  address1_line1: "123 Business Street",
+  address1_city: "New York",
+  address1_stateorprovince: "NY",
+  address1_postalcode: "10001",
+  address1_country: "United States",
+  address1_telephone1: "+1-555-0123",
+  address1_fax: "+1-555-0124",
+  // Website and other details
+  webSiteUrl: "https://sales.company.com",
+  stockExchange: "NYSE",
+  tickerSymbol: "COMP"
+});
+
+// Get business unit information
+await use_mcp_tool("dataverse", "get_dataverse_businessunit", {
+  businessUnitId: "business-unit-guid-here"
+});
+
+// List business units with filtering
+await use_mcp_tool("dataverse", "list_dataverse_businessunits", {
+  filter: "isdisabled eq false",
+  orderby: "name asc",
+  top: 20
+});
+
+// Update business unit properties
+await use_mcp_tool("dataverse", "update_dataverse_businessunit", {
+  businessUnitId: "business-unit-guid-here",
+  name: "Updated Sales Division",
+  description: "Updated description for sales operations",
+  emailAddress: "newsales@company.com",
+  creditLimit: 150000,
+  // Update address information
+  address1_line1: "456 New Business Avenue",
+  address1_telephone1: "+1-555-9999"
+});
+
+// Get business unit hierarchy
+await use_mcp_tool("dataverse", "get_businessunit_hierarchy", {
+  businessUnitId: "business-unit-guid-here"
+});
+
+// Change business unit parent (reorganization)
+await use_mcp_tool("dataverse", "set_businessunit_parent", {
+  businessUnitId: "child-bu-guid-here",
+  parentBusinessUnitId: "new-parent-bu-guid-here"
+});
+
+// Get users in a business unit
+await use_mcp_tool("dataverse", "get_businessunit_users", {
+  businessUnitId: "business-unit-guid-here",
+  includeSubsidiaryUsers: false // Set to true to include users from child business units
+});
+
+// Get teams in a business unit
+await use_mcp_tool("dataverse", "get_businessunit_teams", {
+  businessUnitId: "business-unit-guid-here",
+  includeSubsidiaryTeams: true // Include teams from subsidiary business units
+});
+
+// Delete a business unit (ensure no dependencies exist)
+await use_mcp_tool("dataverse", "delete_dataverse_businessunit", {
+  businessUnitId: "business-unit-guid-here"
+});
+```
+
 ## Authentication
 
 The server uses **Client Credentials flow** (Server-to-Server authentication) with Azure AD. This provides:
@@ -784,6 +877,7 @@ For detailed parameter information for each tool, refer to the tool definitions 
 - [`src/tools/solution-tools.ts`](src/tools/solution-tools.ts) - Solution and publisher operations
 - [`src/tools/role-tools.ts`](src/tools/role-tools.ts) - Security role operations
 - [`src/tools/team-tools.ts`](src/tools/team-tools.ts) - Team operations
+- [`src/tools/businessunit-tools.ts`](src/tools/businessunit-tools.ts) - Business unit operations
 
 ## Solution Management Best Practices
 
