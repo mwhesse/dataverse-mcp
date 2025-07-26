@@ -335,25 +335,17 @@ You'll need:
 npm install
 ```
 
-2. Create environment configuration:
-```bash
-cp .env.example .env
-```
-
-3. Edit the `.env` file with your Dataverse credentials:
-```bash
-DATAVERSE_URL=https://yourorg.crm.dynamics.com
-DATAVERSE_CLIENT_ID=your-client-id
-DATAVERSE_CLIENT_SECRET=your-client-secret
-DATAVERSE_TENANT_ID=your-tenant-id
-```
-
-4. Build the server:
+2. Build the server:
 ```bash
 npm run build
 ```
 
-5. The server will be built to the `build/` directory with an executable `index.js` file.
+3. Copy the full path to the built `index.js` file:
+   - The server will be built to the `build/` directory
+   - Copy the complete file path (e.g., `/Users/yourname/path/to/mcp-dataverse-dotnet/build/index.js`)
+   - You'll use this path in your MCP configuration file
+
+4. Configure the MCP server in your MCP settings file using the copied path (see [Configuration](#configuration) section below for details)
 
 ## Configuration
 
@@ -363,9 +355,9 @@ The server supports flexible environment variable configuration with the followi
 2. **System environment variables**
 3. **`.env` file variables** (lowest priority)
 
-### Option 1: Using .env file (Recommended for Development)
+### Option 1: Using .env file (Recommended for MCP Server Development)
 
-The server automatically loads environment variables from a `.env` file in the project root. This is the recommended approach for local development and testing.
+The server automatically loads environment variables from a `.env` file in the project root. This is the recommended approach when contributing to or modifying the MCP server itself.
 
 1. Create your `.env` file:
 ```bash
@@ -384,9 +376,9 @@ cp .env.example .env
 }
 ```
 
-### Option 2: Using MCP environment variables (Recommended for Production)
+### Option 2: Using MCP environment variables (Recommended for Normal Usage)
 
-You can configure environment variables directly in the MCP settings. These will override any values in the `.env` file:
+You can configure environment variables directly in the MCP settings. This is the recommended approach for normal usage when using the MCP Dataverse tool for development activities. These will override any values in the `.env` file:
 
 ```json
 {
