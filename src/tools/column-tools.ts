@@ -23,16 +23,32 @@ function createLocalizedLabel(text: string, languageCode: number = 1033): Locali
   };
 }
 
+// Helper function to generate logical name from display name and prefix
+function generateColumnLogicalName(displayName: string, prefix: string): string {
+  // Convert display name to lowercase, remove spaces and special characters
+  const cleanName = displayName.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+    .replace(/\s+/g, ''); // Remove all spaces
+  
+  return `${prefix}_${cleanName}`;
+}
+
+// Helper function to generate schema name from display name and prefix
+function generateColumnSchemaName(displayName: string, prefix: string): string {
+  // Remove whitespaces and special characters, but preserve original case
+  const cleanName = displayName.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+  return `${prefix}_${cleanName}`;
+}
+
 export function createColumnTool(server: McpServer, client: DataverseClient) {
   server.tool(
     "create_dataverse_column",
     {
       entityLogicalName: z.string().describe("Logical name of the table to add the column to"),
-      logicalName: z.string().describe("Logical name for the column (e.g., 'new_customfield')"),
-      displayName: z.string().describe("Display name for the column"),
+      displayName: z.string().describe("Display name for the column (e.g., 'Customer Email')"),
       description: z.string().optional().describe("Description of the column"),
       columnType: z.enum([
-        "String", "Integer", "Decimal", "Money", "Boolean", "DateTime", 
+        "String", "Integer", "Decimal", "Money", "Boolean", "DateTime",
         "Picklist", "Lookup", "Memo", "Double", "BigInt"
       ]).describe("Type of the column"),
       requiredLevel: z.enum(["None", "SystemRequired", "ApplicationRequired", "Recommended"]).default("None").describe("Required level of the column"),
@@ -66,9 +82,19 @@ export function createColumnTool(server: McpServer, client: DataverseClient) {
     },
     async (params) => {
       try {
+        // Get the customization prefix from the solution context
+        const prefix = client.getCustomizationPrefix();
+        if (!prefix) {
+          throw new Error('No customization prefix available. Please set a solution context using set_solution_context tool first.');
+        }
+
+        // Generate the logical name and schema name
+        const logicalName = generateColumnLogicalName(params.displayName, prefix);
+        const schemaName = generateColumnSchemaName(params.displayName, prefix);
+
         let attributeDefinition: any = {
-          LogicalName: params.logicalName,
-          SchemaName: params.logicalName.charAt(0).toUpperCase() + params.logicalName.slice(1),
+          LogicalName: logicalName,
+          SchemaName: schemaName,
           DisplayName: createLocalizedLabel(params.displayName),
           Description: params.description ? createLocalizedLabel(params.description) : undefined,
           RequiredLevel: {
@@ -182,7 +208,7 @@ export function createColumnTool(server: McpServer, client: DataverseClient) {
               // Create a new local option set
               attributeDefinition.OptionSet = {
                 "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
-                Name: `${params.entityLogicalName}_${params.logicalName}`,
+                Name: `${params.entityLogicalName}_${logicalName}`,
                 DisplayName: createLocalizedLabel(`${params.displayName} Options`),
                 IsGlobal: false,
                 OptionSetType: "Picklist", // Use string value instead of numeric
@@ -210,7 +236,7 @@ export function createColumnTool(server: McpServer, client: DataverseClient) {
           content: [
             {
               type: "text",
-              text: `Successfully created column '${params.logicalName}' of type '${params.columnType}' in table '${params.entityLogicalName}'.\n\nResponse: ${JSON.stringify(result, null, 2)}`
+              text: `Successfully created column '${logicalName}' with display name '${params.displayName}' of type '${params.columnType}' in table '${params.entityLogicalName}'.\n\nGenerated names:\n- Logical Name: ${logicalName}\n- Schema Name: ${schemaName}\n\nResponse: ${JSON.stringify(result, null, 2)}`
             }
           ]
         };

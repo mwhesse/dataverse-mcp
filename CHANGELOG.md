@@ -5,6 +5,24 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2025-01-26
+
+### Changed
+- **Improved Table Creation** - Enhanced `create_dataverse_table` tool with automatic naming conventions
+  - Removed manual `logicalName` and `displayCollectionName` parameters
+  - Automatic logical name generation using customization prefix from solution context (e.g., "Test Table" → "xyz_testtable")
+  - Automatic schema name generation preserving original case (e.g., "Test Table" → "xyz_TestTable", prefix lowercase, spaces removed)
+  - Automatic display collection name generation with smart pluralization (e.g., "Test Table" → "Test Tables")
+  - Automatic primary name attribute generation (e.g., "xyz_testtable_name")
+  - Requires active solution context to provide customization prefix
+
+- **Improved Column Creation** - Enhanced `create_dataverse_column` tool with automatic naming conventions
+  - Removed manual `logicalName` parameter from column creation
+  - Automatic logical name generation using customization prefix from solution context (e.g., "Customer Email" → "xyz_customeremail")
+  - Automatic schema name generation preserving original case (e.g., "Customer Email" → "xyz_CustomerEmail", prefix lowercase, spaces removed)
+  - Consistent naming conventions with table creation for unified developer experience
+  - Requires active solution context to provide customization prefix
+
 ## [0.1.5] - 2025-01-26
 
 ### Added
@@ -33,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added business unit management examples and usage patterns
 - Enhanced API reference to include businessunit-tools.ts
 - Updated table of contents to include Business Unit Operations section
+- Updated table creation documentation to reflect new automatic naming conventions
 
 ## [0.1.4] - 2025-01-26
 

@@ -477,26 +477,42 @@ DATAVERSE_TENANT_ID=common-tenant-id
 ### Creating a Custom Table
 
 ```typescript
-// Create a new custom table
+// Create a new custom table with automatic naming
+// The system automatically generates:
+// - Logical Name: xyz_project (using customization prefix from solution context)
+// - Schema Name: xyz_Project (prefix lowercase, original case preserved, spaces removed)
+// - Display Collection Name: Projects (auto-pluralized)
+// - Primary Name Attribute: xyz_project_name
 await use_mcp_tool("dataverse", "create_dataverse_table", {
-  logicalName: "new_project",
   displayName: "Project",
-  displayCollectionName: "Projects",
   description: "Custom table for managing projects",
   ownershipType: "UserOwned",
   hasActivities: true,
-  hasNotes: true,
-  primaryNameAttribute: "new_name"
+  hasNotes: true
 });
+
+// Example with minimal parameters (most common usage)
+await use_mcp_tool("dataverse", "create_dataverse_table", {
+  displayName: "Customer Feedback"
+});
+// This creates:
+// - Logical Name: xyz_customerfeedback
+// - Schema Name: xyz_CustomerFeedback (prefix lowercase, original case preserved)
+// - Display Collection Name: Customer Feedbacks
+// - Primary Name Attribute: xyz_customerfeedback_name
 ```
+
+**Important**: Before creating tables, ensure you have set a solution context using `set_solution_context` to provide the customization prefix. The system automatically uses the prefix from the active solution's publisher.
 
 ### Adding Columns to a Table
 
 ```typescript
-// String column with email format
+// String column with email format and automatic naming
+// The system automatically generates:
+// - Logical Name: xyz_contactemail (prefix + lowercase, no spaces)
+// - Schema Name: xyz_ContactEmail (prefix lowercase, original case preserved)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_email",
+  entityLogicalName: "xyz_project",
   displayName: "Contact Email",
   columnType: "String",
   format: "Email",
@@ -504,10 +520,9 @@ await use_mcp_tool("dataverse", "create_dataverse_column", {
   requiredLevel: "ApplicationRequired"
 });
 
-// Integer column with constraints
+// Integer column with constraints (generates xyz_priorityscore)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_priority",
+  entityLogicalName: "xyz_project",
   displayName: "Priority Score",
   columnType: "Integer",
   minValue: 1,
@@ -515,10 +530,9 @@ await use_mcp_tool("dataverse", "create_dataverse_column", {
   defaultValue: 5
 });
 
-// Boolean column with custom labels
+// Boolean column with custom labels (generates xyz_isactive)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_isactive",
+  entityLogicalName: "xyz_project",
   displayName: "Is Active",
   columnType: "Boolean",
   trueOptionLabel: "Active",
@@ -526,29 +540,26 @@ await use_mcp_tool("dataverse", "create_dataverse_column", {
   defaultValue: true
 });
 
-// DateTime column (date only)
+// DateTime column (date only) (generates xyz_startdate)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_startdate",
+  entityLogicalName: "xyz_project",
   displayName: "Start Date",
   columnType: "DateTime",
   dateTimeFormat: "DateOnly",
   requiredLevel: "ApplicationRequired"
 });
 
-// DateTime column (date and time)
+// DateTime column (date and time) (generates xyz_lastmodified)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_lastmodified",
+  entityLogicalName: "xyz_project",
   displayName: "Last Modified",
   columnType: "DateTime",
   dateTimeFormat: "DateAndTime"
 });
 
-// Picklist column with local options
+// Picklist column with local options (generates xyz_status)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_status",
+  entityLogicalName: "xyz_project",
   displayName: "Status",
   columnType: "Picklist",
   options: [
@@ -559,28 +570,25 @@ await use_mcp_tool("dataverse", "create_dataverse_column", {
   ]
 });
 
-// Picklist column using global option set
+// Picklist column using global option set (generates xyz_projectcolor)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_color",
+  entityLogicalName: "xyz_project",
   displayName: "Project Color",
   columnType: "Picklist",
-  optionSetName: "new_colors"
+  optionSetName: "xyz_colors"
 });
 
-// Lookup column
+// Lookup column (generates xyz_account)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_accountid",
+  entityLogicalName: "xyz_project",
   displayName: "Account",
   columnType: "Lookup",
   targetEntity: "account"
 });
 
-// Memo column for long text
+// Memo column for long text (generates xyz_description)
 await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_description",
+  entityLogicalName: "xyz_project",
   displayName: "Description",
   columnType: "Memo",
   maxLength: 2000,
