@@ -14,7 +14,7 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **list_dataverse_tables** - List tables with filtering options
 
 ### Column Operations
-- **create_dataverse_column** - Create columns of various types (String, Integer, Decimal, Boolean, DateTime, Lookup, Picklist, etc.)
+- **create_dataverse_column** - Create columns of various types (see [Supported Column Types](#supported-column-types) below)
 - **get_dataverse_column** - Retrieve column metadata
 - **update_dataverse_column** - Update column properties
 - **delete_dataverse_column** - Delete custom columns
@@ -33,6 +33,97 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **delete_dataverse_optionset** - Delete custom option sets
 - **list_dataverse_optionsets** - List option sets
 - **get_dataverse_optionset_options** - Get options for a specific option set
+
+## Supported Column Types
+
+The MCP server supports all major Dataverse column types with comprehensive configuration options. The following table shows implementation status and testing verification:
+
+| Column Type | Status | Tested | Description | Key Parameters |
+|-------------|--------|--------|-------------|----------------|
+| **String** | ✅ Implemented | ✅ Verified | Text fields with format options | `maxLength`, `format` (Email, Text, TextArea, Url, Phone) |
+| **Integer** | ✅ Implemented | ✅ Verified | Whole numbers with constraints | `minValue`, `maxValue`, `defaultValue` |
+| **Decimal** | ✅ Implemented | ⚠️ Not Tested | Decimal numbers with precision | `precision`, `minValue`, `maxValue`, `defaultValue` |
+| **Money** | ✅ Implemented | ⚠️ Not Tested | Currency values | `precision`, `minValue`, `maxValue` |
+| **Boolean** | ✅ Implemented | ✅ Verified | True/false with custom labels | `trueOptionLabel`, `falseOptionLabel`, `defaultValue` |
+| **DateTime** | ✅ Implemented | ✅ Verified | Date and time fields | `dateTimeFormat` (DateOnly, DateAndTime) |
+| **Picklist** | ✅ Implemented | ✅ Verified | Choice fields (local & global) | `options` (for local), `optionSetName` (for global) |
+| **Lookup** | ✅ Implemented | ✅ Verified | References to other tables | `targetEntity` |
+| **Memo** | ✅ Implemented | ⚠️ Not Tested | Long text fields | `maxLength` |
+| **Double** | ✅ Implemented | ⚠️ Not Tested | Floating-point numbers | `precision`, `minValue`, `maxValue` |
+| **BigInt** | ✅ Implemented | ⚠️ Not Tested | Large integer values | None |
+
+### Column Type Details
+
+#### String Columns ✅ Tested
+- **Formats**: Email, Text, TextArea, Url, Phone
+- **Max Length**: Configurable (default: 100)
+- **Default Values**: Supported
+- **Example**: Employee name, email address, phone number
+
+#### Integer Columns ✅ Tested
+- **Constraints**: Min/max value validation
+- **Default Values**: Supported
+- **Example**: Age, quantity, score with range 0-100
+
+#### Boolean Columns ✅ Tested
+- **Custom Labels**: Configurable true/false option labels
+- **Default Values**: Supported
+- **Example**: "Active/Inactive", "Yes/No", "Enabled/Disabled"
+
+#### DateTime Columns ✅ Tested
+- **DateOnly**: Date without time component (e.g., hire date, birthday)
+- **DateAndTime**: Full timestamp with timezone handling (e.g., last login, created date)
+- **Behavior**: Uses UserLocal timezone behavior
+
+#### Picklist Columns ✅ Tested
+- **Local Option Sets**: Create inline options with the column
+- **Global Option Sets**: Reference existing global option sets by name
+- **Color Support**: Options can have associated colors
+- **Example**: Status (Active, Inactive), Priority (High, Medium, Low)
+
+#### Lookup Columns ✅ Tested
+- **Target Entity**: Specify which table to reference
+- **Relationships**: Automatically creates underlying relationship
+- **Example**: Customer lookup, Account reference
+
+### Tested Column Scenarios
+
+The following specific scenarios have been successfully tested and verified:
+
+1. **String Column Creation** ✅
+   - Basic text field with default settings
+   - Email format validation
+   - Custom max length constraints
+
+2. **Integer Column Creation** ✅
+   - Numeric field with min/max constraints (0-100 range)
+   - Default value assignment
+
+3. **Boolean Column Creation** ✅
+   - Custom true/false labels ("Active"/"Inactive")
+   - Default value configuration
+
+4. **DateTime Column Creation** ✅
+   - DateOnly format for hire dates
+   - DateAndTime format for login timestamps
+
+5. **Picklist Column Creation** ✅
+   - Local option set with custom options
+   - Global option set reference using existing "Colors" option set
+
+6. **Lookup Column Creation** ✅
+   - Cross-table reference (MCT Test 2 → MCT Test)
+   - Automatic relationship creation
+
+### Column Operations Status
+
+| Operation | Status | Description |
+|-----------|--------|-------------|
+| **Create** | ✅ Fully Tested | All column types with type-specific parameters |
+| **Read** | ✅ Implemented | Retrieve column metadata and configuration |
+| **Update** | ✅ Implemented | Modify display name, description, required level |
+| **Delete** | ✅ Tested | Remove custom columns from tables |
+| **List** | ✅ Implemented | List all columns for a table with filtering |
 
 ## Prerequisites
 
@@ -192,7 +283,91 @@ await use_mcp_tool("dataverse", "create_dataverse_table", {
 ### Adding Columns to a Table
 
 ```typescript
-// Add a text column
+// String column with email format
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "new_project",
+  logicalName: "new_email",
+  displayName: "Contact Email",
+  columnType: "String",
+  format: "Email",
+  maxLength: 100,
+  requiredLevel: "ApplicationRequired"
+});
+
+// Integer column with constraints
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "new_project",
+  logicalName: "new_priority",
+  displayName: "Priority Score",
+  columnType: "Integer",
+  minValue: 1,
+  maxValue: 10,
+  defaultValue: 5
+});
+
+// Boolean column with custom labels
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "new_project",
+  logicalName: "new_isactive",
+  displayName: "Is Active",
+  columnType: "Boolean",
+  trueOptionLabel: "Active",
+  falseOptionLabel: "Inactive",
+  defaultValue: true
+});
+
+// DateTime column (date only)
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "new_project",
+  logicalName: "new_startdate",
+  displayName: "Start Date",
+  columnType: "DateTime",
+  dateTimeFormat: "DateOnly",
+  requiredLevel: "ApplicationRequired"
+});
+
+// DateTime column (date and time)
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "new_project",
+  logicalName: "new_lastmodified",
+  displayName: "Last Modified",
+  columnType: "DateTime",
+  dateTimeFormat: "DateAndTime"
+});
+
+// Picklist column with local options
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "new_project",
+  logicalName: "new_status",
+  displayName: "Status",
+  columnType: "Picklist",
+  options: [
+    { value: 1, label: "Planning" },
+    { value: 2, label: "In Progress" },
+    { value: 3, label: "On Hold" },
+    { value: 4, label: "Completed" }
+  ]
+});
+
+// Picklist column using global option set
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "new_project",
+  logicalName: "new_color",
+  displayName: "Project Color",
+  columnType: "Picklist",
+  optionSetName: "new_colors"
+});
+
+// Lookup column
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "new_project",
+  logicalName: "new_accountid",
+  displayName: "Account",
+  columnType: "Lookup",
+  targetEntity: "account"
+});
+
+// Memo column for long text
 await use_mcp_tool("dataverse", "create_dataverse_column", {
   entityLogicalName: "new_project",
   logicalName: "new_description",
@@ -200,28 +375,6 @@ await use_mcp_tool("dataverse", "create_dataverse_column", {
   columnType: "Memo",
   maxLength: 2000,
   requiredLevel: "Recommended"
-});
-
-// Add a picklist column
-await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_status",
-  displayName: "Status",
-  columnType: "Picklist",
-  options: [
-    { value: 1, label: "Active" },
-    { value: 2, label: "On Hold" },
-    { value: 3, label: "Completed" }
-  ]
-});
-
-// Add a lookup column
-await use_mcp_tool("dataverse", "create_dataverse_column", {
-  entityLogicalName: "new_project",
-  logicalName: "new_accountid",
-  displayName: "Account",
-  columnType: "Lookup",
-  targetEntity: "account"
 });
 ```
 
