@@ -47,11 +47,11 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 
 ## Solution-Based Architecture
 
-The MCP server implements enterprise-grade solution management following Microsoft Dataverse best practices. This eliminates hardcoded prefixes and enables proper Application Lifecycle Management (ALM) workflows.
+The MCP server implements enterprise-grade solution management following Microsoft Dataverse best practices.
 
 ### Key Benefits
 
-- **Professional Schema Naming**: Uses publisher-based customization prefixes instead of hardcoded "new" prefixes
+- **Professional Schema Naming**: Uses publisher-based customization prefixes
 - **Solution Association**: All schema changes are automatically associated with the active solution
 - **ALM Support**: Enables proper solution packaging and deployment across environments
 - **Persistent Context**: Solution context survives server restarts via `.mcp-dataverse` file
