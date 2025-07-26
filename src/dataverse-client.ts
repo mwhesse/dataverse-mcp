@@ -1,4 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface DataverseConfig {
   dataverseUrl: string;
@@ -26,13 +28,30 @@ export interface DataverseError {
   };
 }
 
+export interface SolutionContext {
+  solutionUniqueName: string;
+  solutionDisplayName?: string;
+  publisherUniqueName?: string;
+  publisherDisplayName?: string;
+  customizationPrefix?: string;
+  lastUpdated: string;
+}
+
 export class DataverseClient {
   private config: DataverseConfig;
   private httpClient: AxiosInstance;
   private authToken: AuthToken | null = null;
+  private solutionUniqueName: string | null = null;
+  private solutionContext: SolutionContext | null = null;
+  private contextFilePath: string;
 
   constructor(config: DataverseConfig) {
     this.config = config;
+    this.contextFilePath = path.join(process.cwd(), '.mcp-dataverse');
+    
+    // Load persisted solution context on startup
+    this.loadSolutionContext();
+    
     this.httpClient = axios.create({
       baseURL: `${config.dataverseUrl}/api/data/v9.2/`,
       headers: {
@@ -98,6 +117,142 @@ export class DataverseClient {
     }
   }
 
+  // Solution context persistence methods
+  private loadSolutionContext(): void {
+    try {
+      if (fs.existsSync(this.contextFilePath)) {
+        const contextData = fs.readFileSync(this.contextFilePath, 'utf8');
+        this.solutionContext = JSON.parse(contextData);
+        this.solutionUniqueName = this.solutionContext?.solutionUniqueName || null;
+        
+        if (this.solutionContext) {
+          console.log(`Loaded solution context: ${this.solutionContext.solutionUniqueName} (${this.solutionContext.solutionDisplayName || 'Unknown'})`);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load solution context from .mcp-dataverse file:', error instanceof Error ? error.message : 'Unknown error');
+      // Reset context on error
+      this.solutionContext = null;
+      this.solutionUniqueName = null;
+    }
+  }
+
+  private saveSolutionContext(): void {
+    try {
+      if (this.solutionContext) {
+        fs.writeFileSync(this.contextFilePath, JSON.stringify(this.solutionContext, null, 2), 'utf8');
+      } else {
+        // Remove file when context is cleared
+        if (fs.existsSync(this.contextFilePath)) {
+          fs.unlinkSync(this.contextFilePath);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to save solution context to .mcp-dataverse file:', error instanceof Error ? error.message : 'Unknown error');
+    }
+  }
+
+  // Enhanced solution context methods
+  async setSolutionContext(solutionUniqueName: string): Promise<void> {
+    try {
+      // Fetch solution details to populate context
+      const result = await this.get(
+        `solutions?$filter=uniquename eq '${solutionUniqueName}'&$expand=publisherid($select=uniquename,friendlyname,customizationprefix)&$select=uniquename,friendlyname`
+      );
+
+      if (!result.value || result.value.length === 0) {
+        throw new Error(`Solution '${solutionUniqueName}' not found`);
+      }
+
+      const solution = result.value[0];
+      const publisher = solution.publisherid;
+
+      this.solutionContext = {
+        solutionUniqueName: solution.uniquename,
+        solutionDisplayName: solution.friendlyname,
+        publisherUniqueName: publisher?.uniquename,
+        publisherDisplayName: publisher?.friendlyname,
+        customizationPrefix: publisher?.customizationprefix,
+        lastUpdated: new Date().toISOString()
+      };
+
+      this.solutionUniqueName = solutionUniqueName;
+      this.saveSolutionContext();
+    } catch (error) {
+      throw new Error(`Failed to set solution context: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  getSolutionContext(): SolutionContext | null {
+    return this.solutionContext;
+  }
+
+  getSolutionUniqueName(): string | null {
+    return this.solutionUniqueName;
+  }
+
+  clearSolutionContext(): void {
+    this.solutionUniqueName = null;
+    this.solutionContext = null;
+    this.saveSolutionContext();
+  }
+
+  // Helper method to get headers with solution context
+  private getMetadataHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'OData-MaxVersion': '4.0',
+      'OData-Version': '4.0'
+    };
+
+    if (this.solutionUniqueName) {
+      headers['MSCRM.SolutionUniqueName'] = this.solutionUniqueName;
+    }
+
+    return headers;
+  }
+
+  // Helper method to get the customization prefix from the current solution context
+  getCustomizationPrefix(): string | null {
+    if (!this.solutionContext) {
+      return null;
+    }
+    return this.solutionContext.customizationPrefix || null;
+  }
+
+  // Async method to refresh and get customization prefix (for backward compatibility)
+  async getCustomizationPrefixAsync(): Promise<string> {
+    if (!this.solutionUniqueName) {
+      throw new Error('No solution context is set. Please set a solution context using set_solution_context tool to get the customization prefix.');
+    }
+
+    // If we have cached prefix, return it
+    if (this.solutionContext?.customizationPrefix) {
+      return this.solutionContext.customizationPrefix;
+    }
+
+    // Otherwise fetch it
+    try {
+      const result = await this.get(
+        `solutions?$filter=uniquename eq '${this.solutionUniqueName}'&$expand=publisherid($select=customizationprefix)`
+      );
+
+      if (!result.value || result.value.length === 0) {
+        throw new Error(`Solution '${this.solutionUniqueName}' not found`);
+      }
+
+      const prefix = result.value[0].publisherid?.customizationprefix;
+      if (!prefix) {
+        throw new Error(`No customization prefix found for solution '${this.solutionUniqueName}'`);
+      }
+
+      return prefix;
+    } catch (error) {
+      throw new Error(`Failed to get customization prefix: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
   // Generic HTTP methods
   async get<T = any>(endpoint: string, params?: Record<string, any>): Promise<T> {
     const response: AxiosResponse<T> = await this.httpClient.get(endpoint, { params });
@@ -127,12 +282,7 @@ export class DataverseClient {
   async getMetadata<T = any>(endpoint: string, params?: Record<string, any>): Promise<T> {
     const metadataClient = axios.create({
       baseURL: `${this.config.dataverseUrl}/api/data/v9.2/`,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'OData-MaxVersion': '4.0',
-        'OData-Version': '4.0'
-      }
+      headers: this.getMetadataHeaders()
     });
 
     // Add error interceptor
@@ -159,12 +309,7 @@ export class DataverseClient {
   async postMetadata<T = any>(endpoint: string, data?: any): Promise<T> {
     const metadataClient = axios.create({
       baseURL: `${this.config.dataverseUrl}/api/data/v9.2/`,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'OData-MaxVersion': '4.0',
-        'OData-Version': '4.0'
-      }
+      headers: this.getMetadataHeaders()
     });
 
     // Add error interceptor
@@ -191,12 +336,7 @@ export class DataverseClient {
   async patchMetadata<T = any>(endpoint: string, data?: any): Promise<T> {
     const metadataClient = axios.create({
       baseURL: `${this.config.dataverseUrl}/api/data/v9.2/`,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'OData-MaxVersion': '4.0',
-        'OData-Version': '4.0'
-      }
+      headers: this.getMetadataHeaders()
     });
 
     // Add error interceptor
@@ -223,12 +363,7 @@ export class DataverseClient {
   async deleteMetadata(endpoint: string): Promise<void> {
     const metadataClient = axios.create({
       baseURL: `${this.config.dataverseUrl}/api/data/v9.2/`,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'OData-MaxVersion': '4.0',
-        'OData-Version': '4.0'
-      }
+      headers: this.getMetadataHeaders()
     });
 
     // Add error interceptor

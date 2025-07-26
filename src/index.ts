@@ -35,6 +35,17 @@ import {
   listOptionSetsTool,
   getOptionSetOptionsTool
 } from "./tools/optionset-tools.js";
+import {
+  createPublisherTool,
+  createSolutionTool,
+  getSolutionTool,
+  getPublisherTool,
+  listSolutionsTool,
+  listPublishersTool,
+  setSolutionContextTool,
+  getSolutionContextTool,
+  clearSolutionContextTool
+} from "./tools/solution-tools.js";
 
 // Environment variables for Dataverse authentication
 const DATAVERSE_URL = process.env.DATAVERSE_URL;
@@ -87,6 +98,19 @@ updateOptionSetTool(server, dataverseClient);
 deleteOptionSetTool(server, dataverseClient);
 listOptionSetsTool(server, dataverseClient);
 getOptionSetOptionsTool(server, dataverseClient);
+
+// Register solution and publisher tools
+createPublisherTool(server, dataverseClient);
+createSolutionTool(server, dataverseClient);
+getSolutionTool(server, dataverseClient);
+getPublisherTool(server, dataverseClient);
+listSolutionsTool(server, dataverseClient);
+listPublishersTool(server, dataverseClient);
+
+// Register solution context tools
+setSolutionContextTool(server, dataverseClient);
+getSolutionContextTool(server, dataverseClient);
+clearSolutionContextTool(server, dataverseClient);
 
 // Start the server
 const transport = new StdioServerTransport();

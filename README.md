@@ -34,6 +34,98 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **list_dataverse_optionsets** - List option sets
 - **get_dataverse_optionset_options** - Get options for a specific option set
 
+### Solution & Publisher Operations
+- **create_dataverse_publisher** - Create custom publishers with prefixes
+- **get_dataverse_publisher** - Retrieve publisher metadata
+- **list_dataverse_publishers** - List publishers with filtering
+- **create_dataverse_solution** - Create solutions linked to publishers
+- **get_dataverse_solution** - Retrieve solution metadata
+- **list_dataverse_solutions** - List solutions with publisher details
+- **set_solution_context** - Set active solution for schema operations
+- **get_solution_context** - View current solution context
+- **clear_solution_context** - Remove solution context
+
+## Solution-Based Architecture
+
+The MCP server implements enterprise-grade solution management following Microsoft Dataverse best practices. This eliminates hardcoded prefixes and enables proper Application Lifecycle Management (ALM) workflows.
+
+### Key Benefits
+
+- **Professional Schema Naming**: Uses publisher-based customization prefixes instead of hardcoded "new" prefixes
+- **Solution Association**: All schema changes are automatically associated with the active solution
+- **ALM Support**: Enables proper solution packaging and deployment across environments
+- **Persistent Context**: Solution context survives server restarts via `.mcp-dataverse` file
+- **Enterprise Governance**: Supports multiple publishers and solutions with proper isolation
+
+### Solution Workflow
+
+1. **Create Publisher**: Define your organization's customization prefix
+2. **Create Solution**: Link solution to publisher for schema organization
+3. **Set Context**: Activate solution for subsequent operations
+4. **Create Schema**: All tables, columns, and option sets use the publisher's prefix automatically
+5. **Deploy**: Export solution for deployment to other environments
+
+### Example: XYZ Organization Setup
+
+```typescript
+// 1. Create publisher with "xyz" prefix
+await use_mcp_tool("dataverse", "create_dataverse_publisher", {
+  friendlyName: "XYZ Test Publisher",
+  uniqueName: "xyzpublisher",
+  customizationPrefix: "xyz",
+  customizationOptionValuePrefix: 20000,
+  description: "Publisher for XYZ organization"
+});
+
+// 2. Create solution linked to publisher
+await use_mcp_tool("dataverse", "create_dataverse_solution", {
+  friendlyName: "XYZ Test Solution",
+  uniqueName: "xyzsolution",
+  publisherUniqueName: "xyzpublisher",
+  description: "Main solution for XYZ customizations"
+});
+
+// 3. Set solution context (persisted across server restarts)
+await use_mcp_tool("dataverse", "set_solution_context", {
+  solutionUniqueName: "xyzsolution"
+});
+
+// 4. Create schema objects - they automatically use "xyz" prefix
+await use_mcp_tool("dataverse", "create_dataverse_table", {
+  logicalName: "xyz_project",        // Uses xyz prefix automatically
+  displayName: "XYZ Project",
+  displayCollectionName: "XYZ Projects"
+});
+
+await use_mcp_tool("dataverse", "create_dataverse_column", {
+  entityLogicalName: "xyz_project",
+  logicalName: "xyz_description",    // Uses xyz prefix automatically
+  displayName: "Description",
+  columnType: "Memo"
+});
+```
+
+### Persistent Solution Context
+
+The server automatically persists solution context to a `.mcp-dataverse` file in the project root:
+
+```json
+{
+  "solutionUniqueName": "xyzsolution",
+  "solutionDisplayName": "XYZ Test Solution",
+  "publisherUniqueName": "xyzpublisher",
+  "publisherDisplayName": "XYZ Test Publisher",
+  "customizationPrefix": "xyz",
+  "lastUpdated": "2025-07-26T08:27:56.966Z"
+}
+```
+
+**Benefits of Persistence:**
+- **No Context Loss**: Solution context survives server restarts
+- **Instant Productivity**: Developers can immediately continue work
+- **Consistent Prefixes**: No need to remember and re-set solution context
+- **Team Isolation**: Each developer can have their own solution context (file is git-ignored)
+
 ## Supported Column Types
 
 The MCP server supports all major Dataverse column types with comprehensive configuration options. The following table shows implementation status and testing verification:
@@ -471,6 +563,50 @@ For detailed parameter information for each tool, refer to the tool definitions 
 - [`src/tools/column-tools.ts`](src/tools/column-tools.ts) - Column operations  
 - [`src/tools/relationship-tools.ts`](src/tools/relationship-tools.ts) - Relationship operations
 - [`src/tools/optionset-tools.ts`](src/tools/optionset-tools.ts) - Option set operations
+- [`src/tools/solution-tools.ts`](src/tools/solution-tools.ts) - Solution and publisher operations
+
+## Solution Management Best Practices
+
+### Publisher Configuration
+
+When creating publishers, follow these guidelines:
+
+- **Unique Prefixes**: Use 2-8 character prefixes that identify your organization
+- **Option Value Ranges**: Use non-overlapping ranges (e.g., 10000-19999 for one publisher, 20000-29999 for another)
+- **Descriptive Names**: Use clear, professional names for publishers and solutions
+
+### Solution Context Management
+
+```typescript
+// Check current context
+await use_mcp_tool("dataverse", "get_solution_context", {});
+
+// Switch to different solution
+await use_mcp_tool("dataverse", "set_solution_context", {
+  solutionUniqueName: "anothersolution"
+});
+
+// Clear context (removes persistence file)
+await use_mcp_tool("dataverse", "clear_solution_context", {});
+```
+
+### Environment Promotion
+
+1. **Development**: Create and test schema changes in dev environment with solution context
+2. **Export**: Use Power Platform CLI or admin center to export solution
+3. **Import**: Deploy solution to test/production environments
+4. **Validation**: Verify all customizations use proper prefixes
+
+### Git Integration
+
+The `.mcp-dataverse` file is automatically excluded from version control:
+
+```gitignore
+# MCP Dataverse context file
+.mcp-dataverse
+```
+
+This allows each developer to maintain their own solution context while preventing accidental sharing of environment-specific settings.
 
 ## Contributing
 

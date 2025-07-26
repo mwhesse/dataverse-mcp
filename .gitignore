@@ -16,6 +16,9 @@ dist/
 .env.test.local
 .env.production.local
 
+# MCP Dataverse context file
+.mcp-dataverse
+
 # IDE files
 .vscode/
 .idea/
