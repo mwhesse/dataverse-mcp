@@ -48,6 +48,10 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Environment Promotion](#environment-promotion)
   - [Git Integration](#git-integration)
 - [Contributing](#contributing)
+- [Releasing](#releasing)
+  - [Creating a Release](#creating-a-release)
+  - [Automated GitHub Releases](#automated-github-releases)
+  - [Manual Release Process](#manual-release-process)
 - [License](#license)
 - [Support](#support)
 
@@ -690,6 +694,46 @@ This allows each developer to maintain their own solution context while preventi
 3. Make your changes
 4. Add tests if applicable
 5. Submit a pull request
+
+## Releasing
+
+This project includes automated release scripts for maintainers:
+
+### Creating a Release
+
+```bash
+# Patch release (0.1.0 -> 0.1.1)
+npm run release
+
+# Minor release (0.1.0 -> 0.2.0)
+npm run release:minor
+
+# Major release (0.1.0 -> 1.0.0)
+npm run release:major
+```
+
+These scripts will:
+1. Build the project
+2. Bump the version in `package.json`
+3. Create a git tag
+4. Push the changes and tag to GitHub
+
+### Automated GitHub Releases
+
+When a tag is pushed to GitHub, the GitHub Actions workflow will automatically:
+1. Build the project
+2. Create release archives (`.tar.gz` and `.zip`)
+3. Create a GitHub release with the archives attached
+4. Include installation instructions in the release notes
+
+### Manual Release Process
+
+If you prefer to create releases manually:
+
+1. Build the project: `npm run build`
+2. Update version: `npm version [patch|minor|major]`
+3. Push changes: `git push && git push --tags`
+4. The GitHub Actions workflow will handle the rest
 
 ## License
 

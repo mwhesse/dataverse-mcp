@@ -9,7 +9,10 @@
     "dev": "tsc --watch",
     "start": "node build/index.js",
     "test:server": "node test-server.cjs",
-    "test:auth": "node test-auth.cjs"
+    "test:auth": "node test-auth.cjs",
+    "release": "npm run build && npm version patch && git push && git push --tags",
+    "release:minor": "npm run build && npm version minor && git push && git push --tags",
+    "release:major": "npm run build && npm version major && git push && git push --tags"
   },
   "keywords": [
     "mcp",
