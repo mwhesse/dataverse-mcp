@@ -16,6 +16,8 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 
 ✅ **WebAPI Call Generator** - Generate ready-to-use HTTP requests, cURL commands, and JavaScript code for any Dataverse operation
 
+✅ **PowerPages WebAPI Generator** - Generate PowerPages-specific WebAPI calls using the `/_api/[logicalEntityName]` format with React examples
+
 ✅ **Schema Export** - Export complete solution schemas to JSON with filtering options for documentation and backup
 
 ✅ **Professional Integration** - OAuth2 authentication, comprehensive error handling, and enterprise-ready deployment
@@ -33,6 +35,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Business Unit Operations](#business-unit-operations)
   - [Schema Export Operations](#schema-export-operations)
   - [WebAPI Call Generator](#webapi-call-generator)
+  - [PowerPages WebAPI Generator](#powerpages-webapi-generator)
 - [Solution-Based Architecture](#solution-based-architecture)
   - [Key Benefits](#key-benefits)
   - [Solution Workflow](#solution-workflow)
@@ -167,6 +170,9 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 
 ### WebAPI Call Generator
 - **generate_webapi_call** - Generate complete WebAPI calls for Dataverse operations including URLs, headers, and request bodies. Supports all major operations (retrieve, create, update, delete, associate, disassociate, actions, functions) with OData query options and provides output in multiple formats (HTTP, cURL, JavaScript fetch).
+
+### PowerPages WebAPI Generator
+- **generate_powerpages_webapi_call** - Generate PowerPages-specific WebAPI calls using the `/_api/[logicalEntityName]` format. Includes request verification token handling, authentication context, React component examples, and PowerPages-specific features for SPA development.
 
 ## Solution-Based Architecture
 
@@ -1113,6 +1119,187 @@ fetch('https://yourorg.crm.dynamics.com/api/data/v9.2/accounts(12345678-1234-123
 - **Impersonation**: MSCRMCallerID header support
 - **Solution Context**: Automatic MSCRM.SolutionUniqueName header inclusion
 
+### PowerPages WebAPI Generator
+
+The PowerPages WebAPI Generator creates API calls specifically for PowerPages Single Page Applications (SPAs) using the PowerPages WebAPI format `/_api/[logicalEntityName]`. This tool is designed for developers building modern React, Angular, or Vue applications within PowerPages environments.
+
+**Key Differences from Standard Dataverse WebAPI:**
+- **URL Format**: Uses `/_api/[logicalEntityName]` instead of `/api/data/v9.2/[entitySetName]`
+- **Authentication**: Integrates with PowerPages authentication context and request verification tokens
+- **Client-Side Focus**: Optimized for browser-based applications with React component examples
+- **PowerPages Security**: Respects PowerPages table permissions and web roles
+
+```typescript
+// Generate a PowerPages retrieve multiple operation
+await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
+  operation: "retrieveMultiple",
+  logicalEntityName: "cr7ae_creditcardses",
+  select: ["cr7ae_name", "cr7ae_type", "cr7ae_features"],
+  filter: "cr7ae_type eq 'Premium'",
+  orderby: "cr7ae_name asc",
+  top: 10,
+  baseUrl: "https://contoso.powerappsportals.com",
+  includeAuthContext: true
+});
+
+// Generate a PowerPages create operation with request verification token
+await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
+  operation: "create",
+  logicalEntityName: "cr7ae_creditcardses",
+  data: {
+    cr7ae_name: "New Premium Card",
+    cr7ae_type: "Premium",
+    cr7ae_features: "Cashback, Travel Insurance"
+  },
+  baseUrl: "https://contoso.powerappsportals.com",
+  requestVerificationToken: true
+});
+
+// Generate a PowerPages retrieve single record
+await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
+  operation: "retrieve",
+  logicalEntityName: "contacts",
+  entityId: "12345678-1234-1234-1234-123456789012",
+  select: ["fullname", "emailaddress1", "telephone1"],
+  baseUrl: "https://yoursite.powerappsportals.com"
+});
+
+// Generate with custom headers for advanced scenarios
+await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
+  operation: "retrieveMultiple",
+  logicalEntityName: "contacts",
+  select: ["fullname", "emailaddress1"],
+  filter: "contains(fullname,'John')",
+  customHeaders: {
+    "X-Custom-Header": "PowerPages-API",
+    "X-Client-Version": "1.0"
+  }
+});
+```
+
+**Output Features:**
+- **PowerPages URL Format**: Correct `/_api/[logicalEntityName]` endpoint construction
+- **Request Verification Token**: Automatic token handling for POST/PATCH/DELETE operations
+- **JavaScript Examples**: Ready-to-use fetch code with error handling
+- **React Components**: Complete React hook examples for data fetching
+- **Authentication Context**: PowerPages user context and token management
+- **OData Query Support**: Full OData query parameter support with proper encoding
+
+**Example Output:**
+```javascript
+// PowerPages WebAPI Call
+const fetchData = async () => {
+  // Get the request verification token
+  const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+  try {
+    const response = await fetch('/_api/cr7ae_creditcardses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        '__RequestVerificationToken': token
+      },
+      body: JSON.stringify({
+        "cr7ae_name": "New Premium Card",
+        "cr7ae_type": "Premium",
+        "cr7ae_features": "Cashback, Travel Insurance"
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const createdRecord = await response.json();
+    console.log('Created record:', createdRecord);
+    return createdRecord;
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+};
+```
+
+**React Component Example:**
+```javascript
+// React Hook Example
+import React, { useState, useEffect } from 'react';
+
+const CreditCardsList = () => {
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecords = async () => {
+      try {
+        const response = await fetch('/_api/cr7ae_creditcardses?$select=cr7ae_name,cr7ae_type');
+        const data = await response.json();
+        setRecords(data.value);
+      } catch (error) {
+        console.error('Error fetching records:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecords();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      <h2>Credit Cards</h2>
+      {records.map((record, index) => (
+        <div key={record.cr7ae_creditcardsesid || index}>
+          <h3>{record.cr7ae_name}</h3>
+          <p>Type: {record.cr7ae_type}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+**Authentication Context Integration:**
+```javascript
+// Access user information in PowerPages
+const user = window["Microsoft"]?.Dynamic365?.Portal?.User;
+const userName = user?.userName || "";
+const firstName = user?.firstName || "";
+const lastName = user?.lastName || "";
+const isAuthenticated = userName !== "";
+
+// Get authentication token (if needed)
+const getToken = async () => {
+  try {
+    const token = await window.shell.getTokenDeferred();
+    return token;
+  } catch (error) {
+    console.error('Error fetching token:', error);
+    return null;
+  }
+};
+```
+
+**PowerPages-Specific Features:**
+- **Request Verification Token**: Automatic `__RequestVerificationToken` header handling for secure operations
+- **Authentication Integration**: Built-in PowerPages user context access
+- **React-Ready**: Complete React component examples with hooks and state management
+- **Error Handling**: Comprehensive error handling patterns for PowerPages environments
+- **Security Compliance**: Respects PowerPages table permissions and web role security
+- **SPA Optimization**: Designed for single-page application development patterns
+
+**Supported Operations:**
+- **retrieve** - Get a single record by ID
+- **retrieveMultiple** - Query multiple records with OData filtering
+- **create** - Create new records with request verification token
+- **update** - Update existing records (PATCH) with token handling
+- **delete** - Delete records with proper authentication
+
+This tool is essential for PowerPages developers building modern SPAs that need to interact with Dataverse data while maintaining PowerPages security and authentication patterns.
+
 ## Authentication
 
 The server uses **Client Credentials flow** (Server-to-Server authentication) with Azure AD. This provides:
@@ -1187,6 +1374,7 @@ For detailed parameter information for each tool, refer to the tool definitions 
 - [`src/tools/businessunit-tools.ts`](src/tools/businessunit-tools.ts) - Business unit operations
 - [`src/tools/schema-tools.ts`](src/tools/schema-tools.ts) - Schema export operations
 - [`src/tools/webapi-tools.ts`](src/tools/webapi-tools.ts) - WebAPI call generator operations
+- [`src/tools/powerpages-webapi-tools.ts`](src/tools/powerpages-webapi-tools.ts) - PowerPages WebAPI call generator operations
 
 ## Solution Management Best Practices
 

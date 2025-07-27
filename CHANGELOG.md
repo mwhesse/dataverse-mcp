@@ -5,6 +5,28 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9]
+
+### Added
+- **PowerPages WebAPI Generator** - Specialized tool for PowerPages Single Page Applications (SPAs)
+  - `generate_powerpages_webapi_call` - Generate PowerPages-specific WebAPI calls using `/_api/[logicalEntityName]` format
+  - Support for core operations: retrieve, retrieveMultiple, create, update, delete optimized for PowerPages environments
+  - Request verification token handling for secure POST/PATCH/DELETE operations with `__RequestVerificationToken` header
+  - PowerPages authentication context integration with user information access patterns
+  - React component examples with hooks, state management, and error handling for modern SPA development
+  - JavaScript fetch examples optimized for browser-based PowerPages applications
+  - Custom header support for advanced PowerPages scenarios and API versioning
+  - OData query support with proper URL encoding for PowerPages WebAPI endpoints
+  - Authentication token management with PowerPages-specific token retrieval patterns
+
+- **PowerPages Generator Features**
+  - **PowerPages URL Format**: Correct `/_api/[logicalEntityName]` endpoint construction for PowerPages SPAs
+  - **Security Integration**: Request verification token and PowerPages authentication context handling
+  - **React-Ready Examples**: Complete React component examples with modern hooks and patterns
+  - **SPA Optimization**: Designed specifically for single-page application development in PowerPages
+  - **Error Handling**: Comprehensive error handling patterns for PowerPages browser environments
+  - **Authentication Helpers**: PowerPages user context access and token management utilities
+
 ## [0.1.8]
 
 ### Added
