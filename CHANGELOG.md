@@ -5,7 +5,7 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.7] - 2025-01-26
+## [0.1.7]
 
 ### Added
 - **Schema Export Operations** - Complete solution schema export functionality
@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added detailed schema export examples showing various configuration options
 - Updated project structure documentation to include test folder organization
 
-## [0.1.6] - 2025-01-26
+## [0.1.6]
 
 ### Changed
 - **Improved Table Creation** - Enhanced `create_dataverse_table` tool with automatic naming conventions
@@ -50,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Consistent naming conventions with table creation for unified developer experience
   - Requires active solution context to provide customization prefix
 
-## [0.1.5] - 2025-01-26
+## [0.1.5]
 
 ### Added
 - **Business Unit Management System** - Complete business unit operations with 9 comprehensive tools
@@ -80,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated table of contents to include Business Unit Operations section
 - Updated table creation documentation to reflect new automatic naming conventions
 
-## [0.1.4] - 2025-01-26
+## [0.1.4]
 
 ### Added
 - **Team Management System** - Complete team operations with 9 comprehensive tools
@@ -94,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `get_team_members` - Retrieve all members of a team
   - `convert_owner_team_to_access_team` - Convert owner teams to access teams
 
-## [0.1.3] - 2025-01-26
+## [0.1.3]
 
 ### Added
 - **Security Role Operations** - Complete security role management system
@@ -120,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added comprehensive usage examples for team management
 - Updated API reference to include team-tools.ts
 
-## [0.1.2] - 2025-01-26
+## [0.1.2]
 
 - **Release Automation**
   - NPM release scripts for patch, minor, and major versions
@@ -159,7 +159,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated to modern GitHub CLI approach for releases
 - Improved error handling in role creation operations
 
-## [0.1.1] - 2025-01-25
+## [0.1.1]
 
 ### Added
 - **Solution-Based Architecture** - Enterprise-grade solution management
@@ -195,7 +195,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Relationship creation with correct cascade behaviors
 - Option set creation with color support
 
-## [0.1.0] - 2025-01-24
+## [0.1.0]
 
 ### Added
 - **Initial Release** - Core Dataverse MCP Server functionality
