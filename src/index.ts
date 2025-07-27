@@ -83,6 +83,9 @@ import {
   getBusinessUnitUsersTool,
   getBusinessUnitTeamsTool
 } from "./tools/businessunit-tools.js";
+import {
+  exportSolutionSchemaTool
+} from "./tools/schema-tools.js";
 
 // Environment variables for Dataverse authentication
 const DATAVERSE_URL = process.env.DATAVERSE_URL;
@@ -193,6 +196,9 @@ getBusinessUnitHierarchyTool(server, dataverseClient);
 setBusinessUnitParentTool(server, dataverseClient);
 getBusinessUnitUsersTool(server, dataverseClient);
 getBusinessUnitTeamsTool(server, dataverseClient);
+
+// Register schema export tool
+exportSolutionSchemaTool(server, dataverseClient);
 
 // Start the server
 const transport = new StdioServerTransport();

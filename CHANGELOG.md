@@ -5,6 +5,33 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2025-01-26
+
+### Added
+- **Schema Export Operations** - Complete solution schema export functionality
+  - `export_solution_schema` - Export complete solution schema to JSON file including tables, columns, global option sets, and relationships
+  - Comprehensive schema capture with all entity properties, column types, and relationship configurations
+  - Flexible filtering options to include or exclude system entities, columns, and option sets
+  - Solution context awareness - automatically includes solution metadata when context is set
+  - JSON output options: human-readable (pretty-printed) or minified format
+  - Automatic directory creation for output paths
+  - Detailed export statistics and metadata including export timestamp and solution information
+
+- **Schema Export Features**
+  - **Complete Metadata Capture**: Exports all table definitions, column configurations, global option sets, and relationship metadata
+  - **System Entity Support**: Optional inclusion of system tables, columns, and option sets for comprehensive documentation
+  - **Solution Integration**: Automatically captures solution context including publisher prefix and solution details
+  - **Flexible Output**: Configurable JSON formatting (pretty-printed or minified) and custom output paths
+  - **Export Statistics**: Detailed summary of exported entities with file size and export metadata
+  - **Enterprise Ready**: Supports large schema exports with efficient metadata retrieval
+
+### Changed
+- Updated README.md with comprehensive schema export documentation and usage examples
+- Added schema export operations to table of contents and features section
+- Enhanced API reference to include schema-tools.ts
+- Added detailed schema export examples showing various configuration options
+- Updated project structure documentation to include test folder organization
+
 ## [0.1.6] - 2025-01-26
 
 ### Changed

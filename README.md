@@ -13,6 +13,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Security Role Operations](#security-role-operations)
   - [Team Operations](#team-operations)
   - [Business Unit Operations](#business-unit-operations)
+  - [Schema Export Operations](#schema-export-operations)
 - [Solution-Based Architecture](#solution-based-architecture)
   - [Key Benefits](#key-benefits)
   - [Solution Workflow](#solution-workflow)
@@ -141,6 +142,9 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **set_businessunit_parent** - Change the parent business unit in the hierarchy
 - **get_businessunit_users** - Get users associated with a business unit (with subsidiary option)
 - **get_businessunit_teams** - Get teams associated with a business unit (with subsidiary option)
+
+### Schema Export Operations
+- **export_solution_schema** - Export complete solution schema to JSON file including tables, columns, global option sets, and relationships. Supports filtering by customization prefix to export only solution-specific entities.
 
 ## Solution-Based Architecture
 
@@ -814,6 +818,109 @@ await use_mcp_tool("dataverse", "delete_dataverse_businessunit", {
 });
 ```
 
+### Exporting Solution Schema
+
+```typescript
+// Export custom schema only (default settings)
+// Exports tables, columns, option sets, and relationships to a JSON file
+await use_mcp_tool("dataverse", "export_solution_schema", {
+  outputPath: "my-solution-schema.json"
+});
+
+// Export with system entities included for comprehensive documentation
+await use_mcp_tool("dataverse", "export_solution_schema", {
+  outputPath: "complete-schema.json",
+  includeSystemTables: true,
+  includeSystemColumns: true,
+  includeSystemOptionSets: true
+});
+
+// Export minified JSON for production use
+await use_mcp_tool("dataverse", "export_solution_schema", {
+  outputPath: "schema-minified.json",
+  prettify: false
+});
+
+// Export to specific directory with custom settings
+await use_mcp_tool("dataverse", "export_solution_schema", {
+  outputPath: "exports/solution-backup.json",
+  includeSystemTables: false,
+  includeSystemColumns: false,
+  includeSystemOptionSets: false,
+  prettify: true
+});
+
+// Export only tables matching solution customization prefix
+await use_mcp_tool("dataverse", "export_solution_schema", {
+  outputPath: "prefix-only-schema.json",
+  includeSystemTables: false,
+  includeSystemColumns: false,
+  includeSystemOptionSets: false,
+  prefixOnly: true,
+  prettify: true
+});
+```
+
+**Schema Export Features:**
+- **Complete Schema Capture**: Exports tables, columns, global option sets, and relationships
+- **Flexible Filtering**: Choose to include or exclude system entities
+- **Solution Context Aware**: Automatically includes solution metadata when context is set
+- **Comprehensive Metadata**: Captures all entity properties, column types, and relationship configurations
+- **JSON Format**: Human-readable or minified output options
+- **Directory Creation**: Automatically creates output directories if they don't exist
+
+**Example Output Structure:**
+```json
+{
+  "metadata": {
+    "exportedAt": "2025-07-26T17:30:00.000Z",
+    "solutionUniqueName": "xyzsolution",
+    "solutionDisplayName": "XYZ Test Solution",
+    "publisherPrefix": "xyz",
+    "includeSystemTables": false,
+    "includeSystemColumns": false,
+    "includeSystemOptionSets": false
+  },
+  "tables": [
+    {
+      "logicalName": "xyz_project",
+      "displayName": "Project",
+      "schemaName": "xyz_Project",
+      "ownershipType": "UserOwned",
+      "isCustomEntity": true,
+      "columns": [
+        {
+          "logicalName": "xyz_name",
+          "displayName": "Name",
+          "attributeType": "String",
+          "maxLength": 100,
+          "isPrimaryName": true
+        }
+      ]
+    }
+  ],
+  "globalOptionSets": [
+    {
+      "name": "xyz_priority",
+      "displayName": "Priority Levels",
+      "isGlobal": true,
+      "options": [
+        { "value": 1, "label": "Low" },
+        { "value": 2, "label": "High" }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "schemaName": "xyz_account_project",
+      "relationshipType": "OneToMany",
+      "referencedEntity": "account",
+      "referencingEntity": "xyz_project"
+    }
+  ]
+}
+```
+
 ## Authentication
 
 The server uses **Client Credentials flow** (Server-to-Server authentication) with Azure AD. This provides:
@@ -886,6 +993,7 @@ For detailed parameter information for each tool, refer to the tool definitions 
 - [`src/tools/role-tools.ts`](src/tools/role-tools.ts) - Security role operations
 - [`src/tools/team-tools.ts`](src/tools/team-tools.ts) - Team operations
 - [`src/tools/businessunit-tools.ts`](src/tools/businessunit-tools.ts) - Business unit operations
+- [`src/tools/schema-tools.ts`](src/tools/schema-tools.ts) - Schema export operations
 
 ## Solution Management Best Practices
 
