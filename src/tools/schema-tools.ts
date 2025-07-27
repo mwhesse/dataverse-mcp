@@ -118,10 +118,17 @@ export async function exportSolutionSchema(
   try {
     const { outputPath = 'schema-export.json', includeSystemTables, includeSystemColumns, includeSystemOptionSets, prefixOnly, prettify } = args;
     
+    // Collect debug messages to return in response
+    const debugMessages: string[] = [];
+    const log = (message: string) => {
+      console.log(message);
+      debugMessages.push(message);
+    };
+    
     // Get solution context if available
     const solutionContext = client.getSolutionContext();
     
-    console.log('Starting schema export...');
+    log('Starting schema export...');
     
     // Initialize the schema object
     const schema: SolutionSchema = {
@@ -144,11 +151,118 @@ export async function exportSolutionSchema(
       schema.metadata.publisherPrefix = solutionContext.customizationPrefix;
     }
 
-    // Skip global option sets for now due to API limitations
-    console.log('Skipping global option sets due to API limitations...');
+    // Export global option sets
+    log('Exporting global option sets...');
+    try {
+      // Get all option sets (filtering is not supported on GlobalOptionSetDefinitions)
+      log('Retrieving all global option sets...');
+      const optionSetsListResponse = await client.getMetadata(`GlobalOptionSetDefinitions`);
+      log(`Found ${optionSetsListResponse.value.length} total option sets`);
+      
+      for (const optionSetInfo of optionSetsListResponse.value) {
+        log(`Processing option set: ${optionSetInfo.Name} (IsCustom: ${optionSetInfo.IsCustomOptionSet}, IsManaged: ${optionSetInfo.IsManaged})`);
+        
+        // Apply system/custom filtering
+        if (!includeSystemOptionSets && !optionSetInfo.IsCustomOptionSet) {
+          log(`Skipping system option set ${optionSetInfo.Name}`);
+          continue;
+        }
+        
+        // Apply prefix filtering if enabled
+        if (prefixOnly && solutionContext && solutionContext.customizationPrefix) {
+          const prefix = solutionContext.customizationPrefix.toLowerCase();
+          log(`Checking prefix: ${optionSetInfo.Name.toLowerCase()} starts with ${prefix}_`);
+          if (!optionSetInfo.Name.toLowerCase().startsWith(prefix + '_')) {
+            log(`Skipping option set ${optionSetInfo.Name} (doesn't match prefix ${prefix}_)`);
+            continue;
+          }
+        }
+        
+        log(`Exporting option set: ${optionSetInfo.Name}`);
+        
+        try {
+          // Get detailed option set information including options
+          // Try multiple approaches to get the full option set metadata
+          let optionSet = null;
+          let optionsFound = false;
+          
+          // Approach 1: Try with MetadataId
+          try {
+            log(`Trying to get option set ${optionSetInfo.Name} using MetadataId ${optionSetInfo.MetadataId}`);
+            const response1 = await client.getMetadata(`GlobalOptionSetDefinitions(${optionSetInfo.MetadataId})`);
+            optionSet = response1;
+            if (optionSet.Options && optionSet.Options.length > 0) {
+              optionsFound = true;
+              log(`Successfully got options using MetadataId approach`);
+            }
+          } catch (error1) {
+            log(`MetadataId approach failed: ${error1 instanceof Error ? error1.message : 'Unknown error'}`);
+          }
+          
+          // Approach 2: Try with Name filter if first approach didn't get options
+          if (!optionsFound) {
+            try {
+              log(`Trying to get option set ${optionSetInfo.Name} using Name filter`);
+              const response2 = await client.getMetadata(`GlobalOptionSetDefinitions?$filter=Name eq '${optionSetInfo.Name}'`);
+              if (response2.value && response2.value.length > 0) {
+                const foundOptionSet = response2.value[0];
+                if (foundOptionSet.Options && foundOptionSet.Options.length > 0) {
+                  optionSet = foundOptionSet;
+                  optionsFound = true;
+                  log(`Successfully got options using Name filter approach`);
+                }
+              }
+            } catch (error2) {
+              log(`Name filter approach failed: ${error2 instanceof Error ? error2.message : 'Unknown error'}`);
+            }
+          }
+          
+          // If we still don't have an option set, use what we have from the first approach
+          if (!optionSet) {
+            log(`No option set retrieved, skipping ${optionSetInfo.Name}`);
+            continue;
+          }
+          
+          log(`Retrieved detailed info for ${optionSet.Name}, has ${optionSet.Options?.length || 0} options`);
+          
+          const optionSetSchema: OptionSetSchema = {
+            name: optionSet.Name,
+            displayName: optionSet.DisplayName?.UserLocalizedLabel?.Label || optionSet.Name,
+            description: optionSet.Description?.UserLocalizedLabel?.Label,
+            isGlobal: true,
+            isCustomOptionSet: optionSet.IsCustomOptionSet,
+            isManaged: optionSet.IsManaged,
+            options: []
+          };
+
+          // Export options for this option set
+          if (optionSet.Options && optionSet.Options.length > 0) {
+            for (const option of optionSet.Options) {
+              const optionSchema: OptionSchema = {
+                value: option.Value,
+                label: option.Label?.UserLocalizedLabel?.Label || `Option ${option.Value}`,
+                description: option.Description?.UserLocalizedLabel?.Label,
+                color: option.Color
+              };
+              optionSetSchema.options.push(optionSchema);
+            }
+            log(`Added ${optionSetSchema.options.length} options to ${optionSet.Name}`);
+          }
+
+          schema.globalOptionSets.push(optionSetSchema);
+          log(`Successfully added option set ${optionSet.Name} to schema`);
+        } catch (optionSetError) {
+          log(`Error processing option set ${optionSetInfo.Name}: ${optionSetError instanceof Error ? optionSetError.message : 'Unknown error'}`);
+        }
+      }
+      log(`Completed option set export. Total exported: ${schema.globalOptionSets.length}`);
+    } catch (error) {
+      log(`Warning: Could not export global option sets: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Full error:', error);
+    }
 
     // Export tables
-    console.log('Exporting tables...');
+    log('Exporting tables...');
     const tablesFilter = includeSystemTables ? '' : 'IsCustomEntity eq true';
     const tablesResponse = await client.getMetadata(`EntityDefinitions?$filter=${tablesFilter}&$select=LogicalName,DisplayName,DisplayCollectionName,Description,SchemaName,OwnershipType,HasActivities,HasNotes,IsAuditEnabled,IsDuplicateDetectionEnabled,IsValidForQueue,IsConnectionsEnabled,IsMailMergeEnabled,IsDocumentManagementEnabled,IsCustomEntity,IsManaged,PrimaryNameAttribute,PrimaryIdAttribute`);
     
@@ -157,12 +271,12 @@ export async function exportSolutionSchema(
       if (prefixOnly && solutionContext && solutionContext.customizationPrefix) {
         const prefix = solutionContext.customizationPrefix.toLowerCase();
         if (!table.LogicalName.toLowerCase().startsWith(prefix + '_')) {
-          console.log(`Skipping table ${table.LogicalName} (doesn't match prefix ${prefix}_)`);
+          log(`Skipping table ${table.LogicalName} (doesn't match prefix ${prefix}_)`);
           continue;
         }
       }
       
-      console.log(`Exporting table: ${table.LogicalName}`);
+      log(`Exporting table: ${table.LogicalName}`);
       
       const tableSchema: TableSchema = {
         logicalName: table.LogicalName,
@@ -220,7 +334,7 @@ export async function exportSolutionSchema(
     }
 
     // Skip relationships for now to focus on basic table/column export
-    console.log('Skipping relationships for simplified export...');
+    log('Skipping relationships for simplified export...');
 
     // Write the schema to file
     const jsonOutput = prettify ? JSON.stringify(schema, null, 2) : JSON.stringify(schema);
@@ -240,9 +354,13 @@ export async function exportSolutionSchema(
       relationships: schema.relationships.length
     };
 
-    console.log('Schema export completed successfully!');
+    log('Schema export completed successfully!');
     
     return `Schema export completed successfully!
+
+🔍 **Debug Output:**
+${debugMessages.map(msg => `  ${msg}`).join('\n')}
+
 
 📊 **Export Summary:**
 - **Tables:** ${stats.tables}

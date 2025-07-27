@@ -144,7 +144,7 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **get_businessunit_teams** - Get teams associated with a business unit (with subsidiary option)
 
 ### Schema Export Operations
-- **export_solution_schema** - Export complete solution schema to JSON file including tables, columns, global option sets, and relationships. Supports filtering by customization prefix to export only solution-specific entities.
+- **export_solution_schema** - Export solution schema to JSON file including tables, columns, and global option sets. Supports filtering by customization prefix to export only solution-specific entities. **Note: Relationship export is not yet implemented.**
 
 ## Solution-Based Architecture
 
@@ -422,11 +422,17 @@ cp .env.example .env
   "mcpServers": {
     "dataverse": {
       "command": "node",
-      "args": ["/path/to/mcp-dataverse/build/index.js"]
+      "args": ["/path/to/mcp-dataverse/build/index.js"],
+      "disabled": false,
+      "alwaysAllow": [],
+      "disabledTools": [],
+      "timeout": 900
     }
   }
 }
 ```
+
+**Note**: The `timeout` setting is increased to 900 seconds (15 minutes) to accommodate longer-running operations like schema export, which may need to process large amounts of metadata.
 
 ### Option 2: Using MCP environment variables (Recommended for Normal Usage)
 
@@ -443,7 +449,11 @@ You can configure environment variables directly in the MCP settings. This is th
         "DATAVERSE_CLIENT_ID": "your-client-id",
         "DATAVERSE_CLIENT_SECRET": "your-client-secret",
         "DATAVERSE_TENANT_ID": "your-tenant-id"
-      }
+      },
+      "disabled": false,
+      "alwaysAllow": [],
+      "disabledTools": [],
+      "timeout": 900
     }
   }
 }
@@ -470,7 +480,11 @@ DATAVERSE_TENANT_ID=common-tenant-id
         "DATAVERSE_URL": "https://prod-org.crm.dynamics.com",
         "DATAVERSE_CLIENT_ID": "prod-client-id",
         "DATAVERSE_CLIENT_SECRET": "prod-client-secret"
-      }
+      },
+      "disabled": false,
+      "alwaysAllow": [],
+      "disabledTools": [],
+      "timeout": 900
     }
   }
 }
@@ -822,7 +836,8 @@ await use_mcp_tool("dataverse", "delete_dataverse_businessunit", {
 
 ```typescript
 // Export custom schema only (default settings)
-// Exports tables, columns, option sets, and relationships to a JSON file
+// Exports tables, columns, and option sets to a JSON file
+// Note: Relationship export is not yet implemented
 await use_mcp_tool("dataverse", "export_solution_schema", {
   outputPath: "my-solution-schema.json"
 });
@@ -862,10 +877,10 @@ await use_mcp_tool("dataverse", "export_solution_schema", {
 ```
 
 **Schema Export Features:**
-- **Complete Schema Capture**: Exports tables, columns, global option sets, and relationships
+- **Schema Capture**: Exports tables, columns, and global option sets (relationships not yet implemented)
 - **Flexible Filtering**: Choose to include or exclude system entities
 - **Solution Context Aware**: Automatically includes solution metadata when context is set
-- **Comprehensive Metadata**: Captures all entity properties, column types, and relationship configurations
+- **Comprehensive Metadata**: Captures all entity properties and column types
 - **JSON Format**: Human-readable or minified output options
 - **Directory Creation**: Automatically creates output directories if they don't exist
 
@@ -909,17 +924,11 @@ await use_mcp_tool("dataverse", "export_solution_schema", {
         { "value": 2, "label": "High" }
       ]
     }
-  ],
-  "relationships": [
-    {
-      "schemaName": "xyz_account_project",
-      "relationshipType": "OneToMany",
-      "referencedEntity": "account",
-      "referencingEntity": "xyz_project"
-    }
   ]
 }
 ```
+
+**Note**: Relationship export functionality is planned for a future release.
 
 ## Authentication
 
