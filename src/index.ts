@@ -86,6 +86,9 @@ import {
 import {
   exportSolutionSchemaTool
 } from "./tools/schema-tools.js";
+import {
+  generateWebAPICallTool
+} from "./tools/webapi-tools.js";
 
 // Environment variables for Dataverse authentication
 const DATAVERSE_URL = process.env.DATAVERSE_URL;
@@ -199,6 +202,9 @@ getBusinessUnitTeamsTool(server, dataverseClient);
 
 // Register schema export tool
 exportSolutionSchemaTool(server, dataverseClient);
+
+// Register WebAPI call generator tool
+generateWebAPICallTool(server, dataverseClient);
 
 // Start the server
 const transport = new StdioServerTransport();

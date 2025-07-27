@@ -2,6 +2,24 @@
 
 A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schema operations including creating and updating tables, columns, relationships, and option sets using the Dataverse Web API.
 
+## 🚀 Key Features
+
+✅ **Manage Tables & Columns** - Create, update, delete, and list custom tables with all column types (String, Integer, Boolean, DateTime, Picklist, Lookup, etc.)
+
+✅ **Manage Relationships** - Create One-to-Many and Many-to-Many relationships between entities with proper cascade behaviors
+
+✅ **Manage Option Sets** - Create and manage global option sets with custom options, colors, and values
+
+✅ **Solution-Based Architecture** - Enterprise-grade solution management with persistent context and automatic customization prefixes
+
+✅ **Security & Access Control** - Complete security role management, team operations, and business unit hierarchy management
+
+✅ **WebAPI Call Generator** - Generate ready-to-use HTTP requests, cURL commands, and JavaScript code for any Dataverse operation
+
+✅ **Schema Export** - Export complete solution schemas to JSON with filtering options for documentation and backup
+
+✅ **Professional Integration** - OAuth2 authentication, comprehensive error handling, and enterprise-ready deployment
+
 ## Table of Contents
 
 - [Features](#features)
@@ -14,6 +32,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Team Operations](#team-operations)
   - [Business Unit Operations](#business-unit-operations)
   - [Schema Export Operations](#schema-export-operations)
+  - [WebAPI Call Generator](#webapi-call-generator)
 - [Solution-Based Architecture](#solution-based-architecture)
   - [Key Benefits](#key-benefits)
   - [Solution Workflow](#solution-workflow)
@@ -145,6 +164,9 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 
 ### Schema Export Operations
 - **export_solution_schema** - Export solution schema to JSON file including tables, columns, and global option sets. Supports filtering by customization prefix to export only solution-specific entities. **Note: Relationship export is not yet implemented.**
+
+### WebAPI Call Generator
+- **generate_webapi_call** - Generate complete WebAPI calls for Dataverse operations including URLs, headers, and request bodies. Supports all major operations (retrieve, create, update, delete, associate, disassociate, actions, functions) with OData query options and provides output in multiple formats (HTTP, cURL, JavaScript fetch).
 
 ## Solution-Based Architecture
 
@@ -930,6 +952,167 @@ await use_mcp_tool("dataverse", "export_solution_schema", {
 
 **Note**: Relationship export functionality is planned for a future release.
 
+### WebAPI Call Generator
+
+The WebAPI Call Generator tool helps developers construct proper Dataverse WebAPI calls by generating complete HTTP requests with correct URLs, headers, and request bodies. This is particularly useful for:
+
+- **Learning WebAPI syntax** - See how different operations translate to HTTP calls
+- **Debugging API issues** - Generate reference calls to compare against your implementation
+- **Documentation** - Create examples for team members or API documentation
+- **Testing** - Get ready-to-use cURL commands and JavaScript fetch examples
+
+```typescript
+// Generate a simple retrieve operation
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "retrieve",
+  entitySetName: "accounts",
+  entityId: "12345678-1234-1234-1234-123456789012",
+  select: ["name", "emailaddress1", "telephone1"]
+});
+
+// Generate a retrieve multiple with filtering and sorting
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "retrieveMultiple",
+  entitySetName: "contacts",
+  select: ["fullname", "emailaddress1"],
+  filter: "statecode eq 0 and contains(fullname,'John')",
+  orderby: "fullname asc",
+  top: 10,
+  count: true
+});
+
+// Generate a create operation with return preference
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "create",
+  entitySetName: "accounts",
+  data: {
+    name: "Test Account",
+    emailaddress1: "test@example.com",
+    telephone1: "555-1234"
+  },
+  prefer: ["return=representation"],
+  includeAuthHeader: true
+});
+
+// Generate an update operation with conditional headers
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "update",
+  entitySetName: "accounts",
+  entityId: "12345678-1234-1234-1234-123456789012",
+  data: {
+    name: "Updated Account Name",
+    telephone1: "555-5678"
+  },
+  ifMatch: "*"
+});
+
+// Generate an associate operation for relationships
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "associate",
+  entitySetName: "accounts",
+  entityId: "12345678-1234-1234-1234-123456789012",
+  relationshipName: "account_primary_contact",
+  relatedEntitySetName: "contacts",
+  relatedEntityId: "87654321-4321-4321-4321-210987654321"
+});
+
+// Generate a bound action call
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "callAction",
+  actionOrFunctionName: "WinOpportunity",
+  entitySetName: "opportunities",
+  entityId: "11111111-1111-1111-1111-111111111111",
+  parameters: {
+    Status: 3,
+    Subject: "Won Opportunity"
+  }
+});
+
+// Generate an unbound function call
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "callFunction",
+  actionOrFunctionName: "WhoAmI",
+  includeAuthHeader: true
+});
+
+// Generate a function call with parameters
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "callFunction",
+  actionOrFunctionName: "GetTimeZoneCodeByLocalizedName",
+  parameters: {
+    LocalizedStandardName: "Pacific Standard Time",
+    LocaleId: 1033
+  }
+});
+```
+
+**Output Features:**
+- **Complete HTTP Request**: Method, URL, headers, and body
+- **cURL Command**: Ready-to-execute command-line example
+- **JavaScript Fetch**: Copy-paste JavaScript code
+- **Solution Context**: Automatically includes current solution headers
+- **Authentication Placeholder**: Optional Bearer token placeholder
+- **OData Query Building**: Proper encoding of complex filter expressions
+
+**Example Output:**
+```
+HTTP Method: GET
+URL: https://yourorg.crm.dynamics.com/api/data/v9.2/accounts(12345678-1234-1234-1234-123456789012)?$select=name,emailaddress1,telephone1
+
+Headers:
+  Content-Type: application/json
+  Accept: application/json
+  OData-MaxVersion: 4.0
+  OData-Version: 4.0
+  MSCRM.SolutionUniqueName: xyzsolution
+
+--- Additional Information ---
+Operation Type: retrieve
+Entity Set: accounts
+Entity ID: 12345678-1234-1234-1234-123456789012
+
+Curl Command:
+curl -X GET \
+  "https://yourorg.crm.dynamics.com/api/data/v9.2/accounts(12345678-1234-1234-1234-123456789012)?$select=name,emailaddress1,telephone1" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -H "OData-MaxVersion: 4.0" \
+  -H "OData-Version: 4.0" \
+  -H "MSCRM.SolutionUniqueName: xyzsolution"
+
+JavaScript Fetch Example:
+fetch('https://yourorg.crm.dynamics.com/api/data/v9.2/accounts(12345678-1234-1234-1234-123456789012)?$select=name,emailaddress1,telephone1', {
+  method: 'GET',
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "OData-MaxVersion": "4.0",
+    "OData-Version": "4.0",
+    "MSCRM.SolutionUniqueName": "xyzsolution"
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+**Supported Operations:**
+- **retrieve** - Get a single record by ID
+- **retrieveMultiple** - Query multiple records with OData
+- **create** - Create new records
+- **update** - Update existing records (PATCH)
+- **delete** - Delete records
+- **associate** - Create relationships between records
+- **disassociate** - Remove relationships between records
+- **callAction** - Execute Dataverse actions (bound/unbound)
+- **callFunction** - Execute Dataverse functions (bound/unbound)
+
+**Advanced Features:**
+- **OData Query Options**: $select, $filter, $orderby, $top, $skip, $expand, $count
+- **Prefer Headers**: return=representation, odata.include-annotations=*
+- **Conditional Updates**: If-Match, If-None-Match headers
+- **Impersonation**: MSCRMCallerID header support
+- **Solution Context**: Automatic MSCRM.SolutionUniqueName header inclusion
+
 ## Authentication
 
 The server uses **Client Credentials flow** (Server-to-Server authentication) with Azure AD. This provides:
@@ -1003,6 +1186,7 @@ For detailed parameter information for each tool, refer to the tool definitions 
 - [`src/tools/team-tools.ts`](src/tools/team-tools.ts) - Team operations
 - [`src/tools/businessunit-tools.ts`](src/tools/businessunit-tools.ts) - Business unit operations
 - [`src/tools/schema-tools.ts`](src/tools/schema-tools.ts) - Schema export operations
+- [`src/tools/webapi-tools.ts`](src/tools/webapi-tools.ts) - WebAPI call generator operations
 
 ## Solution Management Best Practices
 

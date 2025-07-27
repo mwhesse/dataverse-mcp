@@ -5,6 +5,36 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8]
+
+### Added
+- **WebAPI Call Generator** - Comprehensive tool for generating Dataverse WebAPI calls
+  - `generate_webapi_call` - Generate complete HTTP requests with URLs, headers, and request bodies
+  - Support for all major operations: retrieve, retrieveMultiple, create, update, delete, associate, disassociate, callAction, callFunction
+  - Advanced OData query support: $select, $filter, $orderby, $top, $skip, $expand, $count with proper URL encoding
+  - Professional header management including Content-Type, Accept, OData headers, solution context, and authentication placeholders
+  - Multiple output formats: HTTP request format, cURL commands, and JavaScript fetch examples
+  - Solution context integration with automatic MSCRM.SolutionUniqueName header inclusion
+  - Support for complex filtering expressions with proper encoding (e.g., contains, startswith, and logical operators)
+  - Conditional update headers (If-Match, If-None-Match) and prefer headers for enhanced API control
+  - Impersonation support via MSCRMCallerID header
+  - Comprehensive parameter validation and error handling
+
+- **WebAPI Generator Features**
+  - **Complete Request Generation**: Produces ready-to-use HTTP requests with method, URL, headers, and body
+  - **Multi-Format Output**: Provides HTTP format, cURL commands, and JavaScript fetch examples for different use cases
+  - **OData Query Building**: Handles complex query construction with proper URL encoding and parameter validation
+  - **Solution Awareness**: Automatically includes current solution context headers for proper customization tracking
+  - **Developer Friendly**: Includes detailed operation information and usage examples for learning and debugging
+  - **Enterprise Ready**: Supports all Dataverse operations including bound/unbound actions and functions
+
+### Changed
+- Updated README.md with comprehensive WebAPI call generator documentation and usage examples
+- Added WebAPI Call Generator section to table of contents and features list
+- Enhanced API reference to include webapi-tools.ts
+- Added detailed examples showing various query patterns for contacts and other entities
+- Updated project structure documentation to include new WebAPI tools
+
 ## [0.1.7]
 
 ### Added
