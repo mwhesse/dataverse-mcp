@@ -18,6 +18,8 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 
 ✅ **PowerPages WebAPI Generator** - Generate PowerPages-specific WebAPI calls using the `/_api/[logicalEntityName]` format with React examples
 
+✅ **PowerPages Configuration Management** - Manage table permissions and WebAPI site settings for PowerPages Code Sites with YAML file automation
+
 ✅ **Schema Export** - Export complete solution schemas to JSON with filtering options for documentation and backup
 
 ✅ **Professional Integration** - OAuth2 authentication, comprehensive error handling, and enterprise-ready deployment
@@ -36,6 +38,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Schema Export Operations](#schema-export-operations)
   - [WebAPI Call Generator](#webapi-call-generator)
   - [PowerPages WebAPI Generator](#powerpages-webapi-generator)
+  - [PowerPages Configuration Management](#powerpages-configuration-management)
 - [Solution-Based Architecture](#solution-based-architecture)
   - [Key Benefits](#key-benefits)
   - [Solution Workflow](#solution-workflow)
@@ -173,6 +176,9 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 
 ### PowerPages WebAPI Generator
 - **generate_powerpages_webapi_call** - Generate PowerPages-specific WebAPI calls using the `/_api/[logicalEntityName]` format. Includes request verification token handling, authentication context, React component examples, and PowerPages-specific features for SPA development.
+
+### PowerPages Configuration Management
+- **manage_powerpages_webapi_config** - Manage table permissions and WebAPI site settings for PowerPages Code Sites. Automates YAML configuration files in `.powerpages-site` directory including sitesetting.yml, webrole.yml, and table-permissions/*.yml files with comprehensive status checking and configuration management.
 
 ## Solution-Based Architecture
 
@@ -1300,6 +1306,201 @@ const getToken = async () => {
 
 This tool is essential for PowerPages developers building modern SPAs that need to interact with Dataverse data while maintaining PowerPages security and authentication patterns.
 
+## PowerPages Configuration Management
+
+The `manage_powerpages_webapi_config` tool helps manage table permissions and WebAPI site settings for PowerPages Code Sites. It automates the configuration of YAML files in the `.powerpages-site` directory structure, making it easier to set up and maintain WebAPI access for your PowerPages applications.
+
+### Key Features
+
+- **Automated YAML Management**: Creates and updates sitesetting.yml, webrole.yml, and table permission files
+- **WebAPI Configuration**: Enables WebAPI access with proper site settings
+- **Table Permissions**: Manages granular permissions for specific tables and web roles
+- **Status Checking**: Provides comprehensive status of current configurations
+- **PowerPages Code Site Integration**: Works seamlessly with the `.powerpages-site` directory structure
+
+### Usage Examples
+
+#### Check Configuration Status
+```json
+{
+  "operation": "status"
+}
+```
+
+**Sample Output:**
+```
+PowerPages WebAPI Configuration Status:
+
+WebAPI Configuration:
+✅ WebAPI is enabled (Webapi/cr7ae_creditcardses/Enabled = true)
+✅ WebAPI fields are configured (Webapi/cr7ae_creditcardses/Fields = cr7ae_name,cr7ae_type,cr7ae_limit)
+
+Web Roles:
+✅ Authenticated Users role exists
+✅ Anonymous Users role exists
+
+Table Permissions:
+✅ cr7ae_creditcardses permissions configured for Authenticated Users
+  - Read: ✅, Create: ✅, Write: ✅, Delete: ❌
+  - Scope: Global
+```
+
+#### Enable WebAPI for a Table
+```json
+{
+  "operation": "configure-webapi",
+  "tableName": "cr7ae_creditcardses",
+  "fields": ["cr7ae_name", "cr7ae_type", "cr7ae_limit", "cr7ae_isactive"],
+  "enabled": true
+}
+```
+
+**Result:**
+- Updates `.powerpages-site/sitesetting.yml` with WebAPI settings
+- Enables WebAPI access for the specified table
+- Configures allowed fields for WebAPI operations
+
+#### Create Table Permissions
+```json
+{
+  "operation": "create-table-permission",
+  "tableName": "cr7ae_creditcardses",
+  "webRoleName": "Authenticated Users",
+  "permissions": {
+    "read": true,
+    "create": true,
+    "write": true,
+    "delete": false
+  },
+  "scope": "Global"
+}
+```
+
+**Result:**
+- Creates `.powerpages-site/table-permissions/cr7ae_creditcardses_authenticated_users.yml`
+- Configures specific CRUD permissions for the web role
+- Sets appropriate scope (Global, Contact, Account, Self, Parent, etc.)
+
+#### List Current Configurations
+```json
+{
+  "operation": "list-configurations"
+}
+```
+
+**Sample Output:**
+```
+Current PowerPages Configurations:
+
+Site Settings (3 total):
+- Webapi/cr7ae_creditcardses/Enabled = true
+- Webapi/cr7ae_creditcardses/Fields = cr7ae_name,cr7ae_type,cr7ae_limit
+- Authentication/Registration/Enabled = true
+
+Web Roles (2 total):
+- Authenticated Users (ID: 12345678-1234-1234-1234-123456789012)
+- Anonymous Users (ID: 87654321-4321-4321-4321-210987654321)
+
+Table Permissions (1 total):
+- cr7ae_creditcardses_authenticated_users.yml
+  Table: cr7ae_creditcardses, Role: Authenticated Users
+  Permissions: Read ✅, Create ✅, Write ✅, Delete ❌
+  Scope: Global
+```
+
+### Operations
+
+#### status
+Provides a comprehensive overview of the current PowerPages WebAPI configuration including:
+- WebAPI enablement status for tables
+- Configured fields and permissions
+- Web role definitions
+- Table permission summaries
+
+#### configure-webapi
+Enables or configures WebAPI access for specific tables:
+- **tableName** (required): Logical name of the table
+- **fields** (optional): Array of field names to allow in WebAPI calls
+- **enabled** (optional): Boolean to enable/disable WebAPI access
+
+#### create-table-permission
+Creates granular table permissions for web roles:
+- **tableName** (required): Logical name of the table
+- **webRoleName** (required): Name of the web role
+- **permissions** (required): Object with read, create, write, delete boolean values
+- **scope** (optional): Permission scope (Global, Contact, Account, Self, Parent, etc.)
+
+#### list-configurations
+Lists all current configurations including:
+- Site settings with their values
+- Web roles with IDs
+- Table permissions with detailed permission breakdown
+
+### PowerPages Code Site Integration
+
+This tool is designed to work with PowerPages Code Sites that follow the standard directory structure:
+
+```
+your-powerpages-project/
+├── .powerpages-site/
+│   ├── sitesetting.yml          # WebAPI and other site settings
+│   ├── webrole.yml             # Web role definitions
+│   └── table-permissions/      # Individual permission files
+│       ├── cr7ae_creditcardses_authenticated_users.yml
+│       └── contact_anonymous_users.yml
+├── src/                        # Your React components
+└── package.json
+```
+
+### Example Workflow
+
+1. **Check Current Status**:
+   ```json
+   {"operation": "status"}
+   ```
+
+2. **Enable WebAPI for Your Custom Table**:
+   ```json
+   {
+     "operation": "configure-webapi",
+     "tableName": "cr7ae_creditcardses",
+     "fields": ["cr7ae_name", "cr7ae_type", "cr7ae_limit"],
+     "enabled": true
+   }
+   ```
+
+3. **Create Table Permissions**:
+   ```json
+   {
+     "operation": "create-table-permission",
+     "tableName": "cr7ae_creditcardses",
+     "webRoleName": "Authenticated Users",
+     "permissions": {
+       "read": true,
+       "create": true,
+       "write": true,
+       "delete": false
+     },
+     "scope": "Global"
+   }
+   ```
+
+4. **Verify Configuration**:
+   ```json
+   {"operation": "list-configurations"}
+   ```
+
+5. **Use with PowerPages WebAPI Generator**:
+   ```json
+   {
+     "operation": "retrieveMultiple",
+     "logicalEntityName": "cr7ae_creditcardses",
+     "select": ["cr7ae_name", "cr7ae_type", "cr7ae_limit"]
+   }
+   ```
+
+This workflow ensures your PowerPages Code Site is properly configured to handle WebAPI calls for your custom tables with appropriate security permissions.
+
 ## Authentication
 
 The server uses **Client Credentials flow** (Server-to-Server authentication) with Azure AD. This provides:
@@ -1375,6 +1576,7 @@ For detailed parameter information for each tool, refer to the tool definitions 
 - [`src/tools/schema-tools.ts`](src/tools/schema-tools.ts) - Schema export operations
 - [`src/tools/webapi-tools.ts`](src/tools/webapi-tools.ts) - WebAPI call generator operations
 - [`src/tools/powerpages-webapi-tools.ts`](src/tools/powerpages-webapi-tools.ts) - PowerPages WebAPI call generator operations
+- [`src/tools/powerpages-config-tools.ts`](src/tools/powerpages-config-tools.ts) - PowerPages configuration management operations
 
 ## Solution Management Best Practices
 

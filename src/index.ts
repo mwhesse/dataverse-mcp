@@ -92,6 +92,9 @@ import {
 import {
   generatePowerPagesWebAPICallTool
 } from "./tools/powerpages-webapi-tools.js";
+import {
+  managePowerPagesWebAPIConfigTool
+} from "./tools/powerpages-config-tools.js";
 
 // Environment variables for Dataverse authentication
 const DATAVERSE_URL = process.env.DATAVERSE_URL;
@@ -211,6 +214,9 @@ generateWebAPICallTool(server, dataverseClient);
 
 // Register PowerPages WebAPI call generator tool
 generatePowerPagesWebAPICallTool(server, dataverseClient);
+
+// Register PowerPages configuration management tool
+managePowerPagesWebAPIConfigTool(server, dataverseClient);
 
 // Start the server
 const transport = new StdioServerTransport();

@@ -5,6 +5,34 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10]
+
+### Added
+- **PowerPages Configuration Management** - Comprehensive tool for managing PowerPages Code Site configurations
+  - `manage_powerpages_webapi_config` - Manage table permissions and WebAPI site settings for PowerPages Code Sites
+  - Automated YAML file management for `.powerpages-site` directory structure including sitesetting.yml, webrole.yml, and table-permissions/*.yml files
+  - Configuration status checking with comprehensive overview of WebAPI enablement, web roles, and table permissions
+  - WebAPI configuration management for enabling/disabling table access with field-level control
+  - Granular table permission creation with CRUD operations (read, create, write, delete) and scope management (Global, Contact, Account, Self, Parent)
+  - Configuration listing with detailed breakdown of site settings, web roles, and table permissions
+  - PowerPages Code Site integration with standard directory structure support
+  - Complete workflow examples from status checking to WebAPI usage with step-by-step configuration process
+
+- **PowerPages Configuration Features**
+  - **YAML Automation**: Automatic creation and updates of PowerPages configuration files
+  - **Status Monitoring**: Comprehensive configuration status with visual indicators and detailed summaries
+  - **Permission Management**: Fine-grained table permissions with web role integration
+  - **WebAPI Enablement**: Table-specific WebAPI configuration with field-level access control
+  - **Integration Ready**: Seamless integration with PowerPages WebAPI Generator for end-to-end development workflow
+  - **Developer Friendly**: Clear configuration examples and real-world usage scenarios with credit card table demonstrations
+
+### Changed
+- Updated README.md with comprehensive PowerPages Configuration Management documentation
+- Added PowerPages Configuration Management section to table of contents and features list
+- Enhanced API reference to include powerpages-config-tools.ts
+- Added detailed configuration examples showing various operation types and workflows
+- Updated project structure documentation to include PowerPages configuration management tools
+
 ## [0.1.9]
 
 ### Added
