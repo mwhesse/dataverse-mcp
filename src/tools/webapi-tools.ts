@@ -83,6 +83,13 @@ function generateHeaders(options: {
   return headers;
 }
 
+// Helper function to ensure entity set name has proper suffix
+function formatEntitySetName(entityName: string): string {
+  // Dataverse WebAPI URLs require entity names to be suffixed with 's' (pluralized)
+  // If the name doesn't already end with 's', add it
+  return entityName.endsWith('s') ? entityName : `${entityName}s`;
+}
+
 // Helper function to format the complete WebAPI call
 function formatWebAPICall(
   baseUrl: string,
@@ -117,7 +124,7 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
         "retrieve", "retrieveMultiple", "create", "update", "delete", "associate", "disassociate", "callAction", "callFunction"
       ]).describe("Type of operation to perform"),
       
-      entitySetName: z.string().optional().describe("Entity set name (e.g., 'accounts', 'contacts')"),
+      entitySetName: z.string().optional().describe("Entity set name or logical entity name (e.g., 'account', 'contact') - will be automatically suffixed with 's' for Dataverse API URLs"),
       entityId: z.string().optional().describe("Entity ID for single record operations"),
       
       // OData query options
@@ -182,13 +189,16 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
         }
         
         // Build endpoint based on operation type
+        // Dataverse WebAPI URLs require entity names to be suffixed with 's' (pluralized)
+        const formattedEntitySetName = params.entitySetName ? formatEntitySetName(params.entitySetName) : '';
+        
         switch (params.operation) {
           case 'retrieve':
             if (!params.entitySetName || !params.entityId) {
               throw new Error('entitySetName and entityId are required for retrieve operation');
             }
             method = 'GET';
-            endpoint = `${params.entitySetName}(${params.entityId})`;
+            endpoint = `${formattedEntitySetName}(${params.entityId})`;
             
             const retrieveQuery = buildODataQuery({
               select: params.select,
@@ -202,7 +212,7 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
               throw new Error('entitySetName is required for retrieveMultiple operation');
             }
             method = 'GET';
-            endpoint = params.entitySetName;
+            endpoint = formattedEntitySetName;
             
             const retrieveMultipleQuery = buildODataQuery({
               select: params.select,
@@ -221,7 +231,7 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
               throw new Error('entitySetName and data are required for create operation');
             }
             method = 'POST';
-            endpoint = params.entitySetName;
+            endpoint = formattedEntitySetName;
             body = params.data;
             break;
             
@@ -230,7 +240,7 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
               throw new Error('entitySetName, entityId, and data are required for update operation');
             }
             method = 'PATCH';
-            endpoint = `${params.entitySetName}(${params.entityId})`;
+            endpoint = `${formattedEntitySetName}(${params.entityId})`;
             body = params.data;
             break;
             
@@ -239,17 +249,18 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
               throw new Error('entitySetName and entityId are required for delete operation');
             }
             method = 'DELETE';
-            endpoint = `${params.entitySetName}(${params.entityId})`;
+            endpoint = `${formattedEntitySetName}(${params.entityId})`;
             break;
             
           case 'associate':
             if (!params.entitySetName || !params.entityId || !params.relationshipName || !params.relatedEntitySetName || !params.relatedEntityId) {
               throw new Error('entitySetName, entityId, relationshipName, relatedEntitySetName, and relatedEntityId are required for associate operation');
             }
+            const formattedRelatedEntitySetName = formatEntitySetName(params.relatedEntitySetName);
             method = 'POST';
-            endpoint = `${params.entitySetName}(${params.entityId})/${params.relationshipName}/$ref`;
+            endpoint = `${formattedEntitySetName}(${params.entityId})/${params.relationshipName}/$ref`;
             body = {
-              "@odata.id": `${baseUrl}/api/data/v9.2/${params.relatedEntitySetName}(${params.relatedEntityId})`
+              "@odata.id": `${baseUrl}/api/data/v9.2/${formattedRelatedEntitySetName}(${params.relatedEntityId})`
             };
             break;
             
@@ -259,9 +270,9 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
             }
             method = 'DELETE';
             if (params.relatedEntityId) {
-              endpoint = `${params.entitySetName}(${params.entityId})/${params.relationshipName}(${params.relatedEntityId})/$ref`;
+              endpoint = `${formattedEntitySetName}(${params.entityId})/${params.relationshipName}(${params.relatedEntityId})/$ref`;
             } else {
-              endpoint = `${params.entitySetName}(${params.entityId})/${params.relationshipName}/$ref`;
+              endpoint = `${formattedEntitySetName}(${params.entityId})/${params.relationshipName}/$ref`;
             }
             break;
             
@@ -271,7 +282,7 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
             }
             method = 'POST';
             if (params.entitySetName && params.entityId) {
-              endpoint = `${params.entitySetName}(${params.entityId})/Microsoft.Dynamics.CRM.${params.actionOrFunctionName}`;
+              endpoint = `${formattedEntitySetName}(${params.entityId})/Microsoft.Dynamics.CRM.${params.actionOrFunctionName}`;
             } else {
               endpoint = params.actionOrFunctionName;
             }
@@ -297,7 +308,7 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
             }
             
             if (params.entitySetName && params.entityId) {
-              endpoint = `${params.entitySetName}(${params.entityId})/Microsoft.Dynamics.CRM.${functionEndpoint}`;
+              endpoint = `${formattedEntitySetName}(${params.entityId})/Microsoft.Dynamics.CRM.${functionEndpoint}`;
             } else {
               endpoint = functionEndpoint;
             }
@@ -315,6 +326,8 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
         
         if (params.entitySetName) {
           additionalInfo += `Entity Set: ${params.entitySetName}\n`;
+          additionalInfo += `Formatted Entity Set: ${formattedEntitySetName}\n`;
+          additionalInfo += `Dataverse WebAPI Format: /api/data/v9.2/[entitySetName]s (note: 's' suffix required)\n`;
         }
         
         if (params.entityId) {

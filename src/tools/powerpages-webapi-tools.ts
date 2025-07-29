@@ -68,6 +68,13 @@ function generatePowerPagesHeaders(options: {
   return headers;
 }
 
+// Helper function to ensure PowerPages entity name has proper suffix
+function formatPowerPagesEntityName(logicalEntityName: string): string {
+  // PowerPages API URLs require logical entity names to be suffixed with 's'
+  // If the name doesn't already end with 's', add it
+  return logicalEntityName.endsWith('s') ? logicalEntityName : `${logicalEntityName}s`;
+}
+
 // Helper function to format the complete PowerPages WebAPI call
 function formatPowerPagesWebAPICall(
   baseUrl: string,
@@ -102,7 +109,7 @@ export function generatePowerPagesWebAPICallTool(server: McpServer, client: Data
         "retrieve", "retrieveMultiple", "create", "update", "delete"
       ]).describe("Type of operation to perform"),
       
-      logicalEntityName: z.string().describe("Logical entity name (e.g., 'cr7ae_creditcardses', 'contacts')"),
+      logicalEntityName: z.string().describe("Logical entity name (e.g., 'cr7ae_creditcardse', 'contact') - will be automatically suffixed with 's' for PowerPages API URLs"),
       entityId: z.string().optional().describe("Entity ID for single record operations (GUID)"),
       
       // OData query options
@@ -145,13 +152,16 @@ export function generatePowerPagesWebAPICallTool(server: McpServer, client: Data
         const headers = generatePowerPagesHeaders(headerOptions);
         
         // Build endpoint based on operation type
+        // PowerPages API URLs require logical entity names to be suffixed with 's'
+        const formattedEntityName = formatPowerPagesEntityName(params.logicalEntityName);
+        
         switch (params.operation) {
           case 'retrieve':
             if (!params.entityId) {
               throw new Error('entityId is required for retrieve operation');
             }
             method = 'GET';
-            endpoint = `/_api/${params.logicalEntityName}(${params.entityId})`;
+            endpoint = `/_api/${formattedEntityName}(${params.entityId})`;
             
             const retrieveQuery = buildPowerPagesODataQuery({
               select: params.select,
@@ -162,7 +172,7 @@ export function generatePowerPagesWebAPICallTool(server: McpServer, client: Data
             
           case 'retrieveMultiple':
             method = 'GET';
-            endpoint = `/_api/${params.logicalEntityName}`;
+            endpoint = `/_api/${formattedEntityName}`;
             
             const retrieveMultipleQuery = buildPowerPagesODataQuery({
               select: params.select,
@@ -181,7 +191,7 @@ export function generatePowerPagesWebAPICallTool(server: McpServer, client: Data
               throw new Error('data is required for create operation');
             }
             method = 'POST';
-            endpoint = `/_api/${params.logicalEntityName}`;
+            endpoint = `/_api/${formattedEntityName}`;
             body = params.data;
             break;
             
@@ -190,7 +200,7 @@ export function generatePowerPagesWebAPICallTool(server: McpServer, client: Data
               throw new Error('entityId and data are required for update operation');
             }
             method = 'PATCH';
-            endpoint = `/_api/${params.logicalEntityName}(${params.entityId})`;
+            endpoint = `/_api/${formattedEntityName}(${params.entityId})`;
             body = params.data;
             break;
             
@@ -199,7 +209,7 @@ export function generatePowerPagesWebAPICallTool(server: McpServer, client: Data
               throw new Error('entityId is required for delete operation');
             }
             method = 'DELETE';
-            endpoint = `/_api/${params.logicalEntityName}(${params.entityId})`;
+            endpoint = `/_api/${formattedEntityName}(${params.entityId})`;
             break;
             
           default:
@@ -212,7 +222,8 @@ export function generatePowerPagesWebAPICallTool(server: McpServer, client: Data
         let additionalInfo = '\n\n--- Additional Information ---\n';
         additionalInfo += `Operation Type: ${params.operation}\n`;
         additionalInfo += `Entity: ${params.logicalEntityName}\n`;
-        additionalInfo += `PowerPages WebAPI Format: /_api/[logicalEntityName]\n`;
+        additionalInfo += `Formatted Entity Name: ${formattedEntityName}\n`;
+        additionalInfo += `PowerPages WebAPI Format: /_api/[logicalEntityName]s (note: 's' suffix required)\n`;
         
         if (params.entityId) {
           additionalInfo += `Entity ID: ${params.entityId}\n`;

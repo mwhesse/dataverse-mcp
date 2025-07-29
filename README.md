@@ -1127,10 +1127,10 @@ fetch('https://yourorg.crm.dynamics.com/api/data/v9.2/accounts(12345678-1234-123
 
 ### PowerPages WebAPI Generator
 
-The PowerPages WebAPI Generator creates API calls specifically for PowerPages Single Page Applications (SPAs) using the PowerPages WebAPI format `/_api/[logicalEntityName]`. This tool is designed for developers building modern React, Angular, or Vue applications within PowerPages environments.
+The PowerPages WebAPI Generator creates API calls specifically for PowerPages Single Page Applications (SPAs) using the PowerPages WebAPI format `/_api/[logicalEntityName]s`. This tool is designed for developers building modern React, Angular, or Vue applications within PowerPages environments.
 
 **Key Differences from Standard Dataverse WebAPI:**
-- **URL Format**: Uses `/_api/[logicalEntityName]` instead of `/api/data/v9.2/[entitySetName]`
+- **URL Format**: Uses `/_api/[logicalEntityName]s` instead of `/api/data/v9.2/[entitySetName]` (note: 's' suffix is automatically added)
 - **Authentication**: Integrates with PowerPages authentication context and request verification tokens
 - **Client-Side Focus**: Optimized for browser-based applications with React component examples
 - **PowerPages Security**: Respects PowerPages table permissions and web roles
@@ -1184,7 +1184,7 @@ await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
 ```
 
 **Output Features:**
-- **PowerPages URL Format**: Correct `/_api/[logicalEntityName]` endpoint construction
+- **PowerPages URL Format**: Correct `/_api/[logicalEntityName]s` endpoint construction (automatic 's' suffix)
 - **Request Verification Token**: Automatic token handling for POST/PATCH/DELETE operations
 - **JavaScript Examples**: Ready-to-use fetch code with error handling
 - **React Components**: Complete React hook examples for data fetching
