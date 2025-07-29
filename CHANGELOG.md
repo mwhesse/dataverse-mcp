@@ -5,6 +5,61 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-01-29
+
+### Added
+- **Resource-Based Code Generation** - Major architectural improvement implementing MCP best practices
+  - **WebAPI Resources** - Convert code generation tools to semantic resources for better LLM integration
+    - `webapi://{operation}/{entitySetName?}/{entityId?}` - Generate Dataverse WebAPI calls with URI templates
+    - `webapi-examples://{operation}/{entitySetName?}` - Common WebAPI patterns with best practices and comprehensive examples
+    - Support for all operations: retrieve, retrieveMultiple, create, update, delete, associate, disassociate, callAction, callFunction
+    - Dynamic parameter completion for operations and entity names
+    - Multiple output formats: HTTP requests, cURL commands, and JavaScript fetch examples
+  
+  - **PowerPages Resources** - PowerPages-specific code generation as resources
+    - `powerpages://{operation}/{entityName?}/{entityId?}` - Generate PowerPages API calls with proper `/_api/` endpoints
+    - `powerpages-examples://{operation}/{entityName?}` - PowerPages patterns with React components and authentication
+    - `powerpages-auth://patterns` - Comprehensive authentication and user context patterns for PowerPages
+    - Request verification token handling and PowerPages-specific security patterns
+    - React component examples with hooks, state management, and error handling
+
+- **Resource Architecture Benefits**
+  - **Semantic Clarity** - Code generation is now data access (resources) vs operations (tools)
+  - **Better LLM Integration** - Resources can be loaded into context for code generation tasks
+  - **URI-Based Access** - Intuitive patterns like `webapi://retrieve/accounts/123e4567-e89b-12d3-a456-426614174000`
+  - **Template Support** - Dynamic URI templates with parameter completion and validation
+  - **Backward Compatibility** - All existing tools continue to work alongside new resources
+
+### Changed
+- **MCP SDK Upgrade** - Updated `@modelcontextprotocol/sdk` from `^1.0.0` to `^1.17.0`
+  - Access to latest MCP features including enhanced resource support
+  - Improved ResourceTemplate functionality with completion support
+  - Better parameter handling and URI template processing
+
+- **Code Generation Architecture** - Transitioned from tool-based to resource-based approach
+  - Tools now reserved for operations with side effects (CRUD, file operations)
+  - Resources provide data and code examples without side effects
+  - Maintains full backward compatibility with existing tool-based workflows
+
+### Technical Details
+- **Resource Implementation** - New resource files in `src/resources/`
+  - `webapi-resources.ts` - Dataverse WebAPI code generation resources
+  - `powerpages-resources.ts` - PowerPages-specific code generation resources
+  - Comprehensive parameter validation and error handling
+  - Support for array parameter conversion and template processing
+
+- **Testing Infrastructure** - Enhanced testing for resource functionality
+  - `test/test-resources.cjs` - Comprehensive resource functionality testing
+  - `test/test-simple-resource.cjs` - Basic resource access verification
+  - Validation of URI template processing and parameter handling
+
+### Documentation
+- **Migration Guide** - Added `RESOURCE_MIGRATION.md` with comprehensive migration documentation
+  - Detailed explanation of resource vs tool architecture
+  - Usage examples for all new resources
+  - Migration impact and backward compatibility information
+  - Future enhancement roadmap
+
 ## [0.1.10]
 
 ### Added
