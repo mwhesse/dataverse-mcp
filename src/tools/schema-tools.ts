@@ -264,7 +264,10 @@ export async function exportSolutionSchema(
     // Export tables
     log('Exporting tables...');
     const tablesFilter = includeSystemTables ? '' : 'IsCustomEntity eq true';
-    const tablesResponse = await client.getMetadata(`EntityDefinitions?$filter=${tablesFilter}&$select=LogicalName,DisplayName,DisplayCollectionName,Description,SchemaName,OwnershipType,HasActivities,HasNotes,IsAuditEnabled,IsDuplicateDetectionEnabled,IsValidForQueue,IsConnectionsEnabled,IsMailMergeEnabled,IsDocumentManagementEnabled,IsCustomEntity,IsManaged,PrimaryNameAttribute,PrimaryIdAttribute`);
+    const tablesUrl = tablesFilter
+      ? `EntityDefinitions?$filter=${tablesFilter}&$select=LogicalName,DisplayName,DisplayCollectionName,Description,SchemaName,OwnershipType,HasActivities,HasNotes,IsAuditEnabled,IsDuplicateDetectionEnabled,IsValidForQueue,IsConnectionsEnabled,IsMailMergeEnabled,IsDocumentManagementEnabled,IsCustomEntity,IsManaged,PrimaryNameAttribute,PrimaryIdAttribute`
+      : `EntityDefinitions?$select=LogicalName,DisplayName,DisplayCollectionName,Description,SchemaName,OwnershipType,HasActivities,HasNotes,IsAuditEnabled,IsDuplicateDetectionEnabled,IsValidForQueue,IsConnectionsEnabled,IsMailMergeEnabled,IsDocumentManagementEnabled,IsCustomEntity,IsManaged,PrimaryNameAttribute,PrimaryIdAttribute`;
+    const tablesResponse = await client.getMetadata(tablesUrl);
     
     for (const table of tablesResponse.value) {
       // Apply prefix filtering if enabled
@@ -302,7 +305,10 @@ export async function exportSolutionSchema(
 
       // Export columns for this table
       const columnsFilter = includeSystemColumns ? '' : 'IsCustomAttribute eq true';
-      const columnsResponse = await client.getMetadata(`EntityDefinitions(LogicalName='${table.LogicalName}')/Attributes?$filter=${columnsFilter}&$select=LogicalName,DisplayName,Description,SchemaName,AttributeType,RequiredLevel,IsAuditEnabled,IsValidForAdvancedFind,IsValidForCreate,IsValidForUpdate,IsCustomAttribute,IsManaged,IsPrimaryId,IsPrimaryName`);
+      const columnsUrl = columnsFilter
+        ? `EntityDefinitions(LogicalName='${table.LogicalName}')/Attributes?$filter=${columnsFilter}&$select=LogicalName,DisplayName,Description,SchemaName,AttributeType,RequiredLevel,IsAuditEnabled,IsValidForAdvancedFind,IsValidForCreate,IsValidForUpdate,IsCustomAttribute,IsManaged,IsPrimaryId,IsPrimaryName`
+        : `EntityDefinitions(LogicalName='${table.LogicalName}')/Attributes?$select=LogicalName,DisplayName,Description,SchemaName,AttributeType,RequiredLevel,IsAuditEnabled,IsValidForAdvancedFind,IsValidForCreate,IsValidForUpdate,IsCustomAttribute,IsManaged,IsPrimaryId,IsPrimaryName`;
+      const columnsResponse = await client.getMetadata(columnsUrl);
       
       for (const column of columnsResponse.value) {
         const columnSchema: ColumnSchema = {
