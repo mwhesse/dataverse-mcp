@@ -530,6 +530,15 @@ You can configure environment variables directly in the MCP settings. This is th
 }
 ```
 
+**⚠️ Security Warning**: If you store your MCP settings file in your project directory (rather than in a global MCP configuration location), make sure to add it to your `.gitignore` file to prevent accidentally committing sensitive credentials:
+
+```gitignore
+# MCP configuration with sensitive credentials
+mcp-settings.json
+.mcp-settings.json
+mcp.json
+```
+
 ### Option 3: Hybrid Configuration
 
 You can also use a combination approach where common settings are in `.env` and sensitive or environment-specific settings are overridden via MCP:
