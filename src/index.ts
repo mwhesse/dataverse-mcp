@@ -84,7 +84,8 @@ import {
   getBusinessUnitTeamsTool
 } from "./tools/businessunit-tools.js";
 import {
-  exportSolutionSchemaTool
+  exportSolutionSchemaTool,
+  generateMermaidDiagramTool
 } from "./tools/schema-tools.js";
 import {
   generateWebAPICallTool
@@ -214,6 +215,9 @@ getBusinessUnitTeamsTool(server, dataverseClient);
 
 // Register schema export tool
 exportSolutionSchemaTool(server, dataverseClient);
+
+// Register Mermaid diagram generation tool
+generateMermaidDiagramTool(server, dataverseClient);
 
 // Register WebAPI call generator tool
 generateWebAPICallTool(server, dataverseClient);
