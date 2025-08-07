@@ -478,6 +478,15 @@ For Windows users, the MCP configuration requires using `cmd` with the `/c` flag
 - The `timeout` setting is increased to 900 seconds (15 minutes) for longer operations
 - Environment variables can be configured directly in the MCP settings as shown above
 
+**⚠️ Security Warning**: If you store your MCP settings file in your project directory (rather than in a global MCP configuration location), make sure to add it to your `.gitignore` file to prevent accidentally committing sensitive credentials:
+
+```gitignore
+# MCP configuration with sensitive credentials
+mcp-settings.json
+.mcp-settings.json
+mcp.json
+```
+
 ### Option 1: Using .env file (Recommended for MCP Server Development)
 
 The server automatically loads environment variables from a `.env` file in the project root. This is the recommended approach when contributing to or modifying the MCP server itself.
