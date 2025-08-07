@@ -5,6 +5,52 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1]
+
+### Added
+- **Mermaid Diagram Generation** - Professional Entity Relationship Diagram generation from exported schemas
+  - `generate_mermaid_diagram` - Convert exported JSON schemas into visual Mermaid ERD diagrams
+  - Complete relationship visualization with automatic detection from lookup column targets
+  - Enhanced column markers with Primary Key (PK), Foreign Key (FK), Primary Name (PN), and NOT NULL indicators
+  - Support for unlimited tables per diagram with optional splitting for large schemas
+  - Professional diagram formatting with table names, column types, and relationship lines
+  - Lookup column target display showing referenced tables (e.g., "Lookup (contact, account)")
+  - Automatic relationship detection from both explicit schema relationships and lookup column targets
+  - Mermaid-compatible syntax for use with Mermaid Live Editor, VS Code extensions, and documentation tools
+
+- **Enhanced Schema Export** - Significant improvements to schema export functionality
+  - **Multiple Customization Prefixes** - Support for exporting multiple publisher prefixes simultaneously
+  - **Column Prefix Exclusion** - Filter out unwanted columns by prefix (default excludes: adx_, msa_, msdyn_, mspp_)
+  - **Primary Key Column Inclusion** - Fixed critical bug ensuring all Primary Key columns are included in exports
+  - **Improved System Table Filtering** - Better control over which system tables to include (contact, account by default)
+  - **Enhanced Relationship Detection** - Improved lookup column target capture for accurate relationship mapping
+  - **Parameter Rename** - Changed `includeSystemTables` to `includeAllSystemTables` for clarity
+
+### Changed
+- **Schema Export Tool Enhancements**
+  - Renamed parameter from `includeSystemTables` to `includeAllSystemTables` with updated logic
+  - Added `customizationPrefixes` array parameter to replace single prefix filtering
+  - Added `excludeColumnPrefixes` parameter with sensible defaults for cleaner exports
+  - Fixed column filtering logic to always include Primary Key columns regardless of system column settings
+  - Improved debugging output for better troubleshooting of export issues
+
+- **Mermaid Diagram Features**
+  - Enhanced column markers with separate PK/FK indicators and descriptive attributes
+  - Lookup columns now display target table names for better relationship understanding
+  - Improved relationship detection algorithm with fallback mechanisms
+  - Professional diagram formatting following Mermaid ERD best practices
+
+### Fixed
+- **Primary Key Column Export Bug** - Critical fix ensuring Primary Key columns are never excluded from schema exports
+- **Column Prefix Filtering** - Fixed logic to prevent Primary Key columns from being filtered out by prefix exclusion rules
+- **Relationship Detection** - Improved lookup column target detection for accurate relationship visualization
+- **Mermaid Syntax Compliance** - Enhanced column marker formatting for better Mermaid diagram rendering
+
+### Documentation
+- **Windows MCP Configuration** - Added dedicated Windows setup section with cmd-based configuration examples
+- **Mermaid Diagram Usage** - Comprehensive documentation for diagram generation with usage examples
+- **Enhanced Schema Export Examples** - Updated examples showing new filtering and customization options
+
 ## [0.2.0]
 
 ### Added

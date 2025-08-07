@@ -615,7 +615,13 @@ export async function generateMermaidDiagram(
               otherMarkers.push('Primary Name');
             }
             if (isLookup) {
-              otherMarkers.push('Lookup');
+              // Include target table names in the lookup marker
+              if (column.targets && column.targets.length > 0) {
+                const targetNames = column.targets.join(', ');
+                otherMarkers.push(`Lookup (${targetNames})`);
+              } else {
+                otherMarkers.push('Lookup');
+              }
             }
             if (isRequired) {
               otherMarkers.push('NOT NULL');

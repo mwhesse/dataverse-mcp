@@ -36,6 +36,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Team Operations](#team-operations)
   - [Business Unit Operations](#business-unit-operations)
   - [Schema Export Operations](#schema-export-operations)
+  - [Mermaid Diagram Generation](#mermaid-diagram-generation)
   - [WebAPI Call Generator](#webapi-call-generator)
   - [PowerPages WebAPI Generator](#powerpages-webapi-generator)
   - [PowerPages Configuration Management](#powerpages-configuration-management)
@@ -169,7 +170,8 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **get_businessunit_teams** - Get teams associated with a business unit (with subsidiary option)
 
 ### Schema Export Operations
-- **export_solution_schema** - Export solution schema to JSON file including tables, columns, and global option sets. Supports filtering by customization prefix to export only solution-specific entities. **Note: Relationship export is not yet implemented.**
+- **export_solution_schema** - Export solution schema to JSON file including tables, columns, and global option sets. Supports multiple customization prefixes, column prefix exclusion, and comprehensive system table filtering.
+- **generate_mermaid_diagram** - Generate professional Entity Relationship Diagrams from exported JSON schemas using Mermaid syntax. Includes relationship visualization, enhanced column markers, and support for unlimited tables.
 
 ### WebAPI Call Generator
 - **generate_webapi_call** - Generate complete WebAPI calls for Dataverse operations including URLs, headers, and request bodies. Supports all major operations (retrieve, create, update, delete, associate, disassociate, actions, functions) with OData query options and provides output in multiple formats (HTTP, cURL, JavaScript fetch).
@@ -440,6 +442,41 @@ The server supports flexible environment variable configuration with the followi
 1. **MCP environment variables** (highest priority)
 2. **System environment variables**
 3. **`.env` file variables** (lowest priority)
+
+### Windows MCP Configuration
+
+For Windows users, the MCP configuration requires using `cmd` with the `/c` flag to properly execute the Node.js server:
+
+```json
+{
+  "mcpServers": {
+    "dataverse": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "node",
+        "C:\\DEV\\projects\\mcp-dataverse\\build\\index.js"
+      ],
+      "env": {
+        "DATAVERSE_URL": "https://yourorg.crm.dynamics.com",
+        "DATAVERSE_CLIENT_ID": "your-client-id",
+        "DATAVERSE_CLIENT_SECRET": "your-client-secret",
+        "DATAVERSE_TENANT_ID": "your-tenant-id"
+      },
+      "disabled": false,
+      "alwaysAllow": [],
+      "disabledTools": [],
+      "timeout": 900
+    }
+  }
+}
+```
+
+**Important Windows Notes:**
+- Use `cmd` as the command with `/c` flag
+- Use full Windows paths with double backslashes (`\\`) or forward slashes (`/`)
+- The `timeout` setting is increased to 900 seconds (15 minutes) for longer operations
+- Environment variables can be configured directly in the MCP settings as shown above
 
 ### Option 1: Using .env file (Recommended for MCP Server Development)
 
@@ -870,8 +907,7 @@ await use_mcp_tool("dataverse", "delete_dataverse_businessunit", {
 
 ```typescript
 // Export custom schema only (default settings)
-// Exports tables, columns, and option sets to a JSON file
-// Note: Relationship export is not yet implemented
+// Exports tables, columns, option sets, and relationships to JSON
 await use_mcp_tool("dataverse", "export_solution_schema", {
   outputPath: "my-solution-schema.json"
 });
@@ -879,9 +915,23 @@ await use_mcp_tool("dataverse", "export_solution_schema", {
 // Export with system entities included for comprehensive documentation
 await use_mcp_tool("dataverse", "export_solution_schema", {
   outputPath: "complete-schema.json",
-  includeSystemTables: true,
+  includeAllSystemTables: true,
   includeSystemColumns: true,
   includeSystemOptionSets: true
+});
+
+// Export multiple customization prefixes simultaneously
+await use_mcp_tool("dataverse", "export_solution_schema", {
+  outputPath: "multi-prefix-schema.json",
+  customizationPrefixes: ["xyz", "abc", "its"],
+  systemTablesToInclude: ["contact", "account", "opportunity"]
+});
+
+// Export with column prefix exclusion (removes unwanted columns)
+await use_mcp_tool("dataverse", "export_solution_schema", {
+  outputPath: "clean-schema.json",
+  excludeColumnPrefixes: ["adx_", "msa_", "msdyn_", "mspp_", "old_"],
+  includeSystemColumns: false
 });
 
 // Export minified JSON for production use
@@ -890,21 +940,9 @@ await use_mcp_tool("dataverse", "export_solution_schema", {
   prettify: false
 });
 
-// Export to specific directory with custom settings
-await use_mcp_tool("dataverse", "export_solution_schema", {
-  outputPath: "exports/solution-backup.json",
-  includeSystemTables: false,
-  includeSystemColumns: false,
-  includeSystemOptionSets: false,
-  prettify: true
-});
-
-// Export only tables matching solution customization prefix
+// Export only tables matching solution customization prefix (legacy approach)
 await use_mcp_tool("dataverse", "export_solution_schema", {
   outputPath: "prefix-only-schema.json",
-  includeSystemTables: false,
-  includeSystemColumns: false,
-  includeSystemOptionSets: false,
   prefixOnly: true,
   prettify: true
 });
@@ -962,7 +1000,115 @@ await use_mcp_tool("dataverse", "export_solution_schema", {
 }
 ```
 
-**Note**: Relationship export functionality is planned for a future release.
+**Enhanced Features:**
+- **Multiple Customization Prefixes**: Export tables from multiple publishers simultaneously
+- **Column Prefix Exclusion**: Filter out unwanted columns (default excludes: adx_, msa_, msdyn_, mspp_)
+- **Primary Key Inclusion**: All Primary Key columns are automatically included regardless of system column settings
+- **Improved System Table Filtering**: Better control over which system tables to include with sensible defaults
+
+## Mermaid Diagram Generation
+
+The Mermaid Diagram Generation tool converts exported JSON schemas into professional Entity Relationship Diagrams using Mermaid syntax. This provides visual documentation of your Dataverse schema with relationships, column details, and professional formatting.
+
+### Key Features
+
+- **Professional ERD Generation**: Creates publication-ready Entity Relationship Diagrams
+- **Complete Relationship Visualization**: Shows all relationships between tables with proper cardinality
+- **Enhanced Column Markers**: Visual indicators for Primary Keys (PK), Foreign Keys (FK), Primary Names (PN), and required fields
+- **Lookup Target Display**: Shows which tables each lookup column references (e.g., "Lookup (contact, account)")
+- **Unlimited Table Support**: Handles schemas of any size with optional diagram splitting
+- **Mermaid Compatibility**: Works with Mermaid Live Editor, VS Code extensions, GitHub, and documentation tools
+
+### Usage Examples
+
+```typescript
+// Generate a complete diagram from exported schema
+await use_mcp_tool("dataverse", "generate_mermaid_diagram", {
+  schemaPath: "my-solution-schema.json",
+  outputPath: "schema-diagram.mmd",
+  includeColumns: true,
+  includeRelationships: true
+});
+
+// Generate diagram without column details for overview
+await use_mcp_tool("dataverse", "generate_mermaid_diagram", {
+  schemaPath: "complete-schema.json",
+  outputPath: "overview-diagram.mmd",
+  includeColumns: false,
+  includeRelationships: true
+});
+
+// Split large schemas into multiple diagrams
+await use_mcp_tool("dataverse", "generate_mermaid_diagram", {
+  schemaPath: "large-schema.json",
+  outputPath: "schema-diagram.mmd",
+  maxTablesPerDiagram: 10,
+  includeColumns: true,
+  includeRelationships: true
+});
+```
+
+### Example Output
+
+The tool generates professional Mermaid ERD syntax like this:
+
+```mermaid
+erDiagram
+    its_customer {
+        uuid its_customerid PK "NOT NULL"
+        string its_customername "Primary Name NOT NULL"
+        string its_email "NOT NULL"
+        string its_phone
+        boolean its_isactive "NOT NULL"
+    }
+    
+    its_bill {
+        uuid its_billid PK "NOT NULL"
+        string its_billnumber "Primary Name NOT NULL"
+        uuid its_customerid FK "Lookup (its_customer) NOT NULL"
+        decimal its_amount "NOT NULL"
+        datetime its_duedate "NOT NULL"
+        int its_status "NOT NULL"
+    }
+    
+    its_customer ||--o{ its_bill : "Customer Bills"
+```
+
+### Column Markers Explained
+
+- **PK**: Primary Key columns (unique identifiers)
+- **FK**: Foreign Key columns (lookup references)
+- **Primary Name**: The display name column for records
+- **NOT NULL**: Required fields
+- **Lookup (table1, table2)**: Shows which tables the lookup column can reference
+
+### Diagram Features
+
+- **Table Visualization**: Each table shows its logical name and all columns
+- **Column Details**: Data types, constraints, and special markers
+- **Relationship Lines**: Visual connections between related tables
+- **Cardinality Indicators**: Shows one-to-many (||--o{) and many-to-many (}o--o{) relationships
+- **Professional Formatting**: Clean, readable diagrams suitable for documentation
+
+### Integration with Documentation Tools
+
+Generated Mermaid diagrams work seamlessly with:
+
+- **Mermaid Live Editor** (https://mermaid.live) - Online diagram editor and viewer
+- **VS Code Mermaid Preview** - Real-time diagram preview in your editor
+- **GitHub/GitLab** - Native Mermaid support in markdown files
+- **Documentation Sites** - Gitiles, MkDocs, and other documentation platforms
+- **Confluence** - Via Mermaid plugins for enterprise documentation
+
+### Workflow Example
+
+1. **Export Schema**: Use `export_solution_schema` to create JSON schema file
+2. **Generate Diagram**: Use `generate_mermaid_diagram` to create visual ERD
+3. **Review Relationships**: Verify all lookup columns show correct target tables
+4. **Documentation**: Include diagrams in project documentation or wiki
+5. **Team Sharing**: Share visual schema with stakeholders and developers
+
+This tool is essential for documenting complex Dataverse schemas and communicating data relationships to both technical and non-technical stakeholders.
 
 ### WebAPI Call Generator
 
