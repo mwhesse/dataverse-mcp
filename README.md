@@ -20,7 +20,9 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 
 ✅ **PowerPages Configuration Management** - Manage table permissions and WebAPI site settings for PowerPages Code Sites with YAML file automation
 
-✅ **Schema Export** - Export complete solution schemas to JSON with filtering options for documentation and backup
+✅ **Schema Export & Visualization** - Export complete solution schemas to JSON with advanced filtering, then generate professional Mermaid ERD diagrams with relationship visualization
+
+✅ **Mermaid Diagram Generation** - Convert exported schemas into professional Entity Relationship Diagrams with enhanced column markers, lookup target display, and unlimited table support
 
 ✅ **Professional Integration** - OAuth2 authentication, comprehensive error handling, and enterprise-ready deployment
 
