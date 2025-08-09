@@ -95,7 +95,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Read-Only Tools for alwaysAllow Configuration](#read-only-tools-for-alwaysallow-configuration)
   - [Benefits of This Configuration](#benefits-of-this-configuration)
   - [Common Development Workflows](#common-development-workflows)
-  - [Security Considerations](#security-considerations)
+  - [Developer Security Considerations](#developer-security-considerations)
   - [Advanced Configuration Tips](#advanced-configuration-tips)
 - [Contributing](#contributing)
 - [Releasing](#releasing)
@@ -1868,70 +1868,6 @@ The `.mcp-dataverse` file is automatically excluded from version control:
 
 This allows each developer to maintain their own solution context while preventing accidental sharing of environment-specific settings.
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## Changelog
-
-For a detailed history of changes, new features, and bug fixes, see the [CHANGELOG.md](CHANGELOG.md) file.
-
-### Recent Updates
-
-- **v0.1.2**: Added comprehensive Security Role Management system with 13 new tools
-- **v0.1.1**: Introduced Solution-Based Architecture with persistent context
-- **v0.1.0**: Initial release with core table, column, relationship, and option set operations
-
-The changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format and includes:
-- **Added**: New features and capabilities
-- **Changed**: Modifications to existing functionality
-- **Fixed**: Bug fixes and corrections
-- **Security**: Security-related updates
-
-## Releasing
-
-This project includes automated release scripts for maintainers:
-
-### Creating a Release
-
-```bash
-# Patch release (0.1.0 -> 0.1.1)
-npm run release
-
-# Minor release (0.1.0 -> 0.2.0)
-npm run release:minor
-
-# Major release (0.1.0 -> 1.0.0)
-npm run release:major
-```
-
-These scripts will:
-1. Build the project
-2. Bump the version in `package.json`
-3. Create a git tag
-4. Push the changes and tag to GitHub
-
-### Automated GitHub Releases
-
-When a tag is pushed to GitHub, the GitHub Actions workflow will automatically:
-1. Build the project
-2. Create release archives (`.tar.gz` and `.zip`)
-3. Create a GitHub release with the archives attached
-4. Include installation instructions in the release notes
-
-### Manual Release Process
-
-If you prefer to create releases manually:
-
-1. Build the project: `npm run build`
-2. Update version: `npm version [patch|minor|major]`
-3. Push changes: `git push && git push --tags`
-4. The GitHub Actions workflow will handle the rest
-
 ## Developer Notebook
 
 ### MCP Configuration Recommendations
@@ -2053,7 +1989,7 @@ await use_mcp_tool("dataverse", "generate_webapi_call", {
 });
 ```
 
-#### Security Considerations
+#### Developer Security Considerations
 
 While these tools are read-only and safe, consider these security practices:
 
@@ -2079,6 +2015,72 @@ If you prefer more granular control, start with the most commonly used read-only
 ```
 
 This configuration approach significantly improves the developer experience while maintaining security through the separation of read-only and write operations.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## Changelog
+
+For a detailed history of changes, new features, and bug fixes, see the [CHANGELOG.md](CHANGELOG.md) file.
+
+### Recent Updates
+
+- **v0.1.2**: Added comprehensive Security Role Management system with 13 new tools
+- **v0.1.1**: Introduced Solution-Based Architecture with persistent context
+- **v0.1.0**: Initial release with core table, column, relationship, and option set operations
+
+The changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format and includes:
+- **Added**: New features and capabilities
+- **Changed**: Modifications to existing functionality
+- **Fixed**: Bug fixes and corrections
+- **Security**: Security-related updates
+
+## Releasing
+
+This project includes automated release scripts for maintainers:
+
+### Creating a Release
+
+```bash
+# Patch release (0.1.0 -> 0.1.1)
+npm run release
+
+# Minor release (0.1.0 -> 0.2.0)
+npm run release:minor
+
+# Major release (0.1.0 -> 1.0.0)
+npm run release:major
+```
+
+These scripts will:
+1. Build the project
+2. Bump the version in `package.json`
+3. Create a git tag
+4. Push the changes and tag to GitHub
+
+### Automated GitHub Releases
+
+When a tag is pushed to GitHub, the GitHub Actions workflow will automatically:
+1. Build the project
+2. Create release archives (`.tar.gz` and `.zip`)
+3. Create a GitHub release with the archives attached
+4. Include installation instructions in the release notes
+
+### Manual Release Process
+
+If you prefer to create releases manually:
+
+1. Build the project: `npm run build`
+2. Update version: `npm version [patch|minor|major]`
+3. Push changes: `git push && git push --tags`
+4. The GitHub Actions workflow will handle the rest
+
+
 
 ## License
 
