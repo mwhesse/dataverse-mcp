@@ -24,19 +24,23 @@ function createLocalizedLabel(text: string, languageCode: number = 1033): Locali
 }
 
 export function createOptionSetTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_optionset",
     {
-      name: z.string().describe("Name for the option set (e.g., 'new_priority')"),
-      displayName: z.string().describe("Display name for the option set"),
-      description: z.string().optional().describe("Description of the option set"),
-      isGlobal: z.boolean().default(true).describe("Whether this is a global option set"),
-      options: z.array(z.object({
-        value: z.number().describe("Numeric value for the option"),
-        label: z.string().describe("Display label for the option"),
-        description: z.string().optional().describe("Description for the option"),
-        color: z.string().optional().describe("Color for the option (hex format, e.g., '#FF0000')")
-      })).describe("Array of options for the option set")
+      title: "Create Dataverse Option Set",
+      description: "Creates a new global option set (choice list) in Dataverse with predefined options. Use this to create reusable choice lists that can be used across multiple tables and columns. Option sets provide consistent data entry options and improve data quality.",
+      inputSchema: {
+        name: z.string().describe("Name for the option set (e.g., 'new_priority')"),
+        displayName: z.string().describe("Display name for the option set"),
+        description: z.string().optional().describe("Description of the option set"),
+        isGlobal: z.boolean().default(true).describe("Whether this is a global option set"),
+        options: z.array(z.object({
+          value: z.number().describe("Numeric value for the option"),
+          label: z.string().describe("Display label for the option"),
+          description: z.string().optional().describe("Description for the option"),
+          color: z.string().optional().describe("Color for the option (hex format, e.g., '#FF0000')")
+        })).describe("Array of options for the option set")
+      }
     },
     async (params) => {
       try {
@@ -87,10 +91,14 @@ export function createOptionSetTool(server: McpServer, client: DataverseClient) 
 }
 
 export function getOptionSetTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_optionset",
     {
-      name: z.string().describe("Name of the option set to retrieve")
+      title: "Get Dataverse Option Set",
+      description: "Retrieves detailed information about a specific option set including its metadata, options, and configuration. Use this to inspect option set definitions and understand available choices.",
+      inputSchema: {
+        name: z.string().describe("Name of the option set to retrieve")
+      }
     },
     async (params) => {
       try {
@@ -122,25 +130,29 @@ export function getOptionSetTool(server: McpServer, client: DataverseClient) {
 }
 
 export function updateOptionSetTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "update_dataverse_optionset",
     {
-      name: z.string().describe("Name of the option set to update"),
-      displayName: z.string().optional().describe("New display name for the option set"),
-      description: z.string().optional().describe("New description of the option set"),
-      addOptions: z.array(z.object({
-        value: z.number().describe("Numeric value for the new option"),
-        label: z.string().describe("Display label for the new option"),
-        description: z.string().optional().describe("Description for the new option"),
-        color: z.string().optional().describe("Color for the new option (hex format)")
-      })).optional().describe("New options to add to the option set"),
-      updateOptions: z.array(z.object({
-        value: z.number().describe("Numeric value of the option to update"),
-        label: z.string().optional().describe("New display label for the option"),
-        description: z.string().optional().describe("New description for the option"),
-        color: z.string().optional().describe("New color for the option (hex format)")
-      })).optional().describe("Existing options to update"),
-      removeOptions: z.array(z.number()).optional().describe("Values of options to remove from the option set")
+      title: "Update Dataverse Option Set",
+      description: "Updates an existing option set by modifying its properties and managing its options. Use this to add new choices, update existing ones, remove obsolete options, or change the option set's display name and description. Changes affect all columns using this option set.",
+      inputSchema: {
+        name: z.string().describe("Name of the option set to update"),
+        displayName: z.string().optional().describe("New display name for the option set"),
+        description: z.string().optional().describe("New description of the option set"),
+        addOptions: z.array(z.object({
+          value: z.number().describe("Numeric value for the new option"),
+          label: z.string().describe("Display label for the new option"),
+          description: z.string().optional().describe("Description for the new option"),
+          color: z.string().optional().describe("Color for the new option (hex format)")
+        })).optional().describe("New options to add to the option set"),
+        updateOptions: z.array(z.object({
+          value: z.number().describe("Numeric value of the option to update"),
+          label: z.string().optional().describe("New display label for the option"),
+          description: z.string().optional().describe("New description for the option"),
+          color: z.string().optional().describe("New color for the option (hex format)")
+        })).optional().describe("Existing options to update"),
+        removeOptions: z.array(z.number()).optional().describe("Values of options to remove from the option set")
+      }
     },
     async (params) => {
       try {
@@ -262,10 +274,14 @@ export function updateOptionSetTool(server: McpServer, client: DataverseClient) 
 }
 
 export function deleteOptionSetTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "delete_dataverse_optionset",
     {
-      name: z.string().describe("Name of the option set to delete")
+      title: "Delete Dataverse Option Set",
+      description: "Permanently deletes an option set from Dataverse. WARNING: This action cannot be undone and will fail if the option set is being used by any columns. Ensure no columns reference this option set before deletion.",
+      inputSchema: {
+        name: z.string().describe("Name of the option set to delete")
+      }
     },
     async (params) => {
       try {
@@ -295,13 +311,17 @@ export function deleteOptionSetTool(server: McpServer, client: DataverseClient) 
 }
 
 export function listOptionSetsTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_optionsets",
     {
-      customOnly: z.boolean().default(false).describe("Whether to list only custom option sets"),
-      includeManaged: z.boolean().default(false).describe("Whether to include managed option sets"),
-      top: z.number().optional().describe("Maximum number of option sets to return (default: 50)"),
-      filter: z.string().optional().describe("OData filter expression")
+      title: "List Dataverse Option Sets",
+      description: "Retrieves a list of option sets in the Dataverse environment with filtering options. Use this to discover available choice lists, find custom option sets, or get an overview of reusable options. Supports filtering by custom/system and managed/unmanaged status.",
+      inputSchema: {
+        customOnly: z.boolean().default(false).describe("Whether to list only custom option sets"),
+        includeManaged: z.boolean().default(false).describe("Whether to include managed option sets"),
+        top: z.number().optional().describe("Maximum number of option sets to return (default: 50)"),
+        filter: z.string().optional().describe("OData filter expression")
+      }
     },
     async (params) => {
       try {
@@ -356,10 +376,14 @@ export function listOptionSetsTool(server: McpServer, client: DataverseClient) {
 
 // Additional tool to get option set options/values
 export function getOptionSetOptionsTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_optionset_options",
     {
-      name: z.string().describe("Name of the option set to get options for")
+      title: "Get Dataverse Option Set Options",
+      description: "Retrieves all options (choices) within a specific option set, including their values, labels, descriptions, and colors. Use this to inspect the available choices in an option set and understand their configuration.",
+      inputSchema: {
+        name: z.string().describe("Name of the option set to get options for")
+      }
     },
     async (params) => {
       try {

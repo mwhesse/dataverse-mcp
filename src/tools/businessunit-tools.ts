@@ -3,62 +3,66 @@ import { z } from "zod";
 import { DataverseClient } from "../dataverse-client.js";
 
 export function createBusinessUnitTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_businessunit",
     {
-      name: z.string().min(1).max(160).describe("Name of the business unit"),
-      parentBusinessUnitId: z.string().optional().describe("Unique identifier for the parent business unit"),
-      description: z.string().max(2000).optional().describe("Description of the business unit"),
-      divisionName: z.string().max(100).optional().describe("Name of the division to which the business unit belongs"),
-      emailAddress: z.string().email().max(100).optional().describe("Email address for the business unit"),
-      costCenter: z.string().max(100).optional().describe("Name of the business unit cost center"),
-      creditLimit: z.number().min(0).max(1000000000).optional().describe("Credit limit for the business unit"),
-      fileAsName: z.string().max(100).optional().describe("Alternative name under which the business unit can be filed"),
-      ftpSiteUrl: z.string().url().max(200).optional().describe("FTP site URL for the business unit"),
-      webSiteUrl: z.string().url().max(200).optional().describe("Website URL for the business unit"),
-      stockExchange: z.string().max(10).optional().describe("Stock exchange on which the business is listed"),
-      tickerSymbol: z.string().max(10).optional().describe("Stock exchange ticker symbol for the business unit"),
-      isDisabled: z.boolean().optional().default(false).describe("Whether the business unit is disabled"),
-      // Address 1 fields
-      address1_name: z.string().max(100).optional().describe("Name for address 1"),
-      address1_line1: z.string().max(250).optional().describe("First line for address 1"),
-      address1_line2: z.string().max(250).optional().describe("Second line for address 1"),
-      address1_line3: z.string().max(250).optional().describe("Third line for address 1"),
-      address1_city: z.string().max(80).optional().describe("City name for address 1"),
-      address1_stateorprovince: z.string().max(50).optional().describe("State or province for address 1"),
-      address1_postalcode: z.string().max(20).optional().describe("ZIP Code or postal code for address 1"),
-      address1_country: z.string().max(80).optional().describe("Country/region name for address 1"),
-      address1_county: z.string().max(50).optional().describe("County name for address 1"),
-      address1_telephone1: z.string().max(50).optional().describe("Main phone number for address 1"),
-      address1_telephone2: z.string().max(50).optional().describe("Other phone number for address 1"),
-      address1_telephone3: z.string().max(50).optional().describe("Third telephone number for address 1"),
-      address1_fax: z.string().max(50).optional().describe("Fax number for address 1"),
-      address1_latitude: z.number().min(-90).max(90).optional().describe("Latitude for address 1"),
-      address1_longitude: z.number().min(-180).max(180).optional().describe("Longitude for address 1"),
-      address1_postofficebox: z.string().max(20).optional().describe("Post office box number for address 1"),
-      address1_upszone: z.string().max(4).optional().describe("UPS zone for address 1"),
-      address1_utcoffset: z.number().min(-1500).max(1500).optional().describe("UTC offset for address 1"),
-      // Address 2 fields
-      address2_name: z.string().max(100).optional().describe("Name for address 2"),
-      address2_line1: z.string().max(250).optional().describe("First line for address 2"),
-      address2_line2: z.string().max(250).optional().describe("Second line for address 2"),
-      address2_line3: z.string().max(250).optional().describe("Third line for address 2"),
-      address2_city: z.string().max(80).optional().describe("City name for address 2"),
-      address2_stateorprovince: z.string().max(50).optional().describe("State or province for address 2"),
-      address2_postalcode: z.string().max(20).optional().describe("ZIP Code or postal code for address 2"),
-      address2_country: z.string().max(80).optional().describe("Country/region name for address 2"),
-      address2_county: z.string().max(50).optional().describe("County name for address 2"),
-      address2_telephone1: z.string().max(50).optional().describe("First telephone number for address 2"),
-      address2_telephone2: z.string().max(50).optional().describe("Second telephone number for address 2"),
-      address2_telephone3: z.string().max(50).optional().describe("Third telephone number for address 2"),
-      address2_fax: z.string().max(50).optional().describe("Fax number for address 2"),
-      address2_latitude: z.number().min(-90).max(90).optional().describe("Latitude for address 2"),
-      address2_longitude: z.number().min(-180).max(180).optional().describe("Longitude for address 2"),
-      address2_postofficebox: z.string().max(20).optional().describe("Post office box number for address 2"),
-      address2_upszone: z.string().max(4).optional().describe("UPS zone for address 2"),
-      address2_utcoffset: z.number().min(-1500).max(1500).optional().describe("UTC offset for address 2")
+      title: "Create Dataverse Business Unit",
+      description: "Creates a new business unit in Dataverse with comprehensive configuration options including contact information, addresses, and organizational hierarchy. Business units are used to organize users and control data access in Dataverse.",
+      inputSchema: {
+        name: z.string().min(1).max(160).describe("Name of the business unit"),
+        parentBusinessUnitId: z.string().optional().describe("Unique identifier for the parent business unit"),
+        description: z.string().max(2000).optional().describe("Description of the business unit"),
+        divisionName: z.string().max(100).optional().describe("Name of the division to which the business unit belongs"),
+        emailAddress: z.string().email().max(100).optional().describe("Email address for the business unit"),
+        costCenter: z.string().max(100).optional().describe("Name of the business unit cost center"),
+        creditLimit: z.number().min(0).max(1000000000).optional().describe("Credit limit for the business unit"),
+        fileAsName: z.string().max(100).optional().describe("Alternative name under which the business unit can be filed"),
+        ftpSiteUrl: z.string().url().max(200).optional().describe("FTP site URL for the business unit"),
+        webSiteUrl: z.string().url().max(200).optional().describe("Website URL for the business unit"),
+        stockExchange: z.string().max(10).optional().describe("Stock exchange on which the business is listed"),
+        tickerSymbol: z.string().max(10).optional().describe("Stock exchange ticker symbol for the business unit"),
+        isDisabled: z.boolean().optional().default(false).describe("Whether the business unit is disabled"),
+        // Address 1 fields
+        address1_name: z.string().max(100).optional().describe("Name for address 1"),
+        address1_line1: z.string().max(250).optional().describe("First line for address 1"),
+        address1_line2: z.string().max(250).optional().describe("Second line for address 1"),
+        address1_line3: z.string().max(250).optional().describe("Third line for address 1"),
+        address1_city: z.string().max(80).optional().describe("City name for address 1"),
+        address1_stateorprovince: z.string().max(50).optional().describe("State or province for address 1"),
+        address1_postalcode: z.string().max(20).optional().describe("ZIP Code or postal code for address 1"),
+        address1_country: z.string().max(80).optional().describe("Country/region name for address 1"),
+        address1_county: z.string().max(50).optional().describe("County name for address 1"),
+        address1_telephone1: z.string().max(50).optional().describe("Main phone number for address 1"),
+        address1_telephone2: z.string().max(50).optional().describe("Other phone number for address 1"),
+        address1_telephone3: z.string().max(50).optional().describe("Third telephone number for address 1"),
+        address1_fax: z.string().max(50).optional().describe("Fax number for address 1"),
+        address1_latitude: z.number().min(-90).max(90).optional().describe("Latitude for address 1"),
+        address1_longitude: z.number().min(-180).max(180).optional().describe("Longitude for address 1"),
+        address1_postofficebox: z.string().max(20).optional().describe("Post office box number for address 1"),
+        address1_upszone: z.string().max(4).optional().describe("UPS zone for address 1"),
+        address1_utcoffset: z.number().min(-1500).max(1500).optional().describe("UTC offset for address 1"),
+        // Address 2 fields
+        address2_name: z.string().max(100).optional().describe("Name for address 2"),
+        address2_line1: z.string().max(250).optional().describe("First line for address 2"),
+        address2_line2: z.string().max(250).optional().describe("Second line for address 2"),
+        address2_line3: z.string().max(250).optional().describe("Third line for address 2"),
+        address2_city: z.string().max(80).optional().describe("City name for address 2"),
+        address2_stateorprovince: z.string().max(50).optional().describe("State or province for address 2"),
+        address2_postalcode: z.string().max(20).optional().describe("ZIP Code or postal code for address 2"),
+        address2_country: z.string().max(80).optional().describe("Country/region name for address 2"),
+        address2_county: z.string().max(50).optional().describe("County name for address 2"),
+        address2_telephone1: z.string().max(50).optional().describe("First telephone number for address 2"),
+        address2_telephone2: z.string().max(50).optional().describe("Second telephone number for address 2"),
+        address2_telephone3: z.string().max(50).optional().describe("Third telephone number for address 2"),
+        address2_fax: z.string().max(50).optional().describe("Fax number for address 2"),
+        address2_latitude: z.number().min(-90).max(90).optional().describe("Latitude for address 2"),
+        address2_longitude: z.number().min(-180).max(180).optional().describe("Longitude for address 2"),
+        address2_postofficebox: z.string().max(20).optional().describe("Post office box number for address 2"),
+        address2_upszone: z.string().max(4).optional().describe("UPS zone for address 2"),
+        address2_utcoffset: z.number().min(-1500).max(1500).optional().describe("UTC offset for address 2")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         const businessUnitData: any = {
           name: params.name,
@@ -146,12 +150,16 @@ export function createBusinessUnitTool(server: McpServer, client: DataverseClien
 }
 
 export function getBusinessUnitTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_businessunit",
     {
-      businessUnitId: z.string().describe("Unique identifier of the business unit to retrieve")
+      title: "Get Dataverse Business Unit",
+      description: "Retrieves detailed information about a specific business unit including all properties, addresses, and related information. Use this to inspect business unit configuration and hierarchy relationships.",
+      inputSchema: {
+        businessUnitId: z.string().describe("Unique identifier of the business unit to retrieve")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         const selectFields = [
           'businessunitid', 'name', 'description', 'divisionname', 'emailaddress',
@@ -204,62 +212,66 @@ export function getBusinessUnitTool(server: McpServer, client: DataverseClient) 
 }
 
 export function updateBusinessUnitTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "update_dataverse_businessunit",
     {
-      businessUnitId: z.string().describe("Unique identifier of the business unit to update"),
-      name: z.string().min(1).max(160).optional().describe("Name of the business unit"),
-      description: z.string().max(2000).optional().describe("Description of the business unit"),
-      divisionName: z.string().max(100).optional().describe("Name of the division to which the business unit belongs"),
-      emailAddress: z.string().email().max(100).optional().describe("Email address for the business unit"),
-      costCenter: z.string().max(100).optional().describe("Name of the business unit cost center"),
-      creditLimit: z.number().min(0).max(1000000000).optional().describe("Credit limit for the business unit"),
-      fileAsName: z.string().max(100).optional().describe("Alternative name under which the business unit can be filed"),
-      ftpSiteUrl: z.string().url().max(200).optional().describe("FTP site URL for the business unit"),
-      webSiteUrl: z.string().url().max(200).optional().describe("Website URL for the business unit"),
-      stockExchange: z.string().max(10).optional().describe("Stock exchange on which the business is listed"),
-      tickerSymbol: z.string().max(10).optional().describe("Stock exchange ticker symbol for the business unit"),
-      isDisabled: z.boolean().optional().describe("Whether the business unit is disabled"),
-      // Address 1 fields
-      address1_name: z.string().max(100).optional().describe("Name for address 1"),
-      address1_line1: z.string().max(250).optional().describe("First line for address 1"),
-      address1_line2: z.string().max(250).optional().describe("Second line for address 1"),
-      address1_line3: z.string().max(250).optional().describe("Third line for address 1"),
-      address1_city: z.string().max(80).optional().describe("City name for address 1"),
-      address1_stateorprovince: z.string().max(50).optional().describe("State or province for address 1"),
-      address1_postalcode: z.string().max(20).optional().describe("ZIP Code or postal code for address 1"),
-      address1_country: z.string().max(80).optional().describe("Country/region name for address 1"),
-      address1_county: z.string().max(50).optional().describe("County name for address 1"),
-      address1_telephone1: z.string().max(50).optional().describe("Main phone number for address 1"),
-      address1_telephone2: z.string().max(50).optional().describe("Other phone number for address 1"),
-      address1_telephone3: z.string().max(50).optional().describe("Third telephone number for address 1"),
-      address1_fax: z.string().max(50).optional().describe("Fax number for address 1"),
-      address1_latitude: z.number().min(-90).max(90).optional().describe("Latitude for address 1"),
-      address1_longitude: z.number().min(-180).max(180).optional().describe("Longitude for address 1"),
-      address1_postofficebox: z.string().max(20).optional().describe("Post office box number for address 1"),
-      address1_upszone: z.string().max(4).optional().describe("UPS zone for address 1"),
-      address1_utcoffset: z.number().min(-1500).max(1500).optional().describe("UTC offset for address 1"),
-      // Address 2 fields
-      address2_name: z.string().max(100).optional().describe("Name for address 2"),
-      address2_line1: z.string().max(250).optional().describe("First line for address 2"),
-      address2_line2: z.string().max(250).optional().describe("Second line for address 2"),
-      address2_line3: z.string().max(250).optional().describe("Third line for address 2"),
-      address2_city: z.string().max(80).optional().describe("City name for address 2"),
-      address2_stateorprovince: z.string().max(50).optional().describe("State or province for address 2"),
-      address2_postalcode: z.string().max(20).optional().describe("ZIP Code or postal code for address 2"),
-      address2_country: z.string().max(80).optional().describe("Country/region name for address 2"),
-      address2_county: z.string().max(50).optional().describe("County name for address 2"),
-      address2_telephone1: z.string().max(50).optional().describe("First telephone number for address 2"),
-      address2_telephone2: z.string().max(50).optional().describe("Second telephone number for address 2"),
-      address2_telephone3: z.string().max(50).optional().describe("Third telephone number for address 2"),
-      address2_fax: z.string().max(50).optional().describe("Fax number for address 2"),
-      address2_latitude: z.number().min(-90).max(90).optional().describe("Latitude for address 2"),
-      address2_longitude: z.number().min(-180).max(180).optional().describe("Longitude for address 2"),
-      address2_postofficebox: z.string().max(20).optional().describe("Post office box number for address 2"),
-      address2_upszone: z.string().max(4).optional().describe("UPS zone for address 2"),
-      address2_utcoffset: z.number().min(-1500).max(1500).optional().describe("UTC offset for address 2")
+      title: "Update Dataverse Business Unit",
+      description: "Updates the properties and configuration of an existing business unit. Use this to modify business unit information, contact details, addresses, and organizational settings. Only provided fields will be updated.",
+      inputSchema: {
+        businessUnitId: z.string().describe("Unique identifier of the business unit to update"),
+        name: z.string().min(1).max(160).optional().describe("Name of the business unit"),
+        description: z.string().max(2000).optional().describe("Description of the business unit"),
+        divisionName: z.string().max(100).optional().describe("Name of the division to which the business unit belongs"),
+        emailAddress: z.string().email().max(100).optional().describe("Email address for the business unit"),
+        costCenter: z.string().max(100).optional().describe("Name of the business unit cost center"),
+        creditLimit: z.number().min(0).max(1000000000).optional().describe("Credit limit for the business unit"),
+        fileAsName: z.string().max(100).optional().describe("Alternative name under which the business unit can be filed"),
+        ftpSiteUrl: z.string().url().max(200).optional().describe("FTP site URL for the business unit"),
+        webSiteUrl: z.string().url().max(200).optional().describe("Website URL for the business unit"),
+        stockExchange: z.string().max(10).optional().describe("Stock exchange on which the business is listed"),
+        tickerSymbol: z.string().max(10).optional().describe("Stock exchange ticker symbol for the business unit"),
+        isDisabled: z.boolean().optional().describe("Whether the business unit is disabled"),
+        // Address 1 fields
+        address1_name: z.string().max(100).optional().describe("Name for address 1"),
+        address1_line1: z.string().max(250).optional().describe("First line for address 1"),
+        address1_line2: z.string().max(250).optional().describe("Second line for address 1"),
+        address1_line3: z.string().max(250).optional().describe("Third line for address 1"),
+        address1_city: z.string().max(80).optional().describe("City name for address 1"),
+        address1_stateorprovince: z.string().max(50).optional().describe("State or province for address 1"),
+        address1_postalcode: z.string().max(20).optional().describe("ZIP Code or postal code for address 1"),
+        address1_country: z.string().max(80).optional().describe("Country/region name for address 1"),
+        address1_county: z.string().max(50).optional().describe("County name for address 1"),
+        address1_telephone1: z.string().max(50).optional().describe("Main phone number for address 1"),
+        address1_telephone2: z.string().max(50).optional().describe("Other phone number for address 1"),
+        address1_telephone3: z.string().max(50).optional().describe("Third telephone number for address 1"),
+        address1_fax: z.string().max(50).optional().describe("Fax number for address 1"),
+        address1_latitude: z.number().min(-90).max(90).optional().describe("Latitude for address 1"),
+        address1_longitude: z.number().min(-180).max(180).optional().describe("Longitude for address 1"),
+        address1_postofficebox: z.string().max(20).optional().describe("Post office box number for address 1"),
+        address1_upszone: z.string().max(4).optional().describe("UPS zone for address 1"),
+        address1_utcoffset: z.number().min(-1500).max(1500).optional().describe("UTC offset for address 1"),
+        // Address 2 fields
+        address2_name: z.string().max(100).optional().describe("Name for address 2"),
+        address2_line1: z.string().max(250).optional().describe("First line for address 2"),
+        address2_line2: z.string().max(250).optional().describe("Second line for address 2"),
+        address2_line3: z.string().max(250).optional().describe("Third line for address 2"),
+        address2_city: z.string().max(80).optional().describe("City name for address 2"),
+        address2_stateorprovince: z.string().max(50).optional().describe("State or province for address 2"),
+        address2_postalcode: z.string().max(20).optional().describe("ZIP Code or postal code for address 2"),
+        address2_country: z.string().max(80).optional().describe("Country/region name for address 2"),
+        address2_county: z.string().max(50).optional().describe("County name for address 2"),
+        address2_telephone1: z.string().max(50).optional().describe("First telephone number for address 2"),
+        address2_telephone2: z.string().max(50).optional().describe("Second telephone number for address 2"),
+        address2_telephone3: z.string().max(50).optional().describe("Third telephone number for address 2"),
+        address2_fax: z.string().max(50).optional().describe("Fax number for address 2"),
+        address2_latitude: z.number().min(-90).max(90).optional().describe("Latitude for address 2"),
+        address2_longitude: z.number().min(-180).max(180).optional().describe("Longitude for address 2"),
+        address2_postofficebox: z.string().max(20).optional().describe("Post office box number for address 2"),
+        address2_upszone: z.string().max(4).optional().describe("UPS zone for address 2"),
+        address2_utcoffset: z.number().min(-1500).max(1500).optional().describe("UTC offset for address 2")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         const updateData: any = {};
 
@@ -355,12 +367,16 @@ export function updateBusinessUnitTool(server: McpServer, client: DataverseClien
 }
 
 export function deleteBusinessUnitTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "delete_dataverse_businessunit",
     {
-      businessUnitId: z.string().describe("Unique identifier of the business unit to delete")
+      title: "Delete Dataverse Business Unit",
+      description: "Permanently deletes a business unit from Dataverse. WARNING: This action cannot be undone and may affect users and teams associated with the business unit. Use with extreme caution.",
+      inputSchema: {
+        businessUnitId: z.string().describe("Unique identifier of the business unit to delete")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         await client.delete(`businessunits(${params.businessUnitId})`);
 
@@ -388,15 +404,19 @@ export function deleteBusinessUnitTool(server: McpServer, client: DataverseClien
 }
 
 export function listBusinessUnitsTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_businessunits",
     {
-      top: z.number().min(1).max(5000).optional().describe("Maximum number of business units to return (default: 50)"),
-      filter: z.string().optional().describe("OData filter expression"),
-      orderby: z.string().optional().describe("OData orderby expression"),
-      select: z.string().optional().describe("OData select expression to specify which fields to return")
+      title: "List Dataverse Business Units",
+      description: "Retrieves a list of business units in the Dataverse environment with filtering and sorting options. Use this to discover available business units, understand organizational hierarchy, and find specific business units by criteria.",
+      inputSchema: {
+        top: z.number().min(1).max(5000).optional().describe("Maximum number of business units to return (default: 50)"),
+        filter: z.string().optional().describe("OData filter expression"),
+        orderby: z.string().optional().describe("OData orderby expression"),
+        select: z.string().optional().describe("OData select expression to specify which fields to return")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         let query = 'businessunits?';
         const queryParams: string[] = [];
@@ -468,12 +488,16 @@ export function listBusinessUnitsTool(server: McpServer, client: DataverseClient
 }
 
 export function getBusinessUnitHierarchyTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_businessunit_hierarchy",
     {
-      businessUnitId: z.string().describe("Unique identifier of the business unit to get hierarchy for")
+      title: "Get Business Unit Hierarchy",
+      description: "Retrieves the complete organizational hierarchy for a specific business unit, showing parent-child relationships and the full organizational structure. Use this to understand business unit relationships and organizational structure.",
+      inputSchema: {
+        businessUnitId: z.string().describe("Unique identifier of the business unit to get hierarchy for")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         // Use the RetrieveBusinessHierarchyBusinessUnit bound function
         const response = await client.get(`businessunits(${params.businessUnitId})/Microsoft.Dynamics.CRM.RetrieveBusinessHierarchyBusinessUnit()`);
@@ -502,13 +526,17 @@ export function getBusinessUnitHierarchyTool(server: McpServer, client: Datavers
 }
 
 export function setBusinessUnitParentTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "set_businessunit_parent",
     {
-      businessUnitId: z.string().describe("Unique identifier of the business unit"),
-      parentBusinessUnitId: z.string().describe("Unique identifier of the new parent business unit")
+      title: "Set Business Unit Parent",
+      description: "Changes the parent business unit for a given business unit, effectively moving it within the organizational hierarchy. Use this to reorganize business unit structure and reporting relationships.",
+      inputSchema: {
+        businessUnitId: z.string().describe("Unique identifier of the business unit"),
+        parentBusinessUnitId: z.string().describe("Unique identifier of the new parent business unit")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         // Use the SetParentBusinessUnit action
         await client.callAction('SetParentBusinessUnit', {
@@ -540,13 +568,17 @@ export function setBusinessUnitParentTool(server: McpServer, client: DataverseCl
 }
 
 export function getBusinessUnitUsersTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_businessunit_users",
     {
-      businessUnitId: z.string().describe("Unique identifier of the business unit"),
-      includeSubsidiaryUsers: z.boolean().optional().default(false).describe("Whether to include users from subsidiary business units")
+      title: "Get Business Unit Users",
+      description: "Retrieves all users associated with a specific business unit, with option to include users from subsidiary business units. Use this to understand user assignments and organizational membership.",
+      inputSchema: {
+        businessUnitId: z.string().describe("Unique identifier of the business unit"),
+        includeSubsidiaryUsers: z.boolean().optional().default(false).describe("Whether to include users from subsidiary business units")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         let endpoint: string;
         
@@ -594,13 +626,17 @@ export function getBusinessUnitUsersTool(server: McpServer, client: DataverseCli
 }
 
 export function getBusinessUnitTeamsTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_businessunit_teams",
     {
-      businessUnitId: z.string().describe("Unique identifier of the business unit"),
-      includeSubsidiaryTeams: z.boolean().optional().default(false).describe("Whether to include teams from subsidiary business units")
+      title: "Get Business Unit Teams",
+      description: "Retrieves all teams associated with a specific business unit, with option to include teams from subsidiary business units. Use this to understand team organization and business unit relationships.",
+      inputSchema: {
+        businessUnitId: z.string().describe("Unique identifier of the business unit"),
+        includeSubsidiaryTeams: z.boolean().optional().default(false).describe("Whether to include teams from subsidiary business units")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         let endpoint: string;
         

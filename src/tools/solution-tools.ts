@@ -24,14 +24,18 @@ function createLocalizedLabel(text: string, languageCode: number = 1033): Locali
 }
 
 export function createPublisherTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_publisher",
     {
-      friendlyName: z.string().describe("Friendly name for the publisher"),
-      uniqueName: z.string().describe("Unique name for the publisher (e.g., 'examplepublisher')"),
-      description: z.string().optional().describe("Description of the publisher"),
-      customizationPrefix: z.string().describe("Customization prefix for schema names (e.g., 'sample')"),
-      customizationOptionValuePrefix: z.number().describe("Option value prefix (e.g., 72700)")
+      title: "Create Dataverse Publisher",
+      description: "Creates a new publisher in Dataverse. Publishers are required for creating solutions and provide customization prefixes for schema names. Use this to establish a publisher identity before creating solutions and custom components.",
+      inputSchema: {
+        friendlyName: z.string().describe("Friendly name for the publisher"),
+        uniqueName: z.string().describe("Unique name for the publisher (e.g., 'examplepublisher')"),
+        description: z.string().optional().describe("Description of the publisher"),
+        customizationPrefix: z.string().describe("Customization prefix for schema names (e.g., 'sample')"),
+        customizationOptionValuePrefix: z.number().describe("Option value prefix (e.g., 72700)")
+      }
     },
     async (params) => {
       try {
@@ -69,14 +73,18 @@ export function createPublisherTool(server: McpServer, client: DataverseClient) 
 }
 
 export function createSolutionTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_solution",
     {
-      friendlyName: z.string().describe("Friendly name for the solution"),
-      uniqueName: z.string().describe("Unique name for the solution (e.g., 'examplesolution')"),
-      description: z.string().optional().describe("Description of the solution"),
-      version: z.string().default("1.0.0.0").describe("Version of the solution"),
-      publisherUniqueName: z.string().describe("Unique name of the publisher to associate with this solution")
+      title: "Create Dataverse Solution",
+      description: "Creates a new unmanaged solution in Dataverse. Solutions are containers for customizations and allow you to package, deploy, and manage custom components. Use this to create a solution before adding tables, columns, and other customizations.",
+      inputSchema: {
+        friendlyName: z.string().describe("Friendly name for the solution"),
+        uniqueName: z.string().describe("Unique name for the solution (e.g., 'examplesolution')"),
+        description: z.string().optional().describe("Description of the solution"),
+        version: z.string().default("1.0.0.0").describe("Version of the solution"),
+        publisherUniqueName: z.string().describe("Unique name of the publisher to associate with this solution")
+      }
     },
     async (params) => {
       try {
@@ -123,10 +131,14 @@ export function createSolutionTool(server: McpServer, client: DataverseClient) {
 }
 
 export function getSolutionTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_solution",
     {
-      uniqueName: z.string().describe("Unique name of the solution to retrieve")
+      title: "Get Dataverse Solution",
+      description: "Retrieves detailed information about a specific solution including its metadata, version, publisher details, and configuration. Use this to inspect solution properties and understand solution structure.",
+      inputSchema: {
+        uniqueName: z.string().describe("Unique name of the solution to retrieve")
+      }
     },
     async (params) => {
       try {
@@ -162,10 +174,14 @@ export function getSolutionTool(server: McpServer, client: DataverseClient) {
 }
 
 export function getPublisherTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_publisher",
     {
-      uniqueName: z.string().describe("Unique name of the publisher to retrieve")
+      title: "Get Dataverse Publisher",
+      description: "Retrieves detailed information about a specific publisher including its customization prefix, option value prefix, and configuration. Use this to inspect publisher properties and understand customization settings.",
+      inputSchema: {
+        uniqueName: z.string().describe("Unique name of the publisher to retrieve")
+      }
     },
     async (params) => {
       try {
@@ -201,11 +217,15 @@ export function getPublisherTool(server: McpServer, client: DataverseClient) {
 }
 
 export function listSolutionsTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_solutions",
     {
-      includeManaged: z.boolean().default(false).describe("Whether to include managed solutions"),
-      top: z.number().optional().describe("Maximum number of solutions to return")
+      title: "List Dataverse Solutions",
+      description: "Retrieves a list of solutions in the Dataverse environment with filtering options. Use this to discover available solutions, find unmanaged solutions for customization, or get an overview of solution packages. Includes publisher information for each solution.",
+      inputSchema: {
+        includeManaged: z.boolean().default(false).describe("Whether to include managed solutions"),
+        top: z.number().optional().describe("Maximum number of solutions to return")
+      }
     },
     async (params) => {
       try {
@@ -267,11 +287,15 @@ export function listSolutionsTool(server: McpServer, client: DataverseClient) {
 }
 
 export function listPublishersTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_publishers",
     {
-      customOnly: z.boolean().default(true).describe("Whether to list only custom publishers"),
-      top: z.number().optional().describe("Maximum number of publishers to return")
+      title: "List Dataverse Publishers",
+      description: "Retrieves a list of publishers in the Dataverse environment with filtering options. Use this to discover available publishers, find custom publishers for solution creation, or get an overview of publisher configurations including customization prefixes.",
+      inputSchema: {
+        customOnly: z.boolean().default(true).describe("Whether to list only custom publishers"),
+        top: z.number().optional().describe("Maximum number of publishers to return")
+      }
     },
     async (params) => {
       try {
@@ -327,10 +351,14 @@ export function listPublishersTool(server: McpServer, client: DataverseClient) {
   );
 }
 export function setSolutionContextTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "set_solution_context",
     {
-      solutionUniqueName: z.string().describe("Unique name of the solution to set as context for subsequent operations")
+      title: "Set Solution Context",
+      description: "Sets the active solution context for all subsequent metadata operations. When a solution context is set, all created tables, columns, relationships, and other components will be automatically added to this solution. This is required before creating any custom components.",
+      inputSchema: {
+        solutionUniqueName: z.string().describe("Unique name of the solution to set as context for subsequent operations")
+      }
     },
     async (params) => {
       try {
@@ -365,9 +393,13 @@ export function setSolutionContextTool(server: McpServer, client: DataverseClien
 }
 
 export function getSolutionContextTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_solution_context",
-    {},
+    {
+      title: "Get Solution Context",
+      description: "Retrieves the currently active solution context information. Use this to check which solution is currently set for metadata operations and to verify the customization prefix being used for new components.",
+      inputSchema: {}
+    },
     async () => {
       try {
         const currentContext = client.getSolutionContext();
@@ -407,9 +439,13 @@ export function getSolutionContextTool(server: McpServer, client: DataverseClien
 }
 
 export function clearSolutionContextTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "clear_solution_context",
-    {},
+    {
+      title: "Clear Solution Context",
+      description: "Clears the currently active solution context. After clearing, metadata operations will not be associated with any specific solution. Use this when you want to work without a solution context or before switching to a different solution.",
+      inputSchema: {}
+    },
     async () => {
       try {
         const previousContext = client.getSolutionContext();

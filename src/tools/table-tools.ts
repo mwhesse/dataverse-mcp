@@ -55,21 +55,25 @@ function generateDisplayCollectionName(displayName: string): string {
 }
 
 export function createTableTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_table",
     {
-      displayName: z.string().describe("Display name for the table (e.g., 'Test Table')"),
-      description: z.string().optional().describe("Description of the table"),
-      ownershipType: z.enum(["UserOwned", "OrganizationOwned"]).default("UserOwned").describe("Ownership type of the table"),
-      hasActivities: z.boolean().default(false).describe("Whether the table can have activities"),
-      hasNotes: z.boolean().default(false).describe("Whether the table can have notes"),
-      isAuditEnabled: z.boolean().default(false).describe("Whether auditing is enabled"),
-      isDuplicateDetectionEnabled: z.boolean().default(false).describe("Whether duplicate detection is enabled"),
-      isValidForQueue: z.boolean().default(false).describe("Whether records can be added to queues"),
-      isConnectionsEnabled: z.boolean().default(false).describe("Whether connections are enabled"),
-      isMailMergeEnabled: z.boolean().default(false).describe("Whether mail merge is enabled"),
-      isDocumentManagementEnabled: z.boolean().default(false).describe("Whether document management is enabled"),
-      primaryNameAttribute: z.string().optional().describe("Logical name of the primary name attribute (will be auto-generated if not provided)")
+      title: "Create Dataverse Table",
+      description: "Creates a new custom table in Dataverse with the specified configuration. Use this when you need to create a new entity to store business data. Requires a solution context to be set first.",
+      inputSchema: {
+        displayName: z.string().describe("Display name for the table (e.g., 'Test Table')"),
+        description: z.string().optional().describe("Description of the table"),
+        ownershipType: z.enum(["UserOwned", "OrganizationOwned"]).default("UserOwned").describe("Ownership type of the table"),
+        hasActivities: z.boolean().default(false).describe("Whether the table can have activities"),
+        hasNotes: z.boolean().default(false).describe("Whether the table can have notes"),
+        isAuditEnabled: z.boolean().default(false).describe("Whether auditing is enabled"),
+        isDuplicateDetectionEnabled: z.boolean().default(false).describe("Whether duplicate detection is enabled"),
+        isValidForQueue: z.boolean().default(false).describe("Whether records can be added to queues"),
+        isConnectionsEnabled: z.boolean().default(false).describe("Whether connections are enabled"),
+        isMailMergeEnabled: z.boolean().default(false).describe("Whether mail merge is enabled"),
+        isDocumentManagementEnabled: z.boolean().default(false).describe("Whether document management is enabled"),
+        primaryNameAttribute: z.string().optional().describe("Logical name of the primary name attribute (will be auto-generated if not provided)")
+      }
     },
     async (params) => {
       try {
@@ -148,10 +152,14 @@ export function createTableTool(server: McpServer, client: DataverseClient) {
 }
 
 export function getTableTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_table",
     {
-      logicalName: z.string().describe("Logical name of the table to retrieve")
+      title: "Get Dataverse Table",
+      description: "Retrieves detailed information about a specific Dataverse table including its metadata, properties, and configuration. Use this to inspect table definitions and understand table structure.",
+      inputSchema: {
+        logicalName: z.string().describe("Logical name of the table to retrieve")
+      }
     },
     async (params) => {
       try {
@@ -183,21 +191,25 @@ export function getTableTool(server: McpServer, client: DataverseClient) {
 }
 
 export function updateTableTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "update_dataverse_table",
     {
-      logicalName: z.string().describe("Logical name of the table to update"),
-      displayName: z.string().optional().describe("New display name for the table"),
-      displayCollectionName: z.string().optional().describe("New display collection name for the table"),
-      description: z.string().optional().describe("New description of the table"),
-      hasActivities: z.boolean().optional().describe("Whether the table can have activities"),
-      hasNotes: z.boolean().optional().describe("Whether the table can have notes"),
-      isAuditEnabled: z.boolean().optional().describe("Whether auditing is enabled"),
-      isDuplicateDetectionEnabled: z.boolean().optional().describe("Whether duplicate detection is enabled"),
-      isValidForQueue: z.boolean().optional().describe("Whether records can be added to queues"),
-      isConnectionsEnabled: z.boolean().optional().describe("Whether connections are enabled"),
-      isMailMergeEnabled: z.boolean().optional().describe("Whether mail merge is enabled"),
-      isDocumentManagementEnabled: z.boolean().optional().describe("Whether document management is enabled")
+      title: "Update Dataverse Table",
+      description: "Updates the properties and configuration of an existing Dataverse table. Use this to modify table settings like display names, descriptions, or feature enablement (activities, notes, auditing, etc.). Changes are published automatically.",
+      inputSchema: {
+        logicalName: z.string().describe("Logical name of the table to update"),
+        displayName: z.string().optional().describe("New display name for the table"),
+        displayCollectionName: z.string().optional().describe("New display collection name for the table"),
+        description: z.string().optional().describe("New description of the table"),
+        hasActivities: z.boolean().optional().describe("Whether the table can have activities"),
+        hasNotes: z.boolean().optional().describe("Whether the table can have notes"),
+        isAuditEnabled: z.boolean().optional().describe("Whether auditing is enabled"),
+        isDuplicateDetectionEnabled: z.boolean().optional().describe("Whether duplicate detection is enabled"),
+        isValidForQueue: z.boolean().optional().describe("Whether records can be added to queues"),
+        isConnectionsEnabled: z.boolean().optional().describe("Whether connections are enabled"),
+        isMailMergeEnabled: z.boolean().optional().describe("Whether mail merge is enabled"),
+        isDocumentManagementEnabled: z.boolean().optional().describe("Whether document management is enabled")
+      }
     },
     async (params) => {
       try {
@@ -301,10 +313,14 @@ export function updateTableTool(server: McpServer, client: DataverseClient) {
 }
 
 export function deleteTableTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "delete_dataverse_table",
     {
-      logicalName: z.string().describe("Logical name of the table to delete")
+      title: "Delete Dataverse Table",
+      description: "Permanently deletes a custom table from Dataverse. WARNING: This action cannot be undone and will remove all data in the table. Use with extreme caution and only for tables that are no longer needed.",
+      inputSchema: {
+        logicalName: z.string().describe("Logical name of the table to delete")
+      }
     },
     async (params) => {
       try {
@@ -334,12 +350,16 @@ export function deleteTableTool(server: McpServer, client: DataverseClient) {
 }
 
 export function listTablesTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_tables",
     {
-      customOnly: z.boolean().default(false).describe("Whether to list only custom tables"),
-      includeManaged: z.boolean().default(false).describe("Whether to include managed tables"),
-      filter: z.string().optional().describe("OData filter expression")
+      title: "List Dataverse Tables",
+      description: "Retrieves a list of tables in the Dataverse environment with filtering options. Use this to discover available tables, find custom tables, or get an overview of the data model. Supports filtering by custom/system tables and managed/unmanaged status.",
+      inputSchema: {
+        customOnly: z.boolean().default(false).describe("Whether to list only custom tables"),
+        includeManaged: z.boolean().default(false).describe("Whether to include managed tables"),
+        filter: z.string().optional().describe("OData filter expression")
+      }
     },
     async (params) => {
       try {

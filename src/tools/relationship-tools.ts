@@ -24,39 +24,43 @@ function createLocalizedLabel(text: string, languageCode: number = 1033): Locali
 }
 
 export function createRelationshipTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_relationship",
     {
-      relationshipType: z.enum(["OneToMany", "ManyToMany"]).describe("Type of relationship to create"),
-      schemaName: z.string().describe("Schema name for the relationship (e.g., 'new_account_contact')"),
-      
-      // One-to-Many specific fields
-      referencedEntity: z.string().optional().describe("Referenced (parent) entity logical name for One-to-Many relationships"),
-      referencingEntity: z.string().optional().describe("Referencing (child) entity logical name for One-to-Many relationships"),
-      referencingAttributeLogicalName: z.string().optional().describe("Logical name for the lookup attribute to be created"),
-      referencingAttributeDisplayName: z.string().optional().describe("Display name for the lookup attribute"),
-      
-      // Many-to-Many specific fields
-      entity1LogicalName: z.string().optional().describe("First entity logical name for Many-to-Many relationships"),
-      entity2LogicalName: z.string().optional().describe("Second entity logical name for Many-to-Many relationships"),
-      intersectEntityName: z.string().optional().describe("Name for the intersect entity (auto-generated if not provided)"),
-      
-      // Cascade configuration for One-to-Many
-      cascadeAssign: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for assign operations"),
-      cascadeDelete: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("RemoveLink").describe("Cascade behavior for delete operations"),
-      cascadeMerge: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for merge operations"),
-      cascadeReparent: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for reparent operations"),
-      cascadeShare: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for share operations"),
-      cascadeUnshare: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for unshare operations"),
-      
-      // Associated menu configuration
-      menuBehavior: z.enum(["UseCollectionName", "UseLabel", "DoNotDisplay"]).default("UseCollectionName").describe("How the relationship appears in associated menus"),
-      menuGroup: z.enum(["Details", "Sales", "Service", "Marketing"]).default("Details").describe("Menu group for the relationship"),
-      menuLabel: z.string().optional().describe("Custom label for the menu (required if menuBehavior is UseLabel)"),
-      menuOrder: z.number().optional().describe("Order in the menu"),
-      
-      isValidForAdvancedFind: z.boolean().default(true).describe("Whether the relationship is valid for Advanced Find"),
-      isHierarchical: z.boolean().default(false).describe("Whether this is a hierarchical relationship (One-to-Many only)")
+      title: "Create Dataverse Relationship",
+      description: "Creates a relationship between two Dataverse tables. Supports One-to-Many relationships (parent-child with lookup field) and Many-to-Many relationships (junction table). Use this to establish data connections between tables, enable navigation, and maintain referential integrity.",
+      inputSchema: {
+        relationshipType: z.enum(["OneToMany", "ManyToMany"]).describe("Type of relationship to create"),
+        schemaName: z.string().describe("Schema name for the relationship (e.g., 'new_account_contact')"),
+        
+        // One-to-Many specific fields
+        referencedEntity: z.string().optional().describe("Referenced (parent) entity logical name for One-to-Many relationships"),
+        referencingEntity: z.string().optional().describe("Referencing (child) entity logical name for One-to-Many relationships"),
+        referencingAttributeLogicalName: z.string().optional().describe("Logical name for the lookup attribute to be created"),
+        referencingAttributeDisplayName: z.string().optional().describe("Display name for the lookup attribute"),
+        
+        // Many-to-Many specific fields
+        entity1LogicalName: z.string().optional().describe("First entity logical name for Many-to-Many relationships"),
+        entity2LogicalName: z.string().optional().describe("Second entity logical name for Many-to-Many relationships"),
+        intersectEntityName: z.string().optional().describe("Name for the intersect entity (auto-generated if not provided)"),
+        
+        // Cascade configuration for One-to-Many
+        cascadeAssign: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for assign operations"),
+        cascadeDelete: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("RemoveLink").describe("Cascade behavior for delete operations"),
+        cascadeMerge: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for merge operations"),
+        cascadeReparent: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for reparent operations"),
+        cascadeShare: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for share operations"),
+        cascadeUnshare: z.enum(["NoCascade", "Cascade", "Active", "UserOwned", "RemoveLink", "Restrict"]).default("NoCascade").describe("Cascade behavior for unshare operations"),
+        
+        // Associated menu configuration
+        menuBehavior: z.enum(["UseCollectionName", "UseLabel", "DoNotDisplay"]).default("UseCollectionName").describe("How the relationship appears in associated menus"),
+        menuGroup: z.enum(["Details", "Sales", "Service", "Marketing"]).default("Details").describe("Menu group for the relationship"),
+        menuLabel: z.string().optional().describe("Custom label for the menu (required if menuBehavior is UseLabel)"),
+        menuOrder: z.number().optional().describe("Order in the menu"),
+        
+        isValidForAdvancedFind: z.boolean().default(true).describe("Whether the relationship is valid for Advanced Find"),
+        isHierarchical: z.boolean().default(false).describe("Whether this is a hierarchical relationship (One-to-Many only)")
+      }
     },
     async (params) => {
       try {
@@ -193,10 +197,14 @@ function getMenuGroupValue(group: string): string {
 }
 
 export function getRelationshipTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_relationship",
     {
-      schemaName: z.string().describe("Schema name of the relationship to retrieve")
+      title: "Get Dataverse Relationship",
+      description: "Retrieves detailed information about a specific relationship between Dataverse tables, including its configuration, cascade settings, and menu behavior. Use this to inspect relationship definitions and understand table connections.",
+      inputSchema: {
+        schemaName: z.string().describe("Schema name of the relationship to retrieve")
+      }
     },
     async (params) => {
       try {
@@ -228,10 +236,14 @@ export function getRelationshipTool(server: McpServer, client: DataverseClient) 
 }
 
 export function deleteRelationshipTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "delete_dataverse_relationship",
     {
-      schemaName: z.string().describe("Schema name of the relationship to delete")
+      title: "Delete Dataverse Relationship",
+      description: "Permanently deletes a relationship between Dataverse tables. WARNING: This action cannot be undone and will remove the connection between tables, including any lookup fields for One-to-Many relationships. Use with extreme caution.",
+      inputSchema: {
+        schemaName: z.string().describe("Schema name of the relationship to delete")
+      }
     },
     async (params) => {
       try {
@@ -261,14 +273,18 @@ export function deleteRelationshipTool(server: McpServer, client: DataverseClien
 }
 
 export function listRelationshipsTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_relationships",
     {
-      entityLogicalName: z.string().optional().describe("Filter relationships for a specific entity"),
-      relationshipType: z.enum(["OneToMany", "ManyToMany", "All"]).default("All").describe("Type of relationships to list"),
-      customOnly: z.boolean().default(false).describe("Whether to list only custom relationships"),
-      includeManaged: z.boolean().default(false).describe("Whether to include managed relationships"),
-      filter: z.string().optional().describe("OData filter expression")
+      title: "List Dataverse Relationships",
+      description: "Retrieves a list of relationships in the Dataverse environment with filtering options. Use this to discover table connections, find custom relationships, or get an overview of the data model relationships. Supports filtering by entity, relationship type, and managed/unmanaged status.",
+      inputSchema: {
+        entityLogicalName: z.string().optional().describe("Filter relationships for a specific entity"),
+        relationshipType: z.enum(["OneToMany", "ManyToMany", "All"]).default("All").describe("Type of relationships to list"),
+        customOnly: z.boolean().default(false).describe("Whether to list only custom relationships"),
+        includeManaged: z.boolean().default(false).describe("Whether to include managed relationships"),
+        filter: z.string().optional().describe("OData filter expression")
+      }
     },
     async (params) => {
       try {

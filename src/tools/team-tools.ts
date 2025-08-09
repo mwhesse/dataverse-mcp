@@ -3,22 +3,26 @@ import { z } from "zod";
 import { DataverseClient } from "../dataverse-client.js";
 
 export function createTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_team",
     {
-      name: z.string().max(160).describe("Name of the team"),
-      description: z.string().max(2000).optional().describe("Description of the team"),
-      businessUnitId: z.string().optional().describe("Business unit ID to associate the team with (defaults to root business unit)"),
-      administratorId: z.string().describe("User ID of the team administrator"),
-      teamType: z.enum(['0', '1', '2', '3']).default('0').describe("Team type: 0=Owner, 1=Access, 2=Security Group, 3=Office Group"),
-      membershipType: z.enum(['0', '1', '2', '3']).default('0').describe("Membership type: 0=Members and guests, 1=Members, 2=Owners, 3=Guests"),
-      emailAddress: z.string().max(100).optional().describe("Email address for the team"),
-      yomiName: z.string().max(160).optional().describe("Pronunciation of the team name in phonetic characters"),
-      azureActiveDirectoryObjectId: z.string().optional().describe("Azure AD Object ID for the team"),
-      queueId: z.string().optional().describe("Default queue ID for the team"),
-      teamTemplateId: z.string().optional().describe("Team template ID to associate with the team"),
-      delegatedAuthorizationId: z.string().optional().describe("Delegated authorization context for the team"),
-      transactionCurrencyId: z.string().optional().describe("Currency ID associated with the team")
+      title: "Create Dataverse Team",
+      description: "Creates a new team in Dataverse for organizing users and managing permissions. Teams can be owner teams (for record ownership) or access teams (for sharing records). Use this to establish groups of users who work together and need similar access levels.",
+      inputSchema: {
+        name: z.string().max(160).describe("Name of the team"),
+        description: z.string().max(2000).optional().describe("Description of the team"),
+        businessUnitId: z.string().optional().describe("Business unit ID to associate the team with (defaults to root business unit)"),
+        administratorId: z.string().describe("User ID of the team administrator"),
+        teamType: z.enum(['0', '1', '2', '3']).default('0').describe("Team type: 0=Owner, 1=Access, 2=Security Group, 3=Office Group"),
+        membershipType: z.enum(['0', '1', '2', '3']).default('0').describe("Membership type: 0=Members and guests, 1=Members, 2=Owners, 3=Guests"),
+        emailAddress: z.string().max(100).optional().describe("Email address for the team"),
+        yomiName: z.string().max(160).optional().describe("Pronunciation of the team name in phonetic characters"),
+        azureActiveDirectoryObjectId: z.string().optional().describe("Azure AD Object ID for the team"),
+        queueId: z.string().optional().describe("Default queue ID for the team"),
+        teamTemplateId: z.string().optional().describe("Team template ID to associate with the team"),
+        delegatedAuthorizationId: z.string().optional().describe("Delegated authorization context for the team"),
+        transactionCurrencyId: z.string().optional().describe("Currency ID associated with the team")
+      }
     },
     async (params) => {
       try {
@@ -87,10 +91,14 @@ export function createTeamTool(server: McpServer, client: DataverseClient) {
 }
 
 export function getTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_team",
     {
-      teamId: z.string().describe("ID of the team to retrieve")
+      title: "Get Dataverse Team",
+      description: "Retrieves detailed information about a specific team including its properties, administrator, business unit association, and configuration settings. Use this to inspect team definitions and understand team structure.",
+      inputSchema: {
+        teamId: z.string().describe("ID of the team to retrieve")
+      }
     },
     async (params) => {
       try {
@@ -147,22 +155,26 @@ export function getTeamTool(server: McpServer, client: DataverseClient) {
 }
 
 export function updateTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "update_dataverse_team",
     {
-      teamId: z.string().describe("ID of the team to update"),
-      name: z.string().max(160).optional().describe("New name of the team"),
-      description: z.string().max(2000).optional().describe("New description of the team"),
-      teamType: z.enum(['0', '1', '2', '3']).optional().describe("Team type: 0=Owner, 1=Access, 2=Security Group, 3=Office Group"),
-      membershipType: z.enum(['0', '1', '2', '3']).optional().describe("Membership type: 0=Members and guests, 1=Members, 2=Owners, 3=Guests"),
-      emailAddress: z.string().max(100).optional().describe("Email address for the team"),
-      yomiName: z.string().max(160).optional().describe("Pronunciation of the team name in phonetic characters"),
-      azureActiveDirectoryObjectId: z.string().optional().describe("Azure AD Object ID for the team"),
-      administratorId: z.string().optional().describe("New administrator user ID"),
-      queueId: z.string().optional().describe("Default queue ID for the team"),
-      teamTemplateId: z.string().optional().describe("Team template ID to associate with the team"),
-      delegatedAuthorizationId: z.string().optional().describe("Delegated authorization context for the team"),
-      transactionCurrencyId: z.string().optional().describe("Currency ID associated with the team")
+      title: "Update Dataverse Team",
+      description: "Updates the properties and configuration of an existing team. Use this to modify team settings like name, description, administrator, or other team properties without changing team membership.",
+      inputSchema: {
+        teamId: z.string().describe("ID of the team to update"),
+        name: z.string().max(160).optional().describe("New name of the team"),
+        description: z.string().max(2000).optional().describe("New description of the team"),
+        teamType: z.enum(['0', '1', '2', '3']).optional().describe("Team type: 0=Owner, 1=Access, 2=Security Group, 3=Office Group"),
+        membershipType: z.enum(['0', '1', '2', '3']).optional().describe("Membership type: 0=Members and guests, 1=Members, 2=Owners, 3=Guests"),
+        emailAddress: z.string().max(100).optional().describe("Email address for the team"),
+        yomiName: z.string().max(160).optional().describe("Pronunciation of the team name in phonetic characters"),
+        azureActiveDirectoryObjectId: z.string().optional().describe("Azure AD Object ID for the team"),
+        administratorId: z.string().optional().describe("New administrator user ID"),
+        queueId: z.string().optional().describe("Default queue ID for the team"),
+        teamTemplateId: z.string().optional().describe("Team template ID to associate with the team"),
+        delegatedAuthorizationId: z.string().optional().describe("Delegated authorization context for the team"),
+        transactionCurrencyId: z.string().optional().describe("Currency ID associated with the team")
+      }
     },
     async (params) => {
       try {
@@ -219,10 +231,14 @@ export function updateTeamTool(server: McpServer, client: DataverseClient) {
 }
 
 export function deleteTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "delete_dataverse_team",
     {
-      teamId: z.string().describe("ID of the team to delete")
+      title: "Delete Dataverse Team",
+      description: "Permanently deletes a team from Dataverse. WARNING: This action cannot be undone and will fail if the team owns records or has assigned security roles. Ensure the team is not in use before deletion.",
+      inputSchema: {
+        teamId: z.string().describe("ID of the team to delete")
+      }
     },
     async (params) => {
       try {
@@ -252,15 +268,19 @@ export function deleteTeamTool(server: McpServer, client: DataverseClient) {
 }
 
 export function listTeamsTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_teams",
     {
-      businessUnitId: z.string().optional().describe("Filter teams by business unit ID"),
-      teamType: z.enum(['0', '1', '2', '3']).optional().describe("Filter by team type: 0=Owner, 1=Access, 2=Security Group, 3=Office Group"),
-      systemManagedOnly: z.boolean().default(false).describe("Whether to list only system-managed teams"),
-      excludeDefault: z.boolean().default(false).describe("Whether to exclude default business unit teams"),
-      top: z.number().optional().describe("Maximum number of teams to return (default: 50)"),
-      filter: z.string().optional().describe("OData filter expression")
+      title: "List Dataverse Teams",
+      description: "Retrieves a list of teams in the Dataverse environment with filtering options. Use this to discover available teams, find teams by business unit or type, or get an overview of team organization. Supports filtering by business unit, team type, and system-managed status.",
+      inputSchema: {
+        businessUnitId: z.string().optional().describe("Filter teams by business unit ID"),
+        teamType: z.enum(['0', '1', '2', '3']).optional().describe("Filter by team type: 0=Owner, 1=Access, 2=Security Group, 3=Office Group"),
+        systemManagedOnly: z.boolean().default(false).describe("Whether to list only system-managed teams"),
+        excludeDefault: z.boolean().default(false).describe("Whether to exclude default business unit teams"),
+        top: z.number().optional().describe("Maximum number of teams to return (default: 50)"),
+        filter: z.string().optional().describe("OData filter expression")
+      }
     },
     async (params) => {
       try {
@@ -340,11 +360,15 @@ export function listTeamsTool(server: McpServer, client: DataverseClient) {
 }
 
 export function addMembersToTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "add_members_to_team",
     {
-      teamId: z.string().describe("ID of the team to add members to"),
-      memberIds: z.array(z.string()).describe("Array of user IDs to add as team members")
+      title: "Add Members to Team",
+      description: "Adds users as members to a team, granting them access to team-owned records and team-based permissions. Use this to expand team membership and provide users with team-level access to resources.",
+      inputSchema: {
+        teamId: z.string().describe("ID of the team to add members to"),
+        memberIds: z.array(z.string()).describe("Array of user IDs to add as team members")
+      }
     },
     async (params) => {
       try {
@@ -377,11 +401,15 @@ export function addMembersToTeamTool(server: McpServer, client: DataverseClient)
 }
 
 export function removeMembersFromTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "remove_members_from_team",
     {
-      teamId: z.string().describe("ID of the team to remove members from"),
-      memberIds: z.array(z.string()).describe("Array of user IDs to remove from team")
+      title: "Remove Members from Team",
+      description: "Removes users from team membership, revoking their access to team-owned records and team-based permissions. Use this when users no longer need team access or are changing roles.",
+      inputSchema: {
+        teamId: z.string().describe("ID of the team to remove members from"),
+        memberIds: z.array(z.string()).describe("Array of user IDs to remove from team")
+      }
     },
     async (params) => {
       try {
@@ -414,10 +442,14 @@ export function removeMembersFromTeamTool(server: McpServer, client: DataverseCl
 }
 
 export function getTeamMembersTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_team_members",
     {
-      teamId: z.string().describe("ID of the team to retrieve members for")
+      title: "Get Team Members",
+      description: "Retrieves a list of all users who are members of a specific team, including their basic information and status. Use this to audit team membership and understand who has team-based access.",
+      inputSchema: {
+        teamId: z.string().describe("ID of the team to retrieve members for")
+      }
     },
     async (params) => {
       try {
@@ -457,10 +489,14 @@ export function getTeamMembersTool(server: McpServer, client: DataverseClient) {
 }
 
 export function convertOwnerTeamToAccessTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "convert_owner_team_to_access_team",
     {
-      teamId: z.string().describe("ID of the owner team to convert to access team")
+      title: "Convert Owner Team to Access Team",
+      description: "Converts an owner team to an access team, changing how the team can be used for record ownership and sharing. WARNING: This action cannot be undone and affects how records owned by this team are managed.",
+      inputSchema: {
+        teamId: z.string().describe("ID of the owner team to convert to access team")
+      }
     },
     async (params) => {
       try {

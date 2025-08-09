@@ -5,6 +5,40 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5]
+
+### Enhanced
+- **Tool Descriptions and AI Context** - Major improvement to MCP tool registration for better AI understanding
+  - **Updated All 60+ Tools** - Migrated from `server.tool()` to `server.registerTool()` method across all 12 tool files
+  - **Comprehensive Tool Descriptions** - Added detailed descriptions for every tool explaining purpose, use cases, and important considerations
+  - **Enhanced AI Integration** - Tools now provide rich context to AI systems about their functionality and appropriate usage scenarios
+  - **Improved Developer Experience** - Tool titles and descriptions make the MCP server more discoverable and easier to use
+  - **Better Documentation** - Each tool now includes warnings for destructive operations and guidance on prerequisites
+
+### Changed
+- **MCP Tool Registration Architecture** - Updated tool registration pattern across entire codebase
+  - **Table Tools** (5 tools) - Enhanced descriptions for table CRUD operations with ownership and feature configuration guidance
+  - **Column Tools** (5 tools) - Detailed descriptions for column management with data type and validation information
+  - **Relationship Tools** (4 tools) - Comprehensive descriptions for relationship creation with cascade behavior guidance
+  - **Option Set Tools** (6 tools) - Enhanced descriptions for choice list management with reusability information
+  - **Solution Tools** (8 tools) - Detailed descriptions for solution and publisher management with customization context
+  - **Security Role Tools** (13 tools) - Comprehensive descriptions for permission management with access level guidance
+  - **Team Tools** (9 tools) - Enhanced descriptions for team management with membership and permission information
+  - **Business Unit Tools** (8 tools) - Detailed descriptions for organizational hierarchy management
+  - **Schema Tools** (2 tools) - Comprehensive descriptions for schema export and diagram generation
+  - **WebAPI Tools** (3 tools) - Enhanced descriptions for code generation with platform-specific guidance
+
+### Technical Improvements
+- **TypeScript Compilation** - Resolved all compilation errors from method signature changes
+- **Parameter Validation** - Maintained robust Zod schema validation while improving tool registration
+- **Error Handling** - Preserved comprehensive error handling patterns with enhanced context
+- **Backward Compatibility** - All existing functionality preserved while improving AI integration
+
+### Documentation
+- **Updated README.md** - Refreshed all tool documentation with new titles and comprehensive descriptions
+- **Enhanced Tool Reference** - Complete tool catalog with detailed explanations of functionality and use cases
+- **Improved Usage Examples** - Better context for when and how to use each tool effectively
+
 ## [0.2.4]
 
 ### Added

@@ -63,27 +63,31 @@ function findPowerPagesSiteDir(): string {
 }
 
 export function managePowerPagesWebAPIConfigTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "manage_powerpages_webapi_config",
     {
-      operation: z.enum([
-        "add_webapi_config", "remove_webapi_config", "list_webapi_configs", "add_table_permission", "remove_table_permission", "list_table_permissions", "check_config_status"
-      ]).describe("Type of configuration operation to perform"),
-      
-      // WebAPI configuration parameters
-      tableName: z.string().optional().describe("Logical name of the table (e.g., 'cr7ae_creditcardses', 'contacts')"),
-      fields: z.string().default("*").describe("Fields to expose via WebAPI (default: '*' for all fields)"),
-      
-      // Table permission parameters
-      permissionName: z.string().optional().describe("Name for the table permission"),
-      webRoleName: z.string().default("Authenticated Users").describe("Web role name (default: 'Authenticated Users')"),
-      accessType: z.enum(["Global", "Contact", "Account", "Parent"]).default("Global").describe("Access type for the permission"),
-      privileges: z.array(z.enum(["Create", "Read", "Write", "Delete", "Append", "AppendTo"])).default(["Read"]).describe("Privileges to grant"),
-      
-      // General parameters
-      projectPath: z.string().optional().describe("Path to PowerPages project (defaults to current directory)")
+      title: "Manage PowerPages WebAPI Configuration",
+      description: "Manage PowerPages WebAPI configurations and table permissions. Add/remove WebAPI access for tables, configure table permissions, and check configuration status for PowerPages portals.",
+      inputSchema: {
+        operation: z.enum([
+          "add_webapi_config", "remove_webapi_config", "list_webapi_configs", "add_table_permission", "remove_table_permission", "list_table_permissions", "check_config_status"
+        ]).describe("Type of configuration operation to perform"),
+        
+        // WebAPI configuration parameters
+        tableName: z.string().optional().describe("Logical name of the table (e.g., 'cr7ae_creditcardses', 'contacts')"),
+        fields: z.string().default("*").describe("Fields to expose via WebAPI (default: '*' for all fields)"),
+        
+        // Table permission parameters
+        permissionName: z.string().optional().describe("Name for the table permission"),
+        webRoleName: z.string().default("Authenticated Users").describe("Web role name (default: 'Authenticated Users')"),
+        accessType: z.enum(["Global", "Contact", "Account", "Parent"]).default("Global").describe("Access type for the permission"),
+        privileges: z.array(z.enum(["Create", "Read", "Write", "Delete", "Append", "AppendTo"])).default(["Read"]).describe("Privileges to grant"),
+        
+        // General parameters
+        projectPath: z.string().optional().describe("Path to PowerPages project (defaults to current directory)")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         const projectPath = params.projectPath || process.cwd();
         const siteDir = path.join(projectPath, '.powerpages-site');

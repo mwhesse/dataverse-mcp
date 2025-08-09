@@ -104,93 +104,93 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 This MCP server provides comprehensive tools for Dataverse schema management:
 
 ### Table Operations
-- **create_dataverse_table** ✅ **Fully Tested** - Create new custom tables
-- **get_dataverse_table** ✅ **Fully Tested** - Retrieve table metadata
-- **update_dataverse_table** ✅ **Fully Tested** - Update table properties
-- **delete_dataverse_table** ✅ **Fully Tested** - Delete custom tables
-- **list_dataverse_tables** ✅ **Fully Tested** - List tables with filtering options
+- **create_dataverse_table** ✅ **Fully Tested** - **Create Dataverse Table**: Creates a new custom table in Dataverse with the specified configuration. Use this when you need to create a new entity to store business data. Requires a solution context to be set first.
+- **get_dataverse_table** ✅ **Fully Tested** - **Get Dataverse Table**: Retrieves detailed information about a specific Dataverse table including its metadata, properties, and configuration. Use this to inspect table definitions and understand table structure.
+- **update_dataverse_table** ✅ **Fully Tested** - **Update Dataverse Table**: Updates the properties and configuration of an existing Dataverse table. Use this to modify table settings like display names, descriptions, or feature enablement (activities, notes, auditing, etc.). Changes are published automatically.
+- **delete_dataverse_table** ✅ **Fully Tested** - **Delete Dataverse Table**: Permanently deletes a custom table from Dataverse. WARNING: This action cannot be undone and will remove all data in the table. Use with extreme caution and only for tables that are no longer needed.
+- **list_dataverse_tables** ✅ **Fully Tested** - **List Dataverse Tables**: Retrieves a list of tables in the Dataverse environment with filtering options. Use this to discover available tables, find custom tables, or get an overview of the data model. Supports filtering by custom/system tables and managed/unmanaged status.
 
 ### Column Operations
-- **create_dataverse_column** ✅ **Fully Tested** - Create columns of various types (see [Supported Column Types](#supported-column-types) below)
-- **get_dataverse_column** ✅ **Fully Tested** - Retrieve column metadata
-- **update_dataverse_column** ✅ **Fully Tested** - Update column properties
-- **delete_dataverse_column** ✅ **Fully Tested** - Delete custom columns
-- **list_dataverse_columns** ✅ **Fully Tested** - List columns for a table
+- **create_dataverse_column** ✅ **Fully Tested** - **Create Dataverse Column**: Creates a new column (field) in a Dataverse table with the specified data type and configuration. Supports various column types including text, numbers, dates, lookups, and choice lists. Use this to add new fields to store specific data in your tables. Requires a solution context to be set first.
+- **get_dataverse_column** ✅ **Fully Tested** - **Get Dataverse Column**: Retrieves detailed information about a specific column in a Dataverse table, including its data type, properties, and configuration settings. Use this to inspect column definitions and understand field structure.
+- **update_dataverse_column** ✅ **Fully Tested** - **Update Dataverse Column**: Updates the properties and configuration of an existing column in a Dataverse table. Use this to modify column settings like display names, descriptions, required levels, or audit settings. Note that data type cannot be changed after creation.
+- **delete_dataverse_column** ✅ **Fully Tested** - **Delete Dataverse Column**: Permanently deletes a column from a Dataverse table. WARNING: This action cannot be undone and will remove all data stored in this column. Use with extreme caution and only for columns that are no longer needed.
+- **list_dataverse_columns** ✅ **Fully Tested** - **List Dataverse Columns**: Retrieves a list of columns in a specific Dataverse table with filtering options. Use this to discover available fields in a table, find custom columns, or get an overview of the table structure. Supports filtering by custom/system columns and managed/unmanaged status.
 
 ### Relationship Operations
-- **create_dataverse_relationship** ✅ **Fully Tested** - Create One-to-Many or Many-to-Many relationships
-- **get_dataverse_relationship** ✅ **Fully Tested** - Retrieve relationship metadata
-- **delete_dataverse_relationship** ✅ **Fully Tested** - Delete custom relationships
-- **list_dataverse_relationships** ✅ **Fully Tested** - List relationships with filtering
+- **create_dataverse_relationship** ✅ **Fully Tested** - **Create Dataverse Relationship**: Creates a relationship between two Dataverse tables. Supports One-to-Many relationships (parent-child with lookup field) and Many-to-Many relationships (junction table). Use this to establish data connections between tables, enable navigation, and maintain referential integrity.
+- **get_dataverse_relationship** ✅ **Fully Tested** - **Get Dataverse Relationship**: Retrieves detailed information about a specific relationship between Dataverse tables, including its configuration, cascade settings, and menu behavior. Use this to inspect relationship definitions and understand table connections.
+- **delete_dataverse_relationship** ✅ **Fully Tested** - **Delete Dataverse Relationship**: Permanently deletes a relationship between Dataverse tables. WARNING: This action cannot be undone and will remove the connection between tables, including any lookup fields for One-to-Many relationships. Use with extreme caution.
+- **list_dataverse_relationships** ✅ **Fully Tested** - **List Dataverse Relationships**: Retrieves a list of relationships in the Dataverse environment with filtering options. Use this to discover table connections, find custom relationships, or get an overview of the data model relationships. Supports filtering by entity, relationship type, and managed/unmanaged status.
 
 ### Option Set Operations
-- **create_dataverse_optionset** ✅ **Fully Tested** - Create global option sets
-- **get_dataverse_optionset** ✅ **Fully Tested** - Retrieve option set metadata
-- **update_dataverse_optionset** ✅ **Fully Tested** - Update option sets (add/update/remove options)
-- **delete_dataverse_optionset** ✅ **Fully Tested** - Delete custom option sets
-- **list_dataverse_optionsets** ✅ **Fully Tested** - List option sets
-- **get_dataverse_optionset_options** ✅ **Fully Tested** - Get options for a specific option set
+- **create_dataverse_optionset** ✅ **Fully Tested** - **Create Dataverse Option Set**: Creates a new global option set (choice list) in Dataverse with predefined options. Use this to create reusable choice lists that can be used across multiple tables and columns. Option sets provide consistent data entry options and improve data quality.
+- **get_dataverse_optionset** ✅ **Fully Tested** - **Get Dataverse Option Set**: Retrieves detailed information about a specific option set including its metadata, options, and configuration. Use this to inspect option set definitions and understand available choices.
+- **update_dataverse_optionset** ✅ **Fully Tested** - **Update Dataverse Option Set**: Updates an existing option set by modifying its properties and managing its options. Use this to add new choices, update existing ones, remove obsolete options, or change the option set's display name and description. Changes affect all columns using this option set.
+- **delete_dataverse_optionset** ✅ **Fully Tested** - **Delete Dataverse Option Set**: Permanently deletes an option set from Dataverse. WARNING: This action cannot be undone and will fail if the option set is being used by any columns. Ensure no columns reference this option set before deletion.
+- **list_dataverse_optionsets** ✅ **Fully Tested** - **List Dataverse Option Sets**: Retrieves a list of option sets in the Dataverse environment with filtering options. Use this to discover available choice lists, find custom option sets, or get an overview of reusable options. Supports filtering by custom/system and managed/unmanaged status.
+- **get_dataverse_optionset_options** ✅ **Fully Tested** - **Get Dataverse Option Set Options**: Retrieves all options (choices) within a specific option set, including their values, labels, descriptions, and colors. Use this to inspect the available choices in an option set and understand their configuration.
 
 ### Solution & Publisher Operations
-- **create_dataverse_publisher** ✅ **Fully Tested** - Create custom publishers with prefixes
-- **get_dataverse_publisher** ✅ **Fully Tested** - Retrieve publisher metadata
-- **list_dataverse_publishers** ✅ **Fully Tested** - List publishers with filtering
-- **create_dataverse_solution** ✅ **Fully Tested** - Create solutions linked to publishers
-- **get_dataverse_solution** ✅ **Fully Tested** - Retrieve solution metadata
-- **list_dataverse_solutions** ✅ **Fully Tested** - List solutions with publisher details
-- **set_solution_context** ✅ **Fully Tested** - Set active solution for schema operations
-- **get_solution_context** ✅ **Fully Tested** - View current solution context
-- **clear_solution_context** ✅ **Fully Tested** - Remove solution context
+- **create_dataverse_publisher** ✅ **Fully Tested** - **Create Dataverse Publisher**: Creates a new publisher in Dataverse. Publishers are required for creating solutions and provide customization prefixes for schema names. Use this to establish a publisher identity before creating solutions and custom components.
+- **get_dataverse_publisher** ✅ **Fully Tested** - **Get Dataverse Publisher**: Retrieves detailed information about a specific publisher including its customization prefix, option value prefix, and configuration. Use this to inspect publisher properties and understand customization settings.
+- **list_dataverse_publishers** ✅ **Fully Tested** - **List Dataverse Publishers**: Retrieves a list of publishers in the Dataverse environment with filtering options. Use this to discover available publishers, find custom publishers for solution creation, or get an overview of publisher configurations including customization prefixes.
+- **create_dataverse_solution** ✅ **Fully Tested** - **Create Dataverse Solution**: Creates a new unmanaged solution in Dataverse. Solutions are containers for customizations and allow you to package, deploy, and manage custom components. Use this to create a solution before adding tables, columns, and other customizations.
+- **get_dataverse_solution** ✅ **Fully Tested** - **Get Dataverse Solution**: Retrieves detailed information about a specific solution including its metadata, version, publisher details, and configuration. Use this to inspect solution properties and understand solution structure.
+- **list_dataverse_solutions** ✅ **Fully Tested** - **List Dataverse Solutions**: Retrieves a list of solutions in the Dataverse environment with filtering options. Use this to discover available solutions, find unmanaged solutions for customization, or get an overview of solution packages. Includes publisher information for each solution.
+- **set_solution_context** ✅ **Fully Tested** - **Set Solution Context**: Sets the active solution context for all subsequent metadata operations. When a solution context is set, all created tables, columns, relationships, and other components will be automatically added to this solution. This is required before creating any custom components.
+- **get_solution_context** ✅ **Fully Tested** - **Get Solution Context**: Retrieves the currently active solution context information. Use this to check which solution is currently set for metadata operations and to verify the customization prefix being used for new components.
+- **clear_solution_context** ✅ **Fully Tested** - **Clear Solution Context**: Clears the currently active solution context. After clearing, metadata operations will not be associated with any specific solution. Use this when you want to work without a solution context or before switching to a different solution.
 
 ### Security Role Operations
-- **create_dataverse_role** ✅ **Fully Tested** - Create new security roles
-- **get_dataverse_role** ✅ **Fully Tested** - Retrieve security role metadata
-- **update_dataverse_role** ✅ **Fully Tested** - Update security role properties
-- **delete_dataverse_role** ✅ **Fully Tested** - Delete custom security roles
-- **list_dataverse_roles** ✅ **Fully Tested** - List security roles with filtering options
-- **add_privileges_to_role** ✅ **Fully Tested** - Add privileges to a security role
-- **remove_privilege_from_role** ✅ **Fully Tested** - Remove privileges from a security role
-- **replace_role_privileges** ✅ **Fully Tested** - Replace all privileges for a security role
-- **get_role_privileges** ✅ **Fully Tested** - Retrieve all privileges for a security role
-- **assign_role_to_user** ✅ **Fully Tested** - Assign security roles to users
-- **remove_role_from_user** ✅ **Fully Tested** - Remove security roles from users
-- **assign_role_to_team** ✅ **Fully Tested** - Assign security roles to teams
-- **remove_role_from_team** ✅ **Fully Tested** - Remove security roles from teams
+- **create_dataverse_role** ✅ **Fully Tested** - **Create Dataverse Security Role**: Creates a new security role in Dataverse to define permissions and access levels for users and teams. Security roles control what users can see and do within the system. Use this to establish custom permission sets for different user types or job functions.
+- **get_dataverse_role** ✅ **Fully Tested** - **Get Dataverse Security Role**: Retrieves detailed information about a specific security role including its properties, business unit association, and configuration settings. Use this to inspect role definitions and understand permission structures.
+- **update_dataverse_role** ✅ **Fully Tested** - **Update Dataverse Security Role**: Updates the properties and configuration of an existing security role. Use this to modify role settings like name, description, auto-assignment behavior, or inheritance settings without changing the actual privileges.
+- **delete_dataverse_role** ✅ **Fully Tested** - **Delete Dataverse Security Role**: Permanently deletes a security role from Dataverse. WARNING: This action cannot be undone and will fail if the role is assigned to any users or teams. Ensure the role is not in use before deletion.
+- **list_dataverse_roles** ✅ **Fully Tested** - **List Dataverse Security Roles**: Retrieves a list of security roles in the Dataverse environment with filtering options. Use this to discover available roles, find custom roles, or get an overview of permission structures. Supports filtering by business unit, custom/system roles, and managed/unmanaged status.
+- **add_privileges_to_role** ✅ **Fully Tested** - **Add Privileges to Security Role**: Adds specific privileges with defined access levels to a security role. Use this to grant permissions for specific operations (create, read, write, delete, etc.) on entities or system functions. Each privilege can have different access levels (Basic, Local, Deep, Global).
+- **remove_privilege_from_role** ✅ **Fully Tested** - **Remove Privilege from Security Role**: Removes a specific privilege from a security role, revoking the associated permissions. Use this to restrict access by removing specific operation permissions from a role.
+- **replace_role_privileges** ✅ **Fully Tested** - **Replace Security Role Privileges**: Completely replaces all existing privileges in a security role with a new set of privileges. WARNING: This removes all current privileges and replaces them with the specified ones. Use this for comprehensive role permission restructuring.
+- **get_role_privileges** ✅ **Fully Tested** - **Get Security Role Privileges**: Retrieves all privileges currently assigned to a security role, showing what permissions the role grants. Use this to audit role permissions and understand what access a role provides to users and teams.
+- **assign_role_to_user** ✅ **Fully Tested** - **Assign Security Role to User**: Assigns a security role to a specific user, granting them all the permissions defined in that role. Use this to provide users with the appropriate access levels for their job functions and responsibilities.
+- **remove_role_from_user** ✅ **Fully Tested** - **Remove Security Role from User**: Removes a security role assignment from a specific user, revoking the permissions granted by that role. Use this when users change roles or no longer need certain access levels.
+- **assign_role_to_team** ✅ **Fully Tested** - **Assign Security Role to Team**: Assigns a security role to a team, granting all team members the permissions defined in that role. Use this to provide consistent access levels to groups of users working together on similar tasks.
+- **remove_role_from_team** ✅ **Fully Tested** - **Remove Security Role from Team**: Removes a security role assignment from a team, revoking the permissions granted by that role for all team members. Use this when teams no longer need certain access levels or when restructuring team permissions.
 
 ### Team Operations
-- **create_dataverse_team** ✅ **Fully Tested** - Create new teams with various types and configurations
-- **get_dataverse_team** ✅ **Fully Tested** - Retrieve team metadata and details
-- **update_dataverse_team** ✅ **Fully Tested** - Update team properties and settings
-- **delete_dataverse_team** ✅ **Fully Tested** - Delete teams
-- **list_dataverse_teams** ✅ **Fully Tested** - List teams with filtering options
-- **add_members_to_team** ✅ **Fully Tested** - Add users as team members
-- **remove_members_from_team** ✅ **Fully Tested** - Remove users from teams
-- **get_team_members** ✅ **Fully Tested** - Retrieve all members of a team
-- **convert_owner_team_to_access_team** ✅ **Fully Tested** - Convert owner teams to access teams
+- **create_dataverse_team** ✅ **Fully Tested** - **Create Dataverse Team**: Creates a new team in Dataverse for organizing users and managing permissions. Teams can be owner teams (for record ownership) or access teams (for sharing records). Use this to establish groups of users who work together and need similar access levels.
+- **get_dataverse_team** ✅ **Fully Tested** - **Get Dataverse Team**: Retrieves detailed information about a specific team including its properties, administrator, business unit association, and configuration settings. Use this to inspect team definitions and understand team structure.
+- **update_dataverse_team** ✅ **Fully Tested** - **Update Dataverse Team**: Updates the properties and configuration of an existing team. Use this to modify team settings like name, description, administrator, or other team properties without changing team membership.
+- **delete_dataverse_team** ✅ **Fully Tested** - **Delete Dataverse Team**: Permanently deletes a team from Dataverse. WARNING: This action cannot be undone and will fail if the team owns records or has assigned security roles. Ensure the team is not in use before deletion.
+- **list_dataverse_teams** ✅ **Fully Tested** - **List Dataverse Teams**: Retrieves a list of teams in the Dataverse environment with filtering options. Use this to discover available teams, find teams by business unit or type, or get an overview of team organization. Supports filtering by business unit, team type, and system-managed status.
+- **add_members_to_team** ✅ **Fully Tested** - **Add Members to Team**: Adds users as members to a team, granting them access to team-owned records and team-based permissions. Use this to expand team membership and provide users with team-level access to resources.
+- **remove_members_from_team** ✅ **Fully Tested** - **Remove Members from Team**: Removes users from team membership, revoking their access to team-owned records and team-based permissions. Use this when users no longer need team access or are changing roles.
+- **get_team_members** ✅ **Fully Tested** - **Get Team Members**: Retrieves a list of all users who are members of a specific team, including their basic information and status. Use this to audit team membership and understand who has team-based access.
+- **convert_owner_team_to_access_team** ✅ **Fully Tested** - **Convert Owner Team to Access Team**: Converts an owner team to an access team, changing how the team can be used for record ownership and sharing. WARNING: This action cannot be undone and affects how records owned by this team are managed.
 
 ### Business Unit Operations
-- **create_dataverse_businessunit** ✅ **Fully Tested** - Create new business units with comprehensive address and contact information
-- **get_dataverse_businessunit** ✅ **Fully Tested** - Retrieve business unit metadata and details
-- **update_dataverse_businessunit** ✅ **Fully Tested** - Update business unit properties, addresses, and settings
-- **delete_dataverse_businessunit** ✅ **Fully Tested** - Delete business units
-- **list_dataverse_businessunits** ✅ **Fully Tested** - List business units with filtering and sorting options
-- **get_businessunit_hierarchy** ✅ **Fully Tested** - Retrieve the hierarchical structure of business units
-- **set_businessunit_parent** ✅ **Fully Tested** - Change the parent business unit in the hierarchy
-- **get_businessunit_users** ✅ **Fully Tested** - Get users associated with a business unit (with subsidiary option)
-- **get_businessunit_teams** ✅ **Fully Tested** - Get teams associated with a business unit (with subsidiary option)
+- **create_dataverse_businessunit** ✅ **Fully Tested** - **Create Dataverse Business Unit**: Creates a new business unit in Dataverse with comprehensive configuration options including contact information, addresses, and organizational hierarchy. Business units are used to organize users and control data access in Dataverse.
+- **get_dataverse_businessunit** ✅ **Fully Tested** - **Get Dataverse Business Unit**: Retrieves detailed information about a specific business unit including all properties, addresses, and related information. Use this to inspect business unit configuration and hierarchy relationships.
+- **update_dataverse_businessunit** ✅ **Fully Tested** - **Update Dataverse Business Unit**: Updates the properties and configuration of an existing business unit. Use this to modify business unit information, contact details, addresses, and organizational settings. Only provided fields will be updated.
+- **delete_dataverse_businessunit** ✅ **Fully Tested** - **Delete Dataverse Business Unit**: Permanently deletes a business unit from Dataverse. WARNING: This action cannot be undone and may affect users and teams associated with the business unit. Use with extreme caution.
+- **list_dataverse_businessunits** ✅ **Fully Tested** - **List Dataverse Business Units**: Retrieves a list of business units in the Dataverse environment with filtering and sorting options. Use this to discover available business units, understand organizational hierarchy, and find specific business units by criteria.
+- **get_businessunit_hierarchy** ✅ **Fully Tested** - **Get Business Unit Hierarchy**: Retrieves the complete organizational hierarchy for a specific business unit, showing parent-child relationships and the full organizational structure. Use this to understand business unit relationships and organizational structure.
+- **set_businessunit_parent** ✅ **Fully Tested** - **Set Business Unit Parent**: Changes the parent business unit for a given business unit, effectively moving it within the organizational hierarchy. Use this to reorganize business unit structure and reporting relationships.
+- **get_businessunit_users** ✅ **Fully Tested** - **Get Business Unit Users**: Retrieves all users associated with a specific business unit, with option to include users from subsidiary business units. Use this to understand user assignments and organizational membership.
+- **get_businessunit_teams** ✅ **Fully Tested** - **Get Business Unit Teams**: Retrieves all teams associated with a specific business unit, with option to include teams from subsidiary business units. Use this to understand team organization and business unit relationships.
 
 ### Schema Export Operations
-- **export_solution_schema** ✅ **Fully Tested** - Export solution schema to JSON file including tables, columns, and global option sets. Supports multiple customization prefixes, column prefix exclusion, and comprehensive system table filtering.
-- **generate_mermaid_diagram** ✅ **Fully Tested** - Generate professional Entity Relationship Diagrams from exported JSON schemas using Mermaid syntax. Includes relationship visualization, enhanced column markers, and support for unlimited tables.
+- **export_solution_schema** ✅ **Fully Tested** - **Export Solution Schema**: Exports a comprehensive JSON schema of Dataverse tables, columns, relationships, and option sets. Use this to document your data model, generate diagrams, or analyze solution structure. Supports filtering by prefixes, system/custom components, and specific tables.
+- **generate_mermaid_diagram** ✅ **Fully Tested** - **Generate Mermaid Diagram**: Generates a Mermaid entity relationship diagram from an exported schema JSON file. Creates visual documentation of your data model with tables, columns, and relationships. Perfect for documentation, presentations, and understanding data structure.
 
 ### WebAPI Call Generator
-- **generate_webapi_call** ✅ **Fully Tested** - Generate complete WebAPI calls for Dataverse operations including URLs, headers, and request bodies. Supports all major operations (retrieve, create, update, delete, associate, disassociate, actions, functions) with OData query options and provides output in multiple formats (HTTP, cURL, JavaScript fetch).
+- **generate_webapi_call** ✅ **Fully Tested** - **Generate Dataverse WebAPI Call**: Generate HTTP requests, curl commands, and JavaScript examples for Dataverse WebAPI operations. Supports all CRUD operations, associations, actions, and functions with proper OData query parameters and headers.
 
 ### PowerPages WebAPI Generator
-- **generate_powerpages_webapi_call** ✅ **Fully Tested** - Generate PowerPages-specific WebAPI calls using the `/_api/[logicalEntityName]` format. Includes request verification token handling, authentication context, React component examples, and PowerPages-specific features for SPA development.
+- **generate_powerpages_webapi_call** ✅ **Fully Tested** - **Generate PowerPages WebAPI Call**: Generate PowerPages-specific API calls, JavaScript examples, and React components for Dataverse operations through PowerPages portals. Includes authentication context and portal-specific patterns.
 
 ### PowerPages Configuration Management
-- **manage_powerpages_webapi_config** ✅ **Fully Tested** - Manage table permissions and WebAPI site settings for PowerPages Code Sites. Automates YAML configuration files in `.powerpages-site` directory including sitesetting.yml, webrole.yml, and table-permissions/*.yml files with comprehensive status checking and configuration management.
+- **manage_powerpages_webapi_config** ✅ **Fully Tested** - **Manage PowerPages WebAPI Configuration**: Manage PowerPages WebAPI configurations and table permissions. Add/remove WebAPI access for tables, configure table permissions, and check configuration status for PowerPages portals.
 
 ## Solution-Based Architecture
 

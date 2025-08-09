@@ -102,37 +102,41 @@ function formatPowerPagesWebAPICall(
 }
 
 export function generatePowerPagesWebAPICallTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "generate_powerpages_webapi_call",
     {
-      operation: z.enum([
-        "retrieve", "retrieveMultiple", "create", "update", "delete"
-      ]).describe("Type of operation to perform"),
-      
-      logicalEntityName: z.string().describe("Logical entity name (e.g., 'cr7ae_creditcardse', 'contact') - will be automatically suffixed with 's' for PowerPages API URLs"),
-      entityId: z.string().optional().describe("Entity ID for single record operations (GUID)"),
-      
-      // OData query options
-      select: z.array(z.string()).optional().describe("Fields to select (e.g., ['cr7ae_name', 'cr7ae_type'])"),
-      filter: z.string().optional().describe("OData filter expression"),
-      orderby: z.string().optional().describe("OData orderby expression"),
-      top: z.number().optional().describe("Number of records to return"),
-      skip: z.number().optional().describe("Number of records to skip"),
-      expand: z.string().optional().describe("Related entities to expand"),
-      count: z.boolean().optional().describe("Include count of records"),
-      
-      // Request body for create/update operations
-      data: z.record(z.any()).optional().describe("Data to send in request body for create/update operations"),
-      
-      // PowerPages specific options
-      baseUrl: z.string().optional().describe("PowerPages site base URL (e.g., 'https://yoursite.powerappsportals.com')"),
-      requestVerificationToken: z.boolean().default(false).describe("Include __RequestVerificationToken placeholder for POST operations"),
-      includeAuthContext: z.boolean().default(false).describe("Include authentication context information"),
-      
-      // Additional headers
-      customHeaders: z.record(z.string()).optional().describe("Custom headers to include in the request")
+      title: "Generate PowerPages WebAPI Call",
+      description: "Generate PowerPages-specific API calls, JavaScript examples, and React components for Dataverse operations through PowerPages portals. Includes authentication context and portal-specific patterns.",
+      inputSchema: {
+        operation: z.enum([
+          "retrieve", "retrieveMultiple", "create", "update", "delete"
+        ]).describe("Type of operation to perform"),
+        
+        logicalEntityName: z.string().describe("Logical entity name (e.g., 'cr7ae_creditcardse', 'contact') - will be automatically suffixed with 's' for PowerPages API URLs"),
+        entityId: z.string().optional().describe("Entity ID for single record operations (GUID)"),
+        
+        // OData query options
+        select: z.array(z.string()).optional().describe("Fields to select (e.g., ['cr7ae_name', 'cr7ae_type'])"),
+        filter: z.string().optional().describe("OData filter expression"),
+        orderby: z.string().optional().describe("OData orderby expression"),
+        top: z.number().optional().describe("Number of records to return"),
+        skip: z.number().optional().describe("Number of records to skip"),
+        expand: z.string().optional().describe("Related entities to expand"),
+        count: z.boolean().optional().describe("Include count of records"),
+        
+        // Request body for create/update operations
+        data: z.record(z.any()).optional().describe("Data to send in request body for create/update operations"),
+        
+        // PowerPages specific options
+        baseUrl: z.string().optional().describe("PowerPages site base URL (e.g., 'https://yoursite.powerappsportals.com')"),
+        requestVerificationToken: z.boolean().default(false).describe("Include __RequestVerificationToken placeholder for POST operations"),
+        includeAuthContext: z.boolean().default(false).describe("Include authentication context information"),
+        
+        // Additional headers
+        customHeaders: z.record(z.string()).optional().describe("Custom headers to include in the request")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         const baseUrl = params.baseUrl || 'https://yoursite.powerappsportals.com';
         

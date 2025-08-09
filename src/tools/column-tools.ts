@@ -41,44 +41,48 @@ function generateColumnSchemaName(displayName: string, prefix: string): string {
 }
 
 export function createColumnTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_column",
     {
-      entityLogicalName: z.string().describe("Logical name of the table to add the column to"),
-      displayName: z.string().describe("Display name for the column (e.g., 'Customer Email')"),
-      description: z.string().optional().describe("Description of the column"),
-      columnType: z.enum([
-        "String", "Integer", "Decimal", "Money", "Boolean", "DateTime",
-        "Picklist", "Lookup", "Memo", "Double", "BigInt"
-      ]).describe("Type of the column"),
-      requiredLevel: z.enum(["None", "SystemRequired", "ApplicationRequired", "Recommended"]).default("None").describe("Required level of the column"),
-      isAuditEnabled: z.boolean().optional().describe("Whether auditing is enabled for this column"),
-      isValidForAdvancedFind: z.boolean().optional().describe("Whether the column appears in Advanced Find"),
-      isValidForCreate: z.boolean().optional().describe("Whether the column can be set during create"),
-      isValidForUpdate: z.boolean().optional().describe("Whether the column can be updated"),
-      // String-specific options
-      maxLength: z.number().optional().describe("Maximum length for string columns (default: 100)"),
-      format: z.enum(["Email", "Text", "TextArea", "Url", "Phone"]).optional().describe("Format for string columns"),
-      // Integer-specific options
-      minValue: z.number().optional().describe("Minimum value for integer/decimal columns"),
-      maxValue: z.number().optional().describe("Maximum value for integer/decimal columns"),
-      // Decimal-specific options
-      precision: z.number().optional().describe("Precision for decimal columns (default: 2)"),
-      // DateTime-specific options
-      dateTimeFormat: z.enum(["DateOnly", "DateAndTime"]).optional().describe("Format for datetime columns"),
-      // Boolean-specific options
-      trueOptionLabel: z.string().optional().describe("Label for true option in boolean columns (default: 'Yes')"),
-      falseOptionLabel: z.string().optional().describe("Label for false option in boolean columns (default: 'No')"),
-      defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional().describe("Default value for the column"),
-      // Lookup-specific options
-      targetEntity: z.string().optional().describe("Target entity for lookup columns"),
-      // Picklist-specific options
-      optionSetName: z.string().optional().describe("Name of the option set for picklist columns"),
-      options: z.array(z.object({
-        value: z.number(),
-        label: z.string(),
-        description: z.string().optional()
-      })).optional().describe("Options for picklist columns")
+      title: "Create Dataverse Column",
+      description: "Creates a new column (field) in a Dataverse table with the specified data type and configuration. Supports various column types including text, numbers, dates, lookups, and choice lists. Use this to add new fields to store specific data in your tables. Requires a solution context to be set first.",
+      inputSchema: {
+        entityLogicalName: z.string().describe("Logical name of the table to add the column to"),
+        displayName: z.string().describe("Display name for the column (e.g., 'Customer Email')"),
+        description: z.string().optional().describe("Description of the column"),
+        columnType: z.enum([
+          "String", "Integer", "Decimal", "Money", "Boolean", "DateTime",
+          "Picklist", "Lookup", "Memo", "Double", "BigInt"
+        ]).describe("Type of the column"),
+        requiredLevel: z.enum(["None", "SystemRequired", "ApplicationRequired", "Recommended"]).default("None").describe("Required level of the column"),
+        isAuditEnabled: z.boolean().optional().describe("Whether auditing is enabled for this column"),
+        isValidForAdvancedFind: z.boolean().optional().describe("Whether the column appears in Advanced Find"),
+        isValidForCreate: z.boolean().optional().describe("Whether the column can be set during create"),
+        isValidForUpdate: z.boolean().optional().describe("Whether the column can be updated"),
+        // String-specific options
+        maxLength: z.number().optional().describe("Maximum length for string columns (default: 100)"),
+        format: z.enum(["Email", "Text", "TextArea", "Url", "Phone"]).optional().describe("Format for string columns"),
+        // Integer-specific options
+        minValue: z.number().optional().describe("Minimum value for integer/decimal columns"),
+        maxValue: z.number().optional().describe("Maximum value for integer/decimal columns"),
+        // Decimal-specific options
+        precision: z.number().optional().describe("Precision for decimal columns (default: 2)"),
+        // DateTime-specific options
+        dateTimeFormat: z.enum(["DateOnly", "DateAndTime"]).optional().describe("Format for datetime columns"),
+        // Boolean-specific options
+        trueOptionLabel: z.string().optional().describe("Label for true option in boolean columns (default: 'Yes')"),
+        falseOptionLabel: z.string().optional().describe("Label for false option in boolean columns (default: 'No')"),
+        defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional().describe("Default value for the column"),
+        // Lookup-specific options
+        targetEntity: z.string().optional().describe("Target entity for lookup columns"),
+        // Picklist-specific options
+        optionSetName: z.string().optional().describe("Name of the option set for picklist columns"),
+        options: z.array(z.object({
+          value: z.number(),
+          label: z.string(),
+          description: z.string().optional()
+        })).optional().describe("Options for picklist columns")
+      }
     },
     async (params) => {
       try {
@@ -265,11 +269,15 @@ function getStringFormat(format: string): number {
 }
 
 export function getColumnTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_column",
     {
-      entityLogicalName: z.string().describe("Logical name of the table"),
-      logicalName: z.string().describe("Logical name of the column to retrieve")
+      title: "Get Dataverse Column",
+      description: "Retrieves detailed information about a specific column in a Dataverse table, including its data type, properties, and configuration settings. Use this to inspect column definitions and understand field structure.",
+      inputSchema: {
+        entityLogicalName: z.string().describe("Logical name of the table"),
+        logicalName: z.string().describe("Logical name of the column to retrieve")
+      }
     },
     async (params) => {
       try {
@@ -301,18 +309,22 @@ export function getColumnTool(server: McpServer, client: DataverseClient) {
 }
 
 export function updateColumnTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "update_dataverse_column",
     {
-      entityLogicalName: z.string().describe("Logical name of the table"),
-      logicalName: z.string().describe("Logical name of the column to update"),
-      displayName: z.string().optional().describe("New display name for the column"),
-      description: z.string().optional().describe("New description of the column"),
-      requiredLevel: z.enum(["None", "SystemRequired", "ApplicationRequired", "Recommended"]).optional().describe("New required level of the column"),
-      isAuditEnabled: z.boolean().optional().describe("Whether auditing is enabled for this column"),
-      isValidForAdvancedFind: z.boolean().optional().describe("Whether the column appears in Advanced Find"),
-      isValidForCreate: z.boolean().optional().describe("Whether the column can be set during create"),
-      isValidForUpdate: z.boolean().optional().describe("Whether the column can be updated")
+      title: "Update Dataverse Column",
+      description: "Updates the properties and configuration of an existing column in a Dataverse table. Use this to modify column settings like display names, descriptions, required levels, or audit settings. Note that data type cannot be changed after creation.",
+      inputSchema: {
+        entityLogicalName: z.string().describe("Logical name of the table"),
+        logicalName: z.string().describe("Logical name of the column to update"),
+        displayName: z.string().optional().describe("New display name for the column"),
+        description: z.string().optional().describe("New description of the column"),
+        requiredLevel: z.enum(["None", "SystemRequired", "ApplicationRequired", "Recommended"]).optional().describe("New required level of the column"),
+        isAuditEnabled: z.boolean().optional().describe("Whether auditing is enabled for this column"),
+        isValidForAdvancedFind: z.boolean().optional().describe("Whether the column appears in Advanced Find"),
+        isValidForCreate: z.boolean().optional().describe("Whether the column can be set during create"),
+        isValidForUpdate: z.boolean().optional().describe("Whether the column can be updated")
+      }
     },
     async (params) => {
       try {
@@ -391,11 +403,15 @@ export function updateColumnTool(server: McpServer, client: DataverseClient) {
 }
 
 export function deleteColumnTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "delete_dataverse_column",
     {
-      entityLogicalName: z.string().describe("Logical name of the table"),
-      logicalName: z.string().describe("Logical name of the column to delete")
+      title: "Delete Dataverse Column",
+      description: "Permanently deletes a column from a Dataverse table. WARNING: This action cannot be undone and will remove all data stored in this column. Use with extreme caution and only for columns that are no longer needed.",
+      inputSchema: {
+        entityLogicalName: z.string().describe("Logical name of the table"),
+        logicalName: z.string().describe("Logical name of the column to delete")
+      }
     },
     async (params) => {
       try {
@@ -427,13 +443,17 @@ export function deleteColumnTool(server: McpServer, client: DataverseClient) {
 }
 
 export function listColumnsTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_columns",
     {
-      entityLogicalName: z.string().describe("Logical name of the table"),
-      customOnly: z.boolean().default(false).describe("Whether to list only custom columns"),
-      includeManaged: z.boolean().default(false).describe("Whether to include managed columns"),
-      filter: z.string().optional().describe("OData filter expression")
+      title: "List Dataverse Columns",
+      description: "Retrieves a list of columns in a specific Dataverse table with filtering options. Use this to discover available fields in a table, find custom columns, or get an overview of the table structure. Supports filtering by custom/system columns and managed/unmanaged status.",
+      inputSchema: {
+        entityLogicalName: z.string().describe("Logical name of the table"),
+        customOnly: z.boolean().default(false).describe("Whether to list only custom columns"),
+        includeManaged: z.boolean().default(false).describe("Whether to include managed columns"),
+        filter: z.string().optional().describe("OData filter expression")
+      }
     },
     async (params) => {
       try {

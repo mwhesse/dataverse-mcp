@@ -117,48 +117,52 @@ function formatWebAPICall(
 }
 
 export function generateWebAPICallTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "generate_webapi_call",
     {
-      operation: z.enum([
-        "retrieve", "retrieveMultiple", "create", "update", "delete", "associate", "disassociate", "callAction", "callFunction"
-      ]).describe("Type of operation to perform"),
-      
-      entitySetName: z.string().optional().describe("Entity set name or logical entity name (e.g., 'account', 'contact') - will be automatically suffixed with 's' for Dataverse API URLs"),
-      entityId: z.string().optional().describe("Entity ID for single record operations"),
-      
-      // OData query options
-      select: z.array(z.string()).optional().describe("Fields to select (e.g., ['name', 'emailaddress1'])"),
-      filter: z.string().optional().describe("OData filter expression"),
-      orderby: z.string().optional().describe("OData orderby expression"),
-      top: z.number().optional().describe("Number of records to return"),
-      skip: z.number().optional().describe("Number of records to skip"),
-      expand: z.string().optional().describe("Related entities to expand"),
-      count: z.boolean().optional().describe("Include count of records"),
-      
-      // Request body for create/update operations
-      data: z.record(z.any()).optional().describe("Data to send in request body for create/update operations"),
-      
-      // Header options
-      prefer: z.array(z.string()).optional().describe("Prefer header values (e.g., ['return=representation', 'odata.include-annotations=*'])"),
-      ifMatch: z.string().optional().describe("If-Match header for conditional updates"),
-      ifNoneMatch: z.string().optional().describe("If-None-Match header"),
-      callerId: z.string().optional().describe("MSCRMCallerID header for impersonation"),
-      
-      // Association/Disassociation options
-      relationshipName: z.string().optional().describe("Relationship name for associate/disassociate operations"),
-      relatedEntitySetName: z.string().optional().describe("Related entity set name for associations"),
-      relatedEntityId: z.string().optional().describe("Related entity ID for associations"),
-      
-      // Action/Function options
-      actionOrFunctionName: z.string().optional().describe("Name of the action or function to call"),
-      parameters: z.record(z.any()).optional().describe("Parameters for action/function calls"),
-      
-      // Additional options
-      includeSolutionContext: z.boolean().default(true).describe("Include current solution context in headers"),
-      includeAuthHeader: z.boolean().default(false).describe("Include Authorization header placeholder in output")
+      title: "Generate Dataverse WebAPI Call",
+      description: "Generate HTTP requests, curl commands, and JavaScript examples for Dataverse WebAPI operations. Supports all CRUD operations, associations, actions, and functions with proper OData query parameters and headers.",
+      inputSchema: {
+        operation: z.enum([
+          "retrieve", "retrieveMultiple", "create", "update", "delete", "associate", "disassociate", "callAction", "callFunction"
+        ]).describe("Type of operation to perform"),
+        
+        entitySetName: z.string().optional().describe("Entity set name or logical entity name (e.g., 'account', 'contact') - will be automatically suffixed with 's' for Dataverse API URLs"),
+        entityId: z.string().optional().describe("Entity ID for single record operations"),
+        
+        // OData query options
+        select: z.array(z.string()).optional().describe("Fields to select (e.g., ['name', 'emailaddress1'])"),
+        filter: z.string().optional().describe("OData filter expression"),
+        orderby: z.string().optional().describe("OData orderby expression"),
+        top: z.number().optional().describe("Number of records to return"),
+        skip: z.number().optional().describe("Number of records to skip"),
+        expand: z.string().optional().describe("Related entities to expand"),
+        count: z.boolean().optional().describe("Include count of records"),
+        
+        // Request body for create/update operations
+        data: z.record(z.any()).optional().describe("Data to send in request body for create/update operations"),
+        
+        // Header options
+        prefer: z.array(z.string()).optional().describe("Prefer header values (e.g., ['return=representation', 'odata.include-annotations=*'])"),
+        ifMatch: z.string().optional().describe("If-Match header for conditional updates"),
+        ifNoneMatch: z.string().optional().describe("If-None-Match header"),
+        callerId: z.string().optional().describe("MSCRMCallerID header for impersonation"),
+        
+        // Association/Disassociation options
+        relationshipName: z.string().optional().describe("Relationship name for associate/disassociate operations"),
+        relatedEntitySetName: z.string().optional().describe("Related entity set name for associations"),
+        relatedEntityId: z.string().optional().describe("Related entity ID for associations"),
+        
+        // Action/Function options
+        actionOrFunctionName: z.string().optional().describe("Name of the action or function to call"),
+        parameters: z.record(z.any()).optional().describe("Parameters for action/function calls"),
+        
+        // Additional options
+        includeSolutionContext: z.boolean().default(true).describe("Include current solution context in headers"),
+        includeAuthHeader: z.boolean().default(false).describe("Include Authorization header placeholder in output")
+      }
     },
-    async (params) => {
+    async (params: any) => {
       try {
         const config = (client as any).config as { dataverseUrl: string };
         const baseUrl = config.dataverseUrl;

@@ -23,16 +23,20 @@ function getDepthName(depth: number): string {
 }
 
 export function createRoleTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "create_dataverse_role",
     {
-      name: z.string().max(100).describe("Name of the security role"),
-      description: z.string().max(2000).optional().describe("Description of the security role"),
-      businessUnitId: z.string().optional().describe("Business unit ID to associate the role with (defaults to root business unit)"),
-      appliesTo: z.string().max(2000).optional().describe("Personas/Licenses the security role applies to"),
-      isAutoAssigned: z.boolean().default(false).describe("Whether the role is auto-assigned based on user license"),
-      isInherited: z.enum(['0', '1']).default('1').describe("0 = Team privileges only, 1 = Direct User access level and Team privileges"),
-      summaryOfCoreTablePermissions: z.string().max(2000).optional().describe("Summary of Core Table Permissions of the Role")
+      title: "Create Dataverse Security Role",
+      description: "Creates a new security role in Dataverse to define permissions and access levels for users and teams. Security roles control what users can see and do within the system. Use this to establish custom permission sets for different user types or job functions.",
+      inputSchema: {
+        name: z.string().max(100).describe("Name of the security role"),
+        description: z.string().max(2000).optional().describe("Description of the security role"),
+        businessUnitId: z.string().optional().describe("Business unit ID to associate the role with (defaults to root business unit)"),
+        appliesTo: z.string().max(2000).optional().describe("Personas/Licenses the security role applies to"),
+        isAutoAssigned: z.boolean().default(false).describe("Whether the role is auto-assigned based on user license"),
+        isInherited: z.enum(['0', '1']).default('1').describe("0 = Team privileges only, 1 = Direct User access level and Team privileges"),
+        summaryOfCoreTablePermissions: z.string().max(2000).optional().describe("Summary of Core Table Permissions of the Role")
+      }
     },
     async (params) => {
       try {
@@ -86,10 +90,14 @@ export function createRoleTool(server: McpServer, client: DataverseClient) {
 }
 
 export function getRoleTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_dataverse_role",
     {
-      roleId: z.string().describe("ID of the role to retrieve")
+      title: "Get Dataverse Security Role",
+      description: "Retrieves detailed information about a specific security role including its properties, business unit association, and configuration settings. Use this to inspect role definitions and understand permission structures.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to retrieve")
+      }
     },
     async (params) => {
       try {
@@ -137,16 +145,20 @@ export function getRoleTool(server: McpServer, client: DataverseClient) {
 }
 
 export function updateRoleTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "update_dataverse_role",
     {
-      roleId: z.string().describe("ID of the role to update"),
-      name: z.string().max(100).optional().describe("New name of the security role"),
-      description: z.string().max(2000).optional().describe("New description of the security role"),
-      appliesTo: z.string().max(2000).optional().describe("New personas/licenses the security role applies to"),
-      isAutoAssigned: z.boolean().optional().describe("Whether the role is auto-assigned based on user license"),
-      isInherited: z.enum(['0', '1']).optional().describe("0 = Team privileges only, 1 = Direct User access level and Team privileges"),
-      summaryOfCoreTablePermissions: z.string().max(2000).optional().describe("Summary of Core Table Permissions of the Role")
+      title: "Update Dataverse Security Role",
+      description: "Updates the properties and configuration of an existing security role. Use this to modify role settings like name, description, auto-assignment behavior, or inheritance settings without changing the actual privileges.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to update"),
+        name: z.string().max(100).optional().describe("New name of the security role"),
+        description: z.string().max(2000).optional().describe("New description of the security role"),
+        appliesTo: z.string().max(2000).optional().describe("New personas/licenses the security role applies to"),
+        isAutoAssigned: z.boolean().optional().describe("Whether the role is auto-assigned based on user license"),
+        isInherited: z.enum(['0', '1']).optional().describe("0 = Team privileges only, 1 = Direct User access level and Team privileges"),
+        summaryOfCoreTablePermissions: z.string().max(2000).optional().describe("Summary of Core Table Permissions of the Role")
+      }
     },
     async (params) => {
       try {
@@ -185,10 +197,14 @@ export function updateRoleTool(server: McpServer, client: DataverseClient) {
 }
 
 export function deleteRoleTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "delete_dataverse_role",
     {
-      roleId: z.string().describe("ID of the role to delete")
+      title: "Delete Dataverse Security Role",
+      description: "Permanently deletes a security role from Dataverse. WARNING: This action cannot be undone and will fail if the role is assigned to any users or teams. Ensure the role is not in use before deletion.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to delete")
+      }
     },
     async (params) => {
       try {
@@ -218,14 +234,18 @@ export function deleteRoleTool(server: McpServer, client: DataverseClient) {
 }
 
 export function listRolesTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "list_dataverse_roles",
     {
-      businessUnitId: z.string().optional().describe("Filter roles by business unit ID"),
-      customOnly: z.boolean().default(false).describe("Whether to list only custom (non-system) roles"),
-      includeManaged: z.boolean().default(false).describe("Whether to include managed roles"),
-      top: z.number().optional().describe("Maximum number of roles to return (default: 50)"),
-      filter: z.string().optional().describe("OData filter expression")
+      title: "List Dataverse Security Roles",
+      description: "Retrieves a list of security roles in the Dataverse environment with filtering options. Use this to discover available roles, find custom roles, or get an overview of permission structures. Supports filtering by business unit, custom/system roles, and managed/unmanaged status.",
+      inputSchema: {
+        businessUnitId: z.string().optional().describe("Filter roles by business unit ID"),
+        customOnly: z.boolean().default(false).describe("Whether to list only custom (non-system) roles"),
+        includeManaged: z.boolean().default(false).describe("Whether to include managed roles"),
+        top: z.number().optional().describe("Maximum number of roles to return (default: 50)"),
+        filter: z.string().optional().describe("OData filter expression")
+      }
     },
     async (params) => {
       try {
@@ -295,14 +315,18 @@ export function listRolesTool(server: McpServer, client: DataverseClient) {
 }
 
 export function addPrivilegesToRoleTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "add_privileges_to_role",
     {
-      roleId: z.string().describe("ID of the role to add privileges to"),
-      privileges: z.array(z.object({
-        privilegeId: z.string().describe("ID of the privilege to add"),
-        depth: z.enum(['Basic', 'Local', 'Deep', 'Global']).describe("Access level for the privilege")
-      })).describe("Array of privileges to add to the role")
+      title: "Add Privileges to Dataverse Role",
+      description: "Adds specific privileges with defined access levels to a security role. Use this to grant permissions for specific operations (create, read, write, delete, etc.) on entities or system functions. Each privilege can have different access levels (Basic, Local, Deep, Global).",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to add privileges to"),
+        privileges: z.array(z.object({
+          privilegeId: z.string().describe("ID of the privilege to add"),
+          depth: z.enum(['Basic', 'Local', 'Deep', 'Global']).describe("Access level for the privilege")
+        })).describe("Array of privileges to add to the role")
+      }
     },
     async (params) => {
       try {
@@ -340,11 +364,15 @@ export function addPrivilegesToRoleTool(server: McpServer, client: DataverseClie
 }
 
 export function removePrivilegeFromRoleTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "remove_privilege_from_role",
     {
-      roleId: z.string().describe("ID of the role to remove privilege from"),
-      privilegeId: z.string().describe("ID of the privilege to remove")
+      title: "Remove Privilege from Dataverse Role",
+      description: "Removes a specific privilege from a security role, revoking the associated permissions. Use this to restrict access by removing specific operation permissions from a role.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to remove privilege from"),
+        privilegeId: z.string().describe("ID of the privilege to remove")
+      }
     },
     async (params) => {
       try {
@@ -377,14 +405,18 @@ export function removePrivilegeFromRoleTool(server: McpServer, client: Dataverse
 }
 
 export function replaceRolePrivilegesTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "replace_role_privileges",
     {
-      roleId: z.string().describe("ID of the role to replace privileges for"),
-      privileges: z.array(z.object({
-        privilegeId: z.string().describe("ID of the privilege"),
-        depth: z.enum(['Basic', 'Local', 'Deep', 'Global']).describe("Access level for the privilege")
-      })).describe("Array of privileges to replace existing privileges with")
+      title: "Replace Dataverse Role Privileges",
+      description: "Completely replaces all existing privileges in a security role with a new set of privileges. WARNING: This removes all current privileges and replaces them with the specified ones. Use this for comprehensive role permission restructuring.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to replace privileges for"),
+        privileges: z.array(z.object({
+          privilegeId: z.string().describe("ID of the privilege"),
+          depth: z.enum(['Basic', 'Local', 'Deep', 'Global']).describe("Access level for the privilege")
+        })).describe("Array of privileges to replace existing privileges with")
+      }
     },
     async (params) => {
       try {
@@ -422,10 +454,14 @@ export function replaceRolePrivilegesTool(server: McpServer, client: DataverseCl
 }
 
 export function getRolePrivilegesTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "get_role_privileges",
     {
-      roleId: z.string().describe("ID of the role to retrieve privileges for")
+      title: "Get Dataverse Role Privileges",
+      description: "Retrieves all privileges currently assigned to a security role, showing what permissions the role grants. Use this to audit role permissions and understand what access a role provides to users and teams.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to retrieve privileges for")
+      }
     },
     async (params) => {
       try {
@@ -463,11 +499,15 @@ export function getRolePrivilegesTool(server: McpServer, client: DataverseClient
 }
 
 export function assignRoleToUserTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "assign_role_to_user",
     {
-      roleId: z.string().describe("ID of the role to assign"),
-      userId: z.string().describe("ID of the user to assign the role to")
+      title: "Assign Role to User",
+      description: "Assigns a security role to a specific user, granting them all the permissions defined in that role. Use this to provide users with the appropriate access levels for their job functions and responsibilities.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to assign"),
+        userId: z.string().describe("ID of the user to assign the role to")
+      }
     },
     async (params) => {
       try {
@@ -499,11 +539,15 @@ export function assignRoleToUserTool(server: McpServer, client: DataverseClient)
 }
 
 export function removeRoleFromUserTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "remove_role_from_user",
     {
-      roleId: z.string().describe("ID of the role to remove"),
-      userId: z.string().describe("ID of the user to remove the role from")
+      title: "Remove Role from User",
+      description: "Removes a security role assignment from a specific user, revoking the permissions granted by that role. Use this when users change roles or no longer need certain access levels.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to remove"),
+        userId: z.string().describe("ID of the user to remove the role from")
+      }
     },
     async (params) => {
       try {
@@ -533,11 +577,15 @@ export function removeRoleFromUserTool(server: McpServer, client: DataverseClien
 }
 
 export function assignRoleToTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "assign_role_to_team",
     {
-      roleId: z.string().describe("ID of the role to assign"),
-      teamId: z.string().describe("ID of the team to assign the role to")
+      title: "Assign Role to Team",
+      description: "Assigns a security role to a team, granting all team members the permissions defined in that role. Use this to provide consistent access levels to groups of users working together on similar tasks.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to assign"),
+        teamId: z.string().describe("ID of the team to assign the role to")
+      }
     },
     async (params) => {
       try {
@@ -569,11 +617,15 @@ export function assignRoleToTeamTool(server: McpServer, client: DataverseClient)
 }
 
 export function removeRoleFromTeamTool(server: McpServer, client: DataverseClient) {
-  server.tool(
+  server.registerTool(
     "remove_role_from_team",
     {
-      roleId: z.string().describe("ID of the role to remove"),
-      teamId: z.string().describe("ID of the team to remove the role from")
+      title: "Remove Role from Team",
+      description: "Removes a security role assignment from a team, revoking the permissions granted by that role for all team members. Use this when teams no longer need certain access levels or when restructuring team permissions.",
+      inputSchema: {
+        roleId: z.string().describe("ID of the role to remove"),
+        teamId: z.string().describe("ID of the team to remove the role from")
+      }
     },
     async (params) => {
       try {

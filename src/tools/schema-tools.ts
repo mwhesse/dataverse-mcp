@@ -978,19 +978,23 @@ function mapDataverseTypeToMermaid(attributeType: string): string {
 
 // Tool registration functions
 export function exportSolutionSchemaTool(server: McpServer, client: DataverseClient): void {
-  server.tool(
+  server.registerTool(
     'export_solution_schema',
     {
-      outputPath: z.string().optional().describe('Path where to save the schema JSON file (default: schema-export.json)'),
-      includeAllSystemTables: z.boolean().optional().default(false).describe('Whether to include all system tables in the export'),
-      includeSystemColumns: z.boolean().optional().default(false).describe('Whether to include system columns in the export'),
-      includeSystemOptionSets: z.boolean().optional().default(false).describe('Whether to include system option sets in the export'),
-      includeSystemRelationships: z.boolean().optional().default(false).describe('Whether to include system (non-custom) relationships in the export'),
-      prefixOnly: z.boolean().optional().default(false).describe('Whether to export only tables that match the solution customization prefix (deprecated - use customizationPrefixes instead)'),
-      customizationPrefixes: z.array(z.string()).optional().describe('List of customization prefixes to include (e.g., ["new", "xyz", "its"]). If not provided and prefixOnly is true, uses solution context prefix'),
-      systemTablesToInclude: z.array(z.string()).optional().default(['contact', 'account']).describe('List of system tables to include when includeAllSystemTables is false (default: contact, account)'),
-      excludeColumnPrefixes: z.array(z.string()).optional().default(['adx_', 'msa_', 'msdyn_', 'mspp_']).describe('List of column prefixes to exclude from export (default: ["adx_", "msa_", "msdyn_", "mspp_"])'),
-      prettify: z.boolean().optional().default(true).describe('Whether to format the JSON output for readability')
+      title: "Export Solution Schema",
+      description: "Exports a comprehensive JSON schema of Dataverse tables, columns, relationships, and option sets. Use this to document your data model, generate diagrams, or analyze solution structure. Supports filtering by prefixes, system/custom components, and specific tables.",
+      inputSchema: {
+        outputPath: z.string().optional().describe('Path where to save the schema JSON file (default: schema-export.json)'),
+        includeAllSystemTables: z.boolean().optional().default(false).describe('Whether to include all system tables in the export'),
+        includeSystemColumns: z.boolean().optional().default(false).describe('Whether to include system columns in the export'),
+        includeSystemOptionSets: z.boolean().optional().default(false).describe('Whether to include system option sets in the export'),
+        includeSystemRelationships: z.boolean().optional().default(false).describe('Whether to include system (non-custom) relationships in the export'),
+        prefixOnly: z.boolean().optional().default(false).describe('Whether to export only tables that match the solution customization prefix (deprecated - use customizationPrefixes instead)'),
+        customizationPrefixes: z.array(z.string()).optional().describe('List of customization prefixes to include (e.g., ["new", "xyz", "its"]). If not provided and prefixOnly is true, uses solution context prefix'),
+        systemTablesToInclude: z.array(z.string()).optional().default(['contact', 'account']).describe('List of system tables to include when includeAllSystemTables is false (default: contact, account)'),
+        excludeColumnPrefixes: z.array(z.string()).optional().default(['adx_', 'msa_', 'msdyn_', 'mspp_']).describe('List of column prefixes to exclude from export (default: ["adx_", "msa_", "msdyn_", "mspp_"])'),
+        prettify: z.boolean().optional().default(true).describe('Whether to format the JSON output for readability')
+      }
     },
     async (args) => {
       try {
@@ -1019,14 +1023,18 @@ export function exportSolutionSchemaTool(server: McpServer, client: DataverseCli
 }
 
 export function generateMermaidDiagramTool(server: McpServer, client: DataverseClient): void {
-  server.tool(
+  server.registerTool(
     'generate_mermaid_diagram',
     {
-      schemaPath: z.string().describe('Path to the exported JSON schema file'),
-      outputPath: z.string().optional().describe('Path where to save the Mermaid diagram file (default: schema-diagram.mmd)'),
-      includeColumns: z.boolean().optional().default(true).describe('Whether to include column details in the diagram'),
-      includeRelationships: z.boolean().optional().default(true).describe('Whether to include relationships in the diagram'),
-      tableNameFilter: z.array(z.string()).optional().describe('List of table logical names to include in the diagram. If not specified, all tables will be included.')
+      title: "Generate Mermaid Diagram",
+      description: "Generates a Mermaid entity relationship diagram from an exported schema JSON file. Creates visual documentation of your data model with tables, columns, and relationships. Perfect for documentation, presentations, and understanding data structure.",
+      inputSchema: {
+        schemaPath: z.string().describe('Path to the exported JSON schema file'),
+        outputPath: z.string().optional().describe('Path where to save the Mermaid diagram file (default: schema-diagram.mmd)'),
+        includeColumns: z.boolean().optional().default(true).describe('Whether to include column details in the diagram'),
+        includeRelationships: z.boolean().optional().default(true).describe('Whether to include relationships in the diagram'),
+        tableNameFilter: z.array(z.string()).optional().describe('List of table logical names to include in the diagram. If not specified, all tables will be included.')
+      }
     },
     async (args) => {
       try {
