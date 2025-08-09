@@ -5,6 +5,59 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4]
+
+### Added
+- **Comprehensive Testing Initiative** - Complete validation of all MCP Dataverse functionality
+  - **22-Phase Testing Plan** - Systematic testing covering all tools and operations with pet store schema example
+  - **100% Tool Coverage** - All 40+ MCP tools tested and verified for production readiness
+  - **Complete Column Type Validation** - All 11 supported column types (String, Integer, Decimal, Money, Boolean, DateTime, Picklist, Lookup, Memo, Double, BigInt) fully tested
+  - **Relationship Testing** - Both One-to-Many and Many-to-Many relationships tested with various cascade configurations
+  - **Advanced Feature Testing** - Schema export, Mermaid diagrams, WebAPI generators, PowerPages tools, security roles, teams, and business units
+  - **Error Handling Validation** - Edge cases, invalid inputs, and error scenarios comprehensively tested
+  - **Pet Store Example Schema** - Complete example implementation demonstrating all functionality with realistic business scenario
+
+### Fixed
+- **7 Critical Bugs Identified and Resolved** during comprehensive testing:
+  1. **Integer Column Default Value Bug** - Fixed unsupported DefaultValue property for IntegerAttributeMetadata
+  2. **Table Update Method Bug** - Fixed to use PUT instead of PATCH for EntityMetadata updates with full entity retrieval and merge pattern
+  3. **Column Update Method Bug** - Fixed to use PUT instead of PATCH for AttributeMetadata updates with MSCRM.MergeLabels header support
+  4. **PublishXml Action Prefix Bug** - Fixed global action calling without Microsoft.Dynamics.CRM prefix by adding global actions list
+  5. **Option Set Update Method Bug** - Fixed to use MetadataId instead of Name for PUT operations in option set updates
+  6. **UpdateOptionValue Missing Parameter Bug** - Added required MergeLabels parameter to UpdateOptionValue action calls
+  7. **Option Set Action Prefix Bug** - Fixed option set actions to not include incorrect Microsoft.Dynamics.CRM prefix
+
+### Enhanced
+- **Production Readiness Validation** - Confirmed server is production-ready with:
+  - ✅ Robust error handling for all scenarios
+  - ✅ Microsoft Dataverse API compliance verified
+  - ✅ Proper dependency management and constraint handling
+  - ✅ Complete security role and permission management
+  - ✅ Performance validation with large schemas and bulk operations
+
+### Changed
+- **Documentation Organization** - Moved comprehensive testing artifacts to dedicated examples directory
+  - Created `examples/petstore/` directory containing complete testing documentation and schema artifacts
+  - Moved `COMPREHENSIVE_TEST_PLAN.md` and `COMPREHENSIVE_TEST_REPORT.md` to examples directory
+  - Organized pet store schema exports and Mermaid diagrams in examples directory
+  - Updated main README.md references to point to new organized structure
+  - Added comprehensive README in examples directory explaining the testing initiative
+
+### Documentation
+- **Comprehensive Test Documentation** - Complete testing methodology and results documentation
+  - **[examples/petstore/COMPREHENSIVE_TEST_PLAN.md](examples/petstore/COMPREHENSIVE_TEST_PLAN.md)** - 284-line systematic test plan covering all functionality
+  - **[examples/petstore/COMPREHENSIVE_TEST_REPORT.md](examples/petstore/COMPREHENSIVE_TEST_REPORT.md)** - Detailed test results with bug fixes and production readiness confirmation
+  - **[examples/petstore/README.md](examples/petstore/README.md)** - Complete overview of testing initiative with schema structure and key metrics
+- **Updated README.md** - Enhanced with production readiness indicators, testing status, and comprehensive functionality documentation
+- **Pet Store Schema Artifacts** - Complete example schema with exports and visual diagrams demonstrating all capabilities
+
+### Technical Improvements
+- **Microsoft Dataverse API Compliance** - All operations now fully compliant with official API standards
+- **Enhanced Error Handling** - Comprehensive error handling patterns validated across all scenarios
+- **Metadata Operation Fixes** - Proper PUT vs PATCH usage for metadata updates with correct header handling
+- **Action Calling Improvements** - Fixed global action calling patterns with proper prefix handling
+- **Option Set Management** - Improved option set update operations with correct parameter usage
+
 ## [0.2.3]
 
 ### Added

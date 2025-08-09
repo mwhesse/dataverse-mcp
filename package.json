@@ -5,7 +5,7 @@
   "type": "module",
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\" && touch build/index.js",
     "dev": "tsc --watch",
     "start": "node build/index.js",
     "test:server": "node test-server.cjs",

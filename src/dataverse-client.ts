@@ -360,6 +360,34 @@ export class DataverseClient {
     return response.data;
   }
 
+  async putMetadata<T = any>(endpoint: string, data?: any, additionalHeaders?: Record<string, string>): Promise<T> {
+    const headers = { ...this.getMetadataHeaders(), ...additionalHeaders };
+    const metadataClient = axios.create({
+      baseURL: `${this.config.dataverseUrl}/api/data/v9.2/`,
+      headers
+    });
+
+    // Add error interceptor
+    metadataClient.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.data?.error) {
+          const dataverseError = error.response.data as DataverseError;
+          throw new Error(`Dataverse API Error: ${dataverseError.error.message} (Code: ${dataverseError.error.code})`);
+        }
+        throw error;
+      }
+    );
+
+    await this.ensureAuthenticated();
+    if (this.authToken) {
+      metadataClient.defaults.headers.Authorization = `Bearer ${this.authToken.access_token}`;
+    }
+
+    const response: AxiosResponse<T> = await metadataClient.put(endpoint, data);
+    return response.data;
+  }
+
   async deleteMetadata(endpoint: string): Promise<void> {
     const metadataClient = axios.create({
       baseURL: `${this.config.dataverseUrl}/api/data/v9.2/`,
@@ -415,7 +443,14 @@ export class DataverseClient {
       actionClient.defaults.headers.Authorization = `Bearer ${this.authToken.access_token}`;
     }
 
-    const response: AxiosResponse<T> = await actionClient.post(actionName, data);
+    // Actions should be called with Microsoft.Dynamics.CRM prefix for bound actions
+    // Global actions and option set actions don't need the prefix
+    const globalActions = [
+      'PublishXml', 'PublishAllXml', 'ImportSolution', 'ExportSolution',
+      'InsertOptionValue', 'UpdateOptionValue', 'DeleteOptionValue', 'OrderOption'
+    ];
+    const actionUrl = globalActions.includes(actionName) ? actionName : `Microsoft.Dynamics.CRM.${actionName}`;
+    const response: AxiosResponse<T> = await actionClient.post(actionUrl, data);
     return response.data;
   }
 }

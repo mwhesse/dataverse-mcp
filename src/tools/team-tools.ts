@@ -94,7 +94,7 @@ export function getTeamTool(server: McpServer, client: DataverseClient) {
     },
     async (params) => {
       try {
-        const team = await client.get(`teams(${params.teamId})?$select=teamid,name,description,teamtype,membershiptype,emailaddress,yominame,azureactivedirectoryobjectid,businessunitid,administratorid,queueid,teamtemplateid,delegatedauthorizationid,transactioncurrencyid,createdon,modifiedon,createdby,modifiedby,isdefault,systemmanaged&$expand=administratorid($select=fullname),businessunitid($select=name),createdby($select=fullname),modifiedby($select=fullname)`);
+        const team = await client.get(`teams(${params.teamId})?$select=teamid,name,description,teamtype,membershiptype,emailaddress,yominame,azureactivedirectoryobjectid,businessunitid,administratorid,queueid,delegatedauthorizationid,transactioncurrencyid,createdon,modifiedon,createdby,modifiedby,isdefault,systemmanaged&$expand=administratorid($select=fullname),businessunitid($select=name),createdby($select=fullname),modifiedby($select=fullname)`);
 
         const teamInfo = {
           teamId: team.teamid,

@@ -144,18 +144,36 @@ export function updateOptionSetTool(server: McpServer, client: DataverseClient) 
     },
     async (params) => {
       try {
-        const updateData: any = {};
-
-        if (params.displayName) {
-          updateData.DisplayName = createLocalizedLabel(params.displayName);
-        }
-        if (params.description) {
-          updateData.Description = createLocalizedLabel(params.description);
-        }
-
         // Update basic properties if provided
-        if (Object.keys(updateData).length > 0) {
-          await client.patchMetadata(`GlobalOptionSetDefinitions(Name='${params.name}')`, updateData);
+        if (params.displayName || params.description) {
+          // First, retrieve the current option set definition to get MetadataId
+          const currentOptionSet = await client.getMetadata<OptionSetMetadata>(
+            `GlobalOptionSetDefinitions(Name='${params.name}')`
+          );
+
+          // Create the updated option set definition by merging current with new values
+          const updatedOptionSet: any = {
+            ...currentOptionSet,
+            "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata"
+          };
+
+          // Update only the specified properties
+          if (params.displayName) {
+            updatedOptionSet.DisplayName = createLocalizedLabel(params.displayName);
+          }
+          if (params.description) {
+            updatedOptionSet.Description = createLocalizedLabel(params.description);
+          }
+
+          // Use PUT method with MetadataId as per Microsoft documentation
+          // Only OptionSetMetadataBase properties can be updated this way
+          await client.putMetadata(
+            `GlobalOptionSetDefinitions(${currentOptionSet.MetadataId})`,
+            updatedOptionSet,
+            {
+              'MSCRM.MergeLabels': 'true'
+            }
+          );
         }
 
         // Add new options using InsertOptionValue action
@@ -185,27 +203,27 @@ export function updateOptionSetTool(server: McpServer, client: DataverseClient) 
           }
         }
 
-        // Note: UpdateOptionValue action doesn't exist in the Web API
-        // To update existing options, you need to delete and re-add them
+        // Update existing options using UpdateOptionValue action
         if (params.updateOptions && params.updateOptions.length > 0) {
           for (const option of params.updateOptions) {
-            // First delete the existing option
-            const deleteOptionData = {
-              OptionSetName: params.name,
-              Value: option.value
-            };
-            await client.callAction("DeleteOptionValue", deleteOptionData);
-
-            // Then add it back with updated values
-            const insertOptionData = {
+            const updateOptionData: any = {
               OptionSetName: params.name,
               Value: option.value,
-              Label: option.label ? createLocalizedLabel(option.label) : undefined,
-              Description: option.description ? createLocalizedLabel(option.description) : undefined,
-              Color: option.color
+              MergeLabels: true  // Required parameter for UpdateOptionValue action
             };
 
-            await client.callAction("InsertOptionValue", insertOptionData);
+            // Only include properties that are being updated
+            if (option.label) {
+              updateOptionData.Label = createLocalizedLabel(option.label);
+            }
+            if (option.description) {
+              updateOptionData.Description = createLocalizedLabel(option.description);
+            }
+            if (option.color) {
+              updateOptionData.Color = option.color;
+            }
+
+            await client.callAction("UpdateOptionValue", updateOptionData);
           }
         }
 

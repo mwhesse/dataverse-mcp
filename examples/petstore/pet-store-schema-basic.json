@@ -1,0 +1,1048 @@
+{
+  "metadata": {
+    "exportedAt": "2025-08-09T15:46:06.449Z",
+    "includeAllSystemTables": false,
+    "includeSystemColumns": false,
+    "includeSystemOptionSets": false,
+    "includeSystemRelationships": false,
+    "prefixOnly": true,
+    "systemTablesToInclude": [
+      "contact",
+      "account"
+    ],
+    "excludeColumnPrefixes": [
+      "adx_",
+      "msa_",
+      "msdyn_",
+      "mspp_"
+    ],
+    "solutionUniqueName": "petstoresolution",
+    "solutionDisplayName": "Pet Store Solution",
+    "publisherPrefix": "pets"
+  },
+  "tables": [
+    {
+      "logicalName": "account",
+      "displayName": "Account",
+      "displayCollectionName": "Accounts",
+      "description": "Business that represents a customer or potential customer. The company that is billed in business transactions.",
+      "schemaName": "Account",
+      "ownershipType": "OrganizationOwned",
+      "hasActivities": true,
+      "hasNotes": true,
+      "isAuditEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyauditsettings"
+      },
+      "isDuplicateDetectionEnabled": {
+        "Value": true,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyduplicatedetectionsettings"
+      },
+      "isValidForQueue": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyqueuesettings"
+      },
+      "isConnectionsEnabled": {
+        "Value": true,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyconnectionsettings"
+      },
+      "isMailMergeEnabled": {
+        "Value": true,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifymailmergesettings"
+      },
+      "isDocumentManagementEnabled": true,
+      "isCustomEntity": false,
+      "isManaged": true,
+      "primaryNameAttribute": "name",
+      "primaryIdAttribute": "accountid",
+      "columns": [
+        {
+          "logicalName": "accountid",
+          "displayName": "Account",
+          "description": "Unique identifier of the account.",
+          "schemaName": "AccountId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "SystemRequired",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": false,
+          "isCustomAttribute": false,
+          "isManaged": true,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "address1_addressid",
+          "displayName": "Address 1: ID",
+          "description": "Unique identifier for address 1.",
+          "schemaName": "Address1_AddressId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": false,
+          "isManaged": true,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "address2_addressid",
+          "displayName": "Address 2: ID",
+          "description": "Unique identifier for address 2.",
+          "schemaName": "Address2_AddressId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": false,
+          "isManaged": true,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        }
+      ]
+    },
+    {
+      "logicalName": "contact",
+      "displayName": "Contact",
+      "displayCollectionName": "Contacts",
+      "description": "Person with whom a business unit has a relationship, such as customer, supplier, and colleague.",
+      "schemaName": "Contact",
+      "ownershipType": "OrganizationOwned",
+      "hasActivities": true,
+      "hasNotes": true,
+      "isAuditEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyauditsettings"
+      },
+      "isDuplicateDetectionEnabled": {
+        "Value": true,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyduplicatedetectionsettings"
+      },
+      "isValidForQueue": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyqueuesettings"
+      },
+      "isConnectionsEnabled": {
+        "Value": true,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyconnectionsettings"
+      },
+      "isMailMergeEnabled": {
+        "Value": true,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifymailmergesettings"
+      },
+      "isDocumentManagementEnabled": false,
+      "isCustomEntity": false,
+      "isManaged": true,
+      "primaryNameAttribute": "fullname",
+      "primaryIdAttribute": "contactid",
+      "columns": [
+        {
+          "logicalName": "address1_addressid",
+          "displayName": "Address 1: ID",
+          "description": "Unique identifier for address 1.",
+          "schemaName": "Address1_AddressId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": false,
+          "isManaged": true,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "address2_addressid",
+          "displayName": "Address 2: ID",
+          "description": "Unique identifier for address 2.",
+          "schemaName": "Address2_AddressId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": false,
+          "isManaged": true,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "address3_addressid",
+          "displayName": "Address 3: ID",
+          "description": "Unique identifier for address 3.",
+          "schemaName": "Address3_AddressId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": false,
+          "isManaged": true,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "contactid",
+          "displayName": "Contact",
+          "description": "Unique identifier of the contact.",
+          "schemaName": "ContactId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "SystemRequired",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": false,
+          "isCustomAttribute": false,
+          "isManaged": true,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        }
+      ]
+    },
+    {
+      "logicalName": "pets_animal",
+      "displayName": "Animal",
+      "displayCollectionName": "Animals",
+      "description": "Main table for storing pet/animal information",
+      "schemaName": "pets_Animal",
+      "ownershipType": "OrganizationOwned",
+      "hasActivities": true,
+      "hasNotes": true,
+      "isAuditEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyauditsettings"
+      },
+      "isDuplicateDetectionEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyduplicatedetectionsettings"
+      },
+      "isValidForQueue": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyqueuesettings"
+      },
+      "isConnectionsEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyconnectionsettings"
+      },
+      "isMailMergeEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifymailmergesettings"
+      },
+      "isDocumentManagementEnabled": false,
+      "isCustomEntity": true,
+      "isManaged": false,
+      "primaryNameAttribute": "pets_animalname",
+      "primaryIdAttribute": "pets_animalid",
+      "columns": [
+        {
+          "logicalName": "pets_age",
+          "displayName": "Age",
+          "schemaName": "pets_Age",
+          "attributeType": "Integer",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "format": "None",
+          "minValue": 0,
+          "maxValue": 50
+        },
+        {
+          "logicalName": "pets_animalid",
+          "displayName": "Animal",
+          "description": "Unique identifier for entity instances",
+          "schemaName": "pets_AnimalId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "SystemRequired",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": false,
+          "isCustomAttribute": false,
+          "isManaged": false,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "pets_animalname",
+          "displayName": "Name",
+          "description": "Primary name attribute",
+          "schemaName": "pets_AnimalName",
+          "attributeType": "String",
+          "requiredLevel": "ApplicationRequired",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": true,
+          "maxLength": 100,
+          "format": "Text"
+        },
+        {
+          "logicalName": "pets_birthdate",
+          "displayName": "Birth Date",
+          "schemaName": "pets_BirthDate",
+          "attributeType": "DateTime",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "format": "DateOnly"
+        },
+        {
+          "logicalName": "pets_customerid",
+          "displayName": "Customer",
+          "schemaName": "Pets_customerid",
+          "attributeType": "Lookup",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "targets": [
+            "pets_customer"
+          ],
+          "format": "None"
+        },
+        {
+          "logicalName": "pets_customeridname",
+          "displayName": "pets_customeridname",
+          "schemaName": "Pets_customeridName",
+          "attributeType": "String",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": false,
+          "isValidForUpdate": false,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "maxLength": 100,
+          "format": "Text"
+        },
+        {
+          "logicalName": "pets_description",
+          "displayName": "Description",
+          "schemaName": "pets_Description",
+          "attributeType": "String",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "maxLength": 2000,
+          "format": "Text"
+        },
+        {
+          "logicalName": "pets_height",
+          "displayName": "Height",
+          "schemaName": "pets_Height",
+          "attributeType": "Double",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "minValue": 0.1,
+          "maxValue": 200,
+          "precision": 2
+        },
+        {
+          "logicalName": "pets_isavailable",
+          "displayName": "Is Available",
+          "schemaName": "pets_IsAvailable",
+          "attributeType": "Boolean",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "defaultValue": false
+        },
+        {
+          "logicalName": "pets_isavailablename",
+          "displayName": "pets_isavailablename",
+          "schemaName": "pets_isavailableName",
+          "attributeType": "Virtual",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": false,
+          "isValidForUpdate": false,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "pets_microchipid",
+          "displayName": "Microchip ID",
+          "schemaName": "pets_MicrochipID",
+          "attributeType": "BigInt",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "minValue": -9223372036854776000,
+          "maxValue": 9223372036854776000
+        },
+        {
+          "logicalName": "pets_notes",
+          "displayName": "Notes",
+          "schemaName": "pets_Notes",
+          "attributeType": "Memo",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "maxLength": 4000,
+          "format": "Text"
+        },
+        {
+          "logicalName": "pets_petname",
+          "displayName": "Pet Name",
+          "schemaName": "pets_PetName",
+          "attributeType": "String",
+          "requiredLevel": "ApplicationRequired",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "maxLength": 100,
+          "format": "Text"
+        },
+        {
+          "logicalName": "pets_price",
+          "displayName": "Price",
+          "schemaName": "pets_Price",
+          "attributeType": "Money",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "minValue": 0,
+          "maxValue": 10000,
+          "precision": 2
+        },
+        {
+          "logicalName": "pets_price_base",
+          "displayName": "Price (Base)",
+          "description": "Value of the Price in base currency.",
+          "schemaName": "pets_price_Base",
+          "attributeType": "Money",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": false,
+          "isValidForUpdate": false,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "minValue": -922337203685477,
+          "maxValue": 922337203685477,
+          "precision": 2
+        },
+        {
+          "logicalName": "pets_status",
+          "displayName": "Status",
+          "schemaName": "pets_Status",
+          "attributeType": "Picklist",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "pets_statusname",
+          "displayName": "pets_statusname",
+          "schemaName": "pets_statusName",
+          "attributeType": "Virtual",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": false,
+          "isValidForUpdate": false,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "pets_weight",
+          "displayName": "Weight",
+          "schemaName": "pets_Weight",
+          "attributeType": "Decimal",
+          "requiredLevel": "None",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": false,
+          "minValue": 0.1,
+          "maxValue": 500,
+          "precision": 2
+        }
+      ]
+    },
+    {
+      "logicalName": "pets_customer",
+      "displayName": "Pet Store Customer",
+      "displayCollectionName": "Customers",
+      "description": "Updated description for customer information table",
+      "schemaName": "pets_Customer",
+      "ownershipType": "OrganizationOwned",
+      "hasActivities": false,
+      "hasNotes": false,
+      "isAuditEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyauditsettings"
+      },
+      "isDuplicateDetectionEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyduplicatedetectionsettings"
+      },
+      "isValidForQueue": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyqueuesettings"
+      },
+      "isConnectionsEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyconnectionsettings"
+      },
+      "isMailMergeEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifymailmergesettings"
+      },
+      "isDocumentManagementEnabled": false,
+      "isCustomEntity": true,
+      "isManaged": false,
+      "primaryNameAttribute": "pets_customername",
+      "primaryIdAttribute": "pets_customerid",
+      "columns": [
+        {
+          "logicalName": "pets_customerid",
+          "displayName": "Customer",
+          "description": "Unique identifier for entity instances",
+          "schemaName": "pets_CustomerId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "SystemRequired",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": false,
+          "isCustomAttribute": false,
+          "isManaged": false,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "pets_customername",
+          "displayName": "Name",
+          "description": "Primary name attribute",
+          "schemaName": "pets_CustomerName",
+          "attributeType": "String",
+          "requiredLevel": "ApplicationRequired",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": true,
+          "maxLength": 100,
+          "format": "Text"
+        }
+      ]
+    },
+    {
+      "logicalName": "pets_category",
+      "displayName": "Category",
+      "displayCollectionName": "Categories",
+      "description": "Animal categories and classifications",
+      "schemaName": "pets_Category",
+      "ownershipType": "OrganizationOwned",
+      "hasActivities": false,
+      "hasNotes": true,
+      "isAuditEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyauditsettings"
+      },
+      "isDuplicateDetectionEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyduplicatedetectionsettings"
+      },
+      "isValidForQueue": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyqueuesettings"
+      },
+      "isConnectionsEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyconnectionsettings"
+      },
+      "isMailMergeEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifymailmergesettings"
+      },
+      "isDocumentManagementEnabled": false,
+      "isCustomEntity": true,
+      "isManaged": false,
+      "primaryNameAttribute": "pets_categoryname",
+      "primaryIdAttribute": "pets_categoryid",
+      "columns": [
+        {
+          "logicalName": "pets_categoryid",
+          "displayName": "Category",
+          "description": "Unique identifier for entity instances",
+          "schemaName": "pets_CategoryId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "SystemRequired",
+          "isAuditEnabled": {
+            "Value": false,
+            "CanBeChanged": false,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": false,
+          "isCustomAttribute": false,
+          "isManaged": false,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        },
+        {
+          "logicalName": "pets_categoryname",
+          "displayName": "Name",
+          "description": "Primary name attribute",
+          "schemaName": "pets_CategoryName",
+          "attributeType": "String",
+          "requiredLevel": "ApplicationRequired",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": true,
+          "isValidForUpdate": true,
+          "isCustomAttribute": true,
+          "isManaged": false,
+          "isPrimaryId": false,
+          "isPrimaryName": true,
+          "maxLength": 100,
+          "format": "Text"
+        }
+      ]
+    },
+    {
+      "logicalName": "pets_animal_category",
+      "displayName": "pets_animal_category",
+      "displayCollectionName": "pets_animal_category",
+      "schemaName": "pets_animal_category",
+      "ownershipType": "OrganizationOwned",
+      "hasActivities": false,
+      "hasNotes": false,
+      "isAuditEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyauditsettings"
+      },
+      "isDuplicateDetectionEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyduplicatedetectionsettings"
+      },
+      "isValidForQueue": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyqueuesettings"
+      },
+      "isConnectionsEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifyconnectionsettings"
+      },
+      "isMailMergeEnabled": {
+        "Value": false,
+        "CanBeChanged": true,
+        "ManagedPropertyLogicalName": "canmodifymailmergesettings"
+      },
+      "isDocumentManagementEnabled": false,
+      "isCustomEntity": true,
+      "isManaged": false,
+      "primaryNameAttribute": null,
+      "primaryIdAttribute": "pets_animal_categoryid",
+      "columns": [
+        {
+          "logicalName": "pets_animal_categoryid",
+          "displayName": "pets_animal_categoryid",
+          "schemaName": "pets_animal_categoryId",
+          "attributeType": "Uniqueidentifier",
+          "requiredLevel": "SystemRequired",
+          "isAuditEnabled": {
+            "Value": true,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifyauditsettings"
+          },
+          "isValidForAdvancedFind": {
+            "Value": false,
+            "CanBeChanged": true,
+            "ManagedPropertyLogicalName": "canmodifysearchsettings"
+          },
+          "isValidForCreate": false,
+          "isValidForUpdate": false,
+          "isCustomAttribute": false,
+          "isManaged": false,
+          "isPrimaryId": true,
+          "isPrimaryName": false
+        }
+      ]
+    }
+  ],
+  "globalOptionSets": [],
+  "relationships": [
+    {
+      "schemaName": "pets_customer_animal",
+      "relationshipType": "OneToMany",
+      "referencedEntity": "pets_customer",
+      "referencingEntity": "pets_animal",
+      "referencingAttribute": "pets_customerid",
+      "cascadeConfiguration": {
+        "Assign": "NoCascade",
+        "Delete": "RemoveLink",
+        "Archive": "RemoveLink",
+        "Merge": "NoCascade",
+        "Reparent": "NoCascade",
+        "Share": "NoCascade",
+        "Unshare": "NoCascade",
+        "RollupView": "NoCascade"
+      },
+      "isCustomRelationship": true,
+      "isManaged": false
+    },
+    {
+      "schemaName": "pets_animal_category",
+      "relationshipType": "ManyToMany",
+      "entity1LogicalName": "pets_animal",
+      "entity2LogicalName": "pets_category",
+      "intersectEntityName": "pets_animal_category",
+      "isCustomRelationship": true,
+      "isManaged": false
+    }
+  ]
+}

@@ -12,6 +12,16 @@ function getDepthValue(depth: string): number {
   }
 }
 
+function getDepthName(depth: number): string {
+  switch (depth) {
+    case 0: return 'Basic';
+    case 1: return 'Local';
+    case 2: return 'Deep';
+    case 3: return 'Global';
+    default: return 'Unknown';
+  }
+}
+
 export function createRoleTool(server: McpServer, client: DataverseClient) {
   server.tool(
     "create_dataverse_role",
@@ -419,15 +429,21 @@ export function getRolePrivilegesTool(server: McpServer, client: DataverseClient
     },
     async (params) => {
       try {
-        const response = await client.callAction('RetrieveRolePrivilegesRole', {
-          RoleId: params.roleId
-        });
+        // Get role privileges using the correct Web API approach from Microsoft documentation
+        // Using $expand to get the roleprivileges_association collection
+        const response = await client.get(`roles(${params.roleId})?$select=roleid&$expand=roleprivileges_association($select=name,privilegeid)&$orderby=name`);
+
+        const rolePrivileges = response.roleprivileges_association || [];
+        const privileges = rolePrivileges.map((privilege: any) => ({
+          privilegeId: privilege.privilegeid,
+          privilegeName: privilege.name
+        }));
 
         return {
           content: [
             {
               type: "text",
-              text: `Role privileges:\n\n${JSON.stringify(response.RolePrivileges || [], null, 2)}`
+              text: `Role privileges (${privileges.length} found):\n\n${JSON.stringify(privileges, null, 2)}`
             }
           ]
         };

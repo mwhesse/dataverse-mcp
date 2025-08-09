@@ -201,49 +201,87 @@ export function updateTableTool(server: McpServer, client: DataverseClient) {
     },
     async (params) => {
       try {
-        const updateData: any = {};
+        // First, retrieve the current entity definition
+        const currentEntity = await client.getMetadata<EntityMetadata>(
+          `EntityDefinitions(LogicalName='${params.logicalName}')`
+        );
 
+        // Create the updated entity definition by merging current with new values
+        const updatedEntity: any = {
+          ...currentEntity,
+          "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata"
+        };
+
+        // Update only the specified properties
         if (params.displayName) {
-          updateData.DisplayName = createLocalizedLabel(params.displayName);
+          updatedEntity.DisplayName = createLocalizedLabel(params.displayName);
         }
         if (params.displayCollectionName) {
-          updateData.DisplayCollectionName = createLocalizedLabel(params.displayCollectionName);
+          updatedEntity.DisplayCollectionName = createLocalizedLabel(params.displayCollectionName);
         }
         if (params.description) {
-          updateData.Description = createLocalizedLabel(params.description);
+          updatedEntity.Description = createLocalizedLabel(params.description);
         }
         if (params.hasActivities !== undefined) {
-          updateData.HasActivities = params.hasActivities;
+          updatedEntity.HasActivities = params.hasActivities;
         }
         if (params.hasNotes !== undefined) {
-          updateData.HasNotes = params.hasNotes;
+          updatedEntity.HasNotes = params.hasNotes;
         }
         if (params.isAuditEnabled !== undefined) {
-          updateData.IsAuditEnabled = params.isAuditEnabled;
+          updatedEntity.IsAuditEnabled = {
+            Value: params.isAuditEnabled,
+            CanBeChanged: true,
+            ManagedPropertyLogicalName: "canmodifyauditsettings"
+          };
         }
         if (params.isDuplicateDetectionEnabled !== undefined) {
-          updateData.IsDuplicateDetectionEnabled = params.isDuplicateDetectionEnabled;
+          updatedEntity.IsDuplicateDetectionEnabled = {
+            Value: params.isDuplicateDetectionEnabled,
+            CanBeChanged: true,
+            ManagedPropertyLogicalName: "canmodifyduplicatedetectionsettings"
+          };
         }
         if (params.isValidForQueue !== undefined) {
-          updateData.IsValidForQueue = params.isValidForQueue;
+          updatedEntity.IsValidForQueue = {
+            Value: params.isValidForQueue,
+            CanBeChanged: true,
+            ManagedPropertyLogicalName: "canmodifyqueuesettings"
+          };
         }
         if (params.isConnectionsEnabled !== undefined) {
-          updateData.IsConnectionsEnabled = params.isConnectionsEnabled;
+          updatedEntity.IsConnectionsEnabled = {
+            Value: params.isConnectionsEnabled,
+            CanBeChanged: true,
+            ManagedPropertyLogicalName: "canmodifyconnectionsettings"
+          };
         }
         if (params.isMailMergeEnabled !== undefined) {
-          updateData.IsMailMergeEnabled = params.isMailMergeEnabled;
+          updatedEntity.IsMailMergeEnabled = {
+            Value: params.isMailMergeEnabled,
+            CanBeChanged: true,
+            ManagedPropertyLogicalName: "canmodifymailmergesettings"
+          };
         }
         if (params.isDocumentManagementEnabled !== undefined) {
-          updateData.IsDocumentManagementEnabled = params.isDocumentManagementEnabled;
+          updatedEntity.IsDocumentManagementEnabled = params.isDocumentManagementEnabled;
         }
 
-        await client.patchMetadata(`EntityDefinitions(LogicalName='${params.logicalName}')`, updateData);
+        // Use PUT method with MSCRM.MergeLabels header as per Microsoft documentation
+        await client.putMetadata(`EntityDefinitions(LogicalName='${params.logicalName}')`, updatedEntity, {
+          'MSCRM.MergeLabels': 'true'
+        });
+
+        // Publish the changes as required by the API
+        await client.callAction('PublishXml', {
+          ParameterXml: `<importexportxml><entities><entity>${params.logicalName}</entity></entities></importexportxml>`
+        });
 
         return {
           content: [
             {
               type: "text",
-              text: `Successfully updated table '${params.logicalName}'.`
+              text: `Successfully updated table '${params.logicalName}' and published changes.`
             }
           ]
         };

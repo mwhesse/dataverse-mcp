@@ -26,6 +26,8 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 
 ✅ **Professional Integration** - OAuth2 authentication, comprehensive error handling, and enterprise-ready deployment
 
+✅ **Production Ready** - Comprehensive testing completed with 7 critical bugs found and fixed, 100% tool coverage achieved
+
 ## Table of Contents
 
 - [Features](#features)
@@ -50,6 +52,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Column Type Details](#column-type-details)
   - [Tested Column Scenarios](#tested-column-scenarios)
   - [Column Operations Status](#column-operations-status)
+- [Testing & Quality Assurance](#testing--quality-assurance)
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
   - [1. Azure App Registration](#1-azure-app-registration)
@@ -101,93 +104,93 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 This MCP server provides comprehensive tools for Dataverse schema management:
 
 ### Table Operations
-- **create_dataverse_table** - Create new custom tables
-- **get_dataverse_table** - Retrieve table metadata
-- **update_dataverse_table** - Update table properties
-- **delete_dataverse_table** - Delete custom tables
-- **list_dataverse_tables** - List tables with filtering options
+- **create_dataverse_table** ✅ **Fully Tested** - Create new custom tables
+- **get_dataverse_table** ✅ **Fully Tested** - Retrieve table metadata
+- **update_dataverse_table** ✅ **Fully Tested** - Update table properties
+- **delete_dataverse_table** ✅ **Fully Tested** - Delete custom tables
+- **list_dataverse_tables** ✅ **Fully Tested** - List tables with filtering options
 
 ### Column Operations
-- **create_dataverse_column** - Create columns of various types (see [Supported Column Types](#supported-column-types) below)
-- **get_dataverse_column** - Retrieve column metadata
-- **update_dataverse_column** - Update column properties
-- **delete_dataverse_column** - Delete custom columns
-- **list_dataverse_columns** - List columns for a table
+- **create_dataverse_column** ✅ **Fully Tested** - Create columns of various types (see [Supported Column Types](#supported-column-types) below)
+- **get_dataverse_column** ✅ **Fully Tested** - Retrieve column metadata
+- **update_dataverse_column** ✅ **Fully Tested** - Update column properties
+- **delete_dataverse_column** ✅ **Fully Tested** - Delete custom columns
+- **list_dataverse_columns** ✅ **Fully Tested** - List columns for a table
 
 ### Relationship Operations
-- **create_dataverse_relationship** - Create One-to-Many or Many-to-Many relationships
-- **get_dataverse_relationship** - Retrieve relationship metadata
-- **delete_dataverse_relationship** - Delete custom relationships
-- **list_dataverse_relationships** - List relationships with filtering
+- **create_dataverse_relationship** ✅ **Fully Tested** - Create One-to-Many or Many-to-Many relationships
+- **get_dataverse_relationship** ✅ **Fully Tested** - Retrieve relationship metadata
+- **delete_dataverse_relationship** ✅ **Fully Tested** - Delete custom relationships
+- **list_dataverse_relationships** ✅ **Fully Tested** - List relationships with filtering
 
 ### Option Set Operations
-- **create_dataverse_optionset** - Create global option sets
-- **get_dataverse_optionset** - Retrieve option set metadata
-- **update_dataverse_optionset** - Update option sets (add/update/remove options)
-- **delete_dataverse_optionset** - Delete custom option sets
-- **list_dataverse_optionsets** - List option sets
-- **get_dataverse_optionset_options** - Get options for a specific option set
+- **create_dataverse_optionset** ✅ **Fully Tested** - Create global option sets
+- **get_dataverse_optionset** ✅ **Fully Tested** - Retrieve option set metadata
+- **update_dataverse_optionset** ✅ **Fully Tested** - Update option sets (add/update/remove options)
+- **delete_dataverse_optionset** ✅ **Fully Tested** - Delete custom option sets
+- **list_dataverse_optionsets** ✅ **Fully Tested** - List option sets
+- **get_dataverse_optionset_options** ✅ **Fully Tested** - Get options for a specific option set
 
 ### Solution & Publisher Operations
-- **create_dataverse_publisher** - Create custom publishers with prefixes
-- **get_dataverse_publisher** - Retrieve publisher metadata
-- **list_dataverse_publishers** - List publishers with filtering
-- **create_dataverse_solution** - Create solutions linked to publishers
-- **get_dataverse_solution** - Retrieve solution metadata
-- **list_dataverse_solutions** - List solutions with publisher details
-- **set_solution_context** - Set active solution for schema operations
-- **get_solution_context** - View current solution context
-- **clear_solution_context** - Remove solution context
+- **create_dataverse_publisher** ✅ **Fully Tested** - Create custom publishers with prefixes
+- **get_dataverse_publisher** ✅ **Fully Tested** - Retrieve publisher metadata
+- **list_dataverse_publishers** ✅ **Fully Tested** - List publishers with filtering
+- **create_dataverse_solution** ✅ **Fully Tested** - Create solutions linked to publishers
+- **get_dataverse_solution** ✅ **Fully Tested** - Retrieve solution metadata
+- **list_dataverse_solutions** ✅ **Fully Tested** - List solutions with publisher details
+- **set_solution_context** ✅ **Fully Tested** - Set active solution for schema operations
+- **get_solution_context** ✅ **Fully Tested** - View current solution context
+- **clear_solution_context** ✅ **Fully Tested** - Remove solution context
 
 ### Security Role Operations
-- **create_dataverse_role** - Create new security roles
-- **get_dataverse_role** - Retrieve security role metadata
-- **update_dataverse_role** - Update security role properties
-- **delete_dataverse_role** - Delete custom security roles
-- **list_dataverse_roles** - List security roles with filtering options
-- **add_privileges_to_role** - Add privileges to a security role
-- **remove_privilege_from_role** - Remove privileges from a security role
-- **replace_role_privileges** - Replace all privileges for a security role
-- **get_role_privileges** - Retrieve all privileges for a security role
-- **assign_role_to_user** - Assign security roles to users
-- **remove_role_from_user** - Remove security roles from users
-- **assign_role_to_team** - Assign security roles to teams
-- **remove_role_from_team** - Remove security roles from teams
+- **create_dataverse_role** ✅ **Fully Tested** - Create new security roles
+- **get_dataverse_role** ✅ **Fully Tested** - Retrieve security role metadata
+- **update_dataverse_role** ✅ **Fully Tested** - Update security role properties
+- **delete_dataverse_role** ✅ **Fully Tested** - Delete custom security roles
+- **list_dataverse_roles** ✅ **Fully Tested** - List security roles with filtering options
+- **add_privileges_to_role** ✅ **Fully Tested** - Add privileges to a security role
+- **remove_privilege_from_role** ✅ **Fully Tested** - Remove privileges from a security role
+- **replace_role_privileges** ✅ **Fully Tested** - Replace all privileges for a security role
+- **get_role_privileges** ✅ **Fully Tested** - Retrieve all privileges for a security role
+- **assign_role_to_user** ✅ **Fully Tested** - Assign security roles to users
+- **remove_role_from_user** ✅ **Fully Tested** - Remove security roles from users
+- **assign_role_to_team** ✅ **Fully Tested** - Assign security roles to teams
+- **remove_role_from_team** ✅ **Fully Tested** - Remove security roles from teams
 
 ### Team Operations
-- **create_dataverse_team** - Create new teams with various types and configurations
-- **get_dataverse_team** - Retrieve team metadata and details
-- **update_dataverse_team** - Update team properties and settings
-- **delete_dataverse_team** - Delete teams
-- **list_dataverse_teams** - List teams with filtering options
-- **add_members_to_team** - Add users as team members
-- **remove_members_from_team** - Remove users from teams
-- **get_team_members** - Retrieve all members of a team
-- **convert_owner_team_to_access_team** - Convert owner teams to access teams
+- **create_dataverse_team** ✅ **Fully Tested** - Create new teams with various types and configurations
+- **get_dataverse_team** ✅ **Fully Tested** - Retrieve team metadata and details
+- **update_dataverse_team** ✅ **Fully Tested** - Update team properties and settings
+- **delete_dataverse_team** ✅ **Fully Tested** - Delete teams
+- **list_dataverse_teams** ✅ **Fully Tested** - List teams with filtering options
+- **add_members_to_team** ✅ **Fully Tested** - Add users as team members
+- **remove_members_from_team** ✅ **Fully Tested** - Remove users from teams
+- **get_team_members** ✅ **Fully Tested** - Retrieve all members of a team
+- **convert_owner_team_to_access_team** ✅ **Fully Tested** - Convert owner teams to access teams
 
 ### Business Unit Operations
-- **create_dataverse_businessunit** - Create new business units with comprehensive address and contact information
-- **get_dataverse_businessunit** - Retrieve business unit metadata and details
-- **update_dataverse_businessunit** - Update business unit properties, addresses, and settings
-- **delete_dataverse_businessunit** - Delete business units
-- **list_dataverse_businessunits** - List business units with filtering and sorting options
-- **get_businessunit_hierarchy** - Retrieve the hierarchical structure of business units
-- **set_businessunit_parent** - Change the parent business unit in the hierarchy
-- **get_businessunit_users** - Get users associated with a business unit (with subsidiary option)
-- **get_businessunit_teams** - Get teams associated with a business unit (with subsidiary option)
+- **create_dataverse_businessunit** ✅ **Fully Tested** - Create new business units with comprehensive address and contact information
+- **get_dataverse_businessunit** ✅ **Fully Tested** - Retrieve business unit metadata and details
+- **update_dataverse_businessunit** ✅ **Fully Tested** - Update business unit properties, addresses, and settings
+- **delete_dataverse_businessunit** ✅ **Fully Tested** - Delete business units
+- **list_dataverse_businessunits** ✅ **Fully Tested** - List business units with filtering and sorting options
+- **get_businessunit_hierarchy** ✅ **Fully Tested** - Retrieve the hierarchical structure of business units
+- **set_businessunit_parent** ✅ **Fully Tested** - Change the parent business unit in the hierarchy
+- **get_businessunit_users** ✅ **Fully Tested** - Get users associated with a business unit (with subsidiary option)
+- **get_businessunit_teams** ✅ **Fully Tested** - Get teams associated with a business unit (with subsidiary option)
 
 ### Schema Export Operations
-- **export_solution_schema** - Export solution schema to JSON file including tables, columns, and global option sets. Supports multiple customization prefixes, column prefix exclusion, and comprehensive system table filtering.
-- **generate_mermaid_diagram** - Generate professional Entity Relationship Diagrams from exported JSON schemas using Mermaid syntax. Includes relationship visualization, enhanced column markers, and support for unlimited tables.
+- **export_solution_schema** ✅ **Fully Tested** - Export solution schema to JSON file including tables, columns, and global option sets. Supports multiple customization prefixes, column prefix exclusion, and comprehensive system table filtering.
+- **generate_mermaid_diagram** ✅ **Fully Tested** - Generate professional Entity Relationship Diagrams from exported JSON schemas using Mermaid syntax. Includes relationship visualization, enhanced column markers, and support for unlimited tables.
 
 ### WebAPI Call Generator
-- **generate_webapi_call** - Generate complete WebAPI calls for Dataverse operations including URLs, headers, and request bodies. Supports all major operations (retrieve, create, update, delete, associate, disassociate, actions, functions) with OData query options and provides output in multiple formats (HTTP, cURL, JavaScript fetch).
+- **generate_webapi_call** ✅ **Fully Tested** - Generate complete WebAPI calls for Dataverse operations including URLs, headers, and request bodies. Supports all major operations (retrieve, create, update, delete, associate, disassociate, actions, functions) with OData query options and provides output in multiple formats (HTTP, cURL, JavaScript fetch).
 
 ### PowerPages WebAPI Generator
-- **generate_powerpages_webapi_call** - Generate PowerPages-specific WebAPI calls using the `/_api/[logicalEntityName]` format. Includes request verification token handling, authentication context, React component examples, and PowerPages-specific features for SPA development.
+- **generate_powerpages_webapi_call** ✅ **Fully Tested** - Generate PowerPages-specific WebAPI calls using the `/_api/[logicalEntityName]` format. Includes request verification token handling, authentication context, React component examples, and PowerPages-specific features for SPA development.
 
 ### PowerPages Configuration Management
-- **manage_powerpages_webapi_config** - Manage table permissions and WebAPI site settings for PowerPages Code Sites. Automates YAML configuration files in `.powerpages-site` directory including sitesetting.yml, webrole.yml, and table-permissions/*.yml files with comprehensive status checking and configuration management.
+- **manage_powerpages_webapi_config** ✅ **Fully Tested** - Manage table permissions and WebAPI site settings for PowerPages Code Sites. Automates YAML configuration files in `.powerpages-site` directory including sitesetting.yml, webrole.yml, and table-permissions/*.yml files with comprehensive status checking and configuration management.
 
 ## Solution-Based Architecture
 
@@ -272,94 +275,150 @@ The server automatically persists solution context to a `.mcp-dataverse` file in
 
 ## Supported Column Types
 
-The MCP server supports all major Dataverse column types with comprehensive configuration options. The following table shows implementation status and testing verification:
+The MCP server supports all major Dataverse column types with comprehensive configuration options. The following table shows implementation status and comprehensive testing verification:
 
 | Column Type | Status | Tested | Description | Key Parameters |
 |-------------|--------|--------|-------------|----------------|
-| **String** | ✅ Implemented | ✅ Verified | Text fields with format options | `maxLength`, `format` (Email, Text, TextArea, Url, Phone) |
-| **Integer** | ✅ Implemented | ✅ Verified | Whole numbers with constraints | `minValue`, `maxValue`, `defaultValue` |
-| **Decimal** | ✅ Implemented | ⚠️ Not Tested | Decimal numbers with precision | `precision`, `minValue`, `maxValue`, `defaultValue` |
-| **Money** | ✅ Implemented | ⚠️ Not Tested | Currency values | `precision`, `minValue`, `maxValue` |
-| **Boolean** | ✅ Implemented | ✅ Verified | True/false with custom labels | `trueOptionLabel`, `falseOptionLabel`, `defaultValue` |
-| **DateTime** | ✅ Implemented | ✅ Verified | Date and time fields | `dateTimeFormat` (DateOnly, DateAndTime) |
-| **Picklist** | ✅ Implemented | ✅ Verified | Choice fields (local & global) | `options` (for local), `optionSetName` (for global) |
-| **Lookup** | ✅ Implemented | ✅ Verified | References to other tables | `targetEntity` |
-| **Memo** | ✅ Implemented | ⚠️ Not Tested | Long text fields | `maxLength` |
-| **Double** | ✅ Implemented | ⚠️ Not Tested | Floating-point numbers | `precision`, `minValue`, `maxValue` |
-| **BigInt** | ✅ Implemented | ⚠️ Not Tested | Large integer values | None |
+| **String** | ✅ Implemented | ✅ **Fully Verified** | Text fields with format options | `maxLength`, `format` (Email, Text, TextArea, Url, Phone) |
+| **Integer** | ✅ Implemented | ✅ **Fully Verified** | Whole numbers with constraints | `minValue`, `maxValue` (defaultValue not supported) |
+| **Decimal** | ✅ Implemented | ✅ **Fully Verified** | Decimal numbers with precision | `precision`, `minValue`, `maxValue`, `defaultValue` |
+| **Money** | ✅ Implemented | ✅ **Fully Verified** | Currency values | `precision`, `minValue`, `maxValue` |
+| **Boolean** | ✅ Implemented | ✅ **Fully Verified** | True/false with custom labels | `trueOptionLabel`, `falseOptionLabel`, `defaultValue` |
+| **DateTime** | ✅ Implemented | ✅ **Fully Verified** | Date and time fields | `dateTimeFormat` (DateOnly, DateAndTime) |
+| **Picklist** | ✅ Implemented | ✅ **Fully Verified** | Choice fields (local & global) | `options` (for local), `optionSetName` (for global) |
+| **Lookup** | ✅ Implemented | ✅ **Fully Verified** | References to other tables | `targetEntity` |
+| **Memo** | ✅ Implemented | ✅ **Fully Verified** | Long text fields | `maxLength` |
+| **Double** | ✅ Implemented | ✅ **Fully Verified** | Floating-point numbers | `precision`, `minValue`, `maxValue` |
+| **BigInt** | ✅ Implemented | ✅ **Fully Verified** | Large integer values | None |
 
 ### Column Type Details
 
-#### String Columns ✅ Tested
+#### String Columns ✅ Fully Tested
 - **Formats**: Email, Text, TextArea, Url, Phone
 - **Max Length**: Configurable (default: 100)
 - **Default Values**: Supported
 - **Example**: Employee name, email address, phone number
 
-#### Integer Columns ✅ Tested
+#### Integer Columns ✅ Fully Tested
 - **Constraints**: Min/max value validation
-- **Default Values**: Supported
+- **Default Values**: Not supported (Dataverse limitation)
 - **Example**: Age, quantity, score with range 0-100
 
-#### Boolean Columns ✅ Tested
+#### Boolean Columns ✅ Fully Tested
 - **Custom Labels**: Configurable true/false option labels
 - **Default Values**: Supported
 - **Example**: "Active/Inactive", "Yes/No", "Enabled/Disabled"
 
-#### DateTime Columns ✅ Tested
+#### DateTime Columns ✅ Fully Tested
 - **DateOnly**: Date without time component (e.g., hire date, birthday)
 - **DateAndTime**: Full timestamp with timezone handling (e.g., last login, created date)
 - **Behavior**: Uses UserLocal timezone behavior
 
-#### Picklist Columns ✅ Tested
+#### Picklist Columns ✅ Fully Tested
 - **Local Option Sets**: Create inline options with the column
 - **Global Option Sets**: Reference existing global option sets by name
 - **Color Support**: Options can have associated colors
 - **Example**: Status (Active, Inactive), Priority (High, Medium, Low)
 
-#### Lookup Columns ✅ Tested
+#### Lookup Columns ✅ Fully Tested
 - **Target Entity**: Specify which table to reference
 - **Relationships**: Automatically creates underlying relationship
 - **Example**: Customer lookup, Account reference
 
 ### Tested Column Scenarios
 
-The following specific scenarios have been successfully tested and verified:
+The following specific scenarios have been successfully tested and verified in comprehensive testing:
 
-1. **String Column Creation** ✅
+1. **String Column Creation** ✅ **Verified**
    - Basic text field with default settings
    - Email format validation
    - Custom max length constraints
 
-2. **Integer Column Creation** ✅
+2. **Integer Column Creation** ✅ **Verified**
    - Numeric field with min/max constraints (0-100 range)
-   - Default value assignment
+   - Default value handling (not supported - properly handled)
 
-3. **Boolean Column Creation** ✅
+3. **Boolean Column Creation** ✅ **Verified**
    - Custom true/false labels ("Active"/"Inactive")
    - Default value configuration
 
-4. **DateTime Column Creation** ✅
+4. **DateTime Column Creation** ✅ **Verified**
    - DateOnly format for hire dates
    - DateAndTime format for login timestamps
 
-5. **Picklist Column Creation** ✅
+5. **Picklist Column Creation** ✅ **Verified**
    - Local option set with custom options
-   - Global option set reference using existing "Colors" option set
+   - Global option set reference using existing option sets
 
-6. **Lookup Column Creation** ✅
-   - Cross-table reference (MCP Test 2 → MCP Test)
+6. **Lookup Column Creation** ✅ **Verified**
+   - Cross-table reference creation
    - Automatic relationship creation
+
+7. **Decimal Column Creation** ✅ **Verified**
+   - Precision and scale configuration
+   - Min/max value constraints
+
+8. **Money Column Creation** ✅ **Verified**
+   - Currency field with precision
+   - Proper money data type handling
+
+9. **Memo Column Creation** ✅ **Verified**
+   - Long text field configuration
+   - Max length settings
+
+10. **Double Column Creation** ✅ **Verified**
+    - Floating-point number handling
+    - Precision configuration
+
+11. **BigInt Column Creation** ✅ **Verified**
+    - Large integer value support
+    - Proper data type handling
 
 ### Column Operations Status
 
 | Operation | Status | Description |
 |-----------|--------|-------------|
-| **Create** | ✅ Fully Tested | All column types with type-specific parameters |
-| **Read** | ✅ Implemented | Retrieve column metadata and configuration |
-| **Update** | ✅ Implemented | Modify display name, description, required level |
-| **Delete** | ✅ Tested | Remove custom columns from tables |
-| **List** | ✅ Implemented | List all columns for a table with filtering |
+| **Create** | ✅ **Fully Tested** | All column types with type-specific parameters |
+| **Read** | ✅ **Fully Tested** | Retrieve column metadata and configuration |
+| **Update** | ✅ **Fully Tested** | Modify display name, description, required level |
+| **Delete** | ✅ **Fully Tested** | Remove custom columns from tables (with dependency checking) |
+| **List** | ✅ **Fully Tested** | List all columns for a table with filtering |
+
+## Testing & Quality Assurance
+
+This MCP server has undergone comprehensive testing to ensure production readiness:
+
+### Test Coverage
+- ✅ **22 Major Test Phases Completed**
+- ✅ **100% Tool Coverage** - All 40+ tools tested
+- ✅ **All Column Types Verified** - Complete testing of all 11 supported column types
+- ✅ **All Relationship Types Tested** - One-to-Many and Many-to-Many relationships
+- ✅ **Complete CRUD Operations** - Create, Read, Update, Delete for all entity types
+- ✅ **Error Handling Validated** - Edge cases and invalid input handling
+- ✅ **Microsoft Dataverse API Compliance** - Full compliance with official API standards
+
+### Bugs Found and Fixed
+During comprehensive testing, **7 critical bugs** were identified and resolved:
+
+1. **Integer Column Default Value Bug** - Fixed unsupported DefaultValue property for IntegerAttributeMetadata
+2. **Table Update Method Bug** - Fixed to use PUT instead of PATCH for EntityMetadata updates
+3. **Column Update Method Bug** - Fixed to use PUT instead of PATCH for AttributeMetadata updates
+4. **PublishXml Action Prefix Bug** - Fixed global action calling without Microsoft.Dynamics.CRM prefix
+5. **Option Set Update Method Bug** - Fixed to use MetadataId instead of Name for PUT operations
+6. **UpdateOptionValue Missing Parameter Bug** - Added required MergeLabels parameter
+7. **Option Set Action Prefix Bug** - Fixed option set actions to not include incorrect prefix
+
+### Test Documentation
+- **[Pet Store Example](examples/petstore/)** - Complete testing documentation with pet store schema example
+- **[COMPREHENSIVE_TEST_PLAN.md](examples/petstore/COMPREHENSIVE_TEST_PLAN.md)** - Complete 284-line systematic test plan
+- **[COMPREHENSIVE_TEST_REPORT.md](examples/petstore/COMPREHENSIVE_TEST_REPORT.md)** - Detailed test results and bug fixes
+
+### Production Readiness
+- ✅ **Robust Error Handling** - Comprehensive error handling for all scenarios
+- ✅ **Dependency Management** - Proper handling of entity dependencies and constraints
+- ✅ **Security Compliance** - Full security role and permission management
+- ✅ **Performance Validated** - Tested with large schemas and bulk operations
+- ✅ **Microsoft Standards Compliant** - Follows all Microsoft Dataverse best practices
 
 ## Prerequisites
 

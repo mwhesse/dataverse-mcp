@@ -475,8 +475,8 @@ export function getBusinessUnitHierarchyTool(server: McpServer, client: Datavers
     },
     async (params) => {
       try {
-        // Use the RetrieveBusinessHierarchyBusinessUnit function
-        const response = await client.get(`RetrieveBusinessHierarchyBusinessUnit(BusinessUnitId=${params.businessUnitId})`);
+        // Use the RetrieveBusinessHierarchyBusinessUnit bound function
+        const response = await client.get(`businessunits(${params.businessUnitId})/Microsoft.Dynamics.CRM.RetrieveBusinessHierarchyBusinessUnit()`);
 
         return {
           content: [
@@ -609,7 +609,7 @@ export function getBusinessUnitTeamsTool(server: McpServer, client: DataverseCli
           endpoint = `RetrieveSubsidiaryTeamsBusinessUnit(BusinessUnitId=${params.businessUnitId})`;
         } else {
           // Get teams directly associated with the business unit
-          endpoint = `teams?$filter=businessunitid/businessunitid eq ${params.businessUnitId}&$select=teamid,name,teamtype,businessunitid,isdisabled&$expand=businessunitid($select=name)`;
+          endpoint = `teams?$filter=businessunitid/businessunitid eq ${params.businessUnitId}&$select=teamid,name,teamtype,businessunitid&$expand=businessunitid($select=name)`;
         }
 
         const result = await client.get(endpoint);
@@ -621,8 +621,7 @@ export function getBusinessUnitTeamsTool(server: McpServer, client: DataverseCli
           teamType: team.teamtype,
           teamTypeLabel: getTeamTypeLabel(team.teamtype),
           businessUnitId: team.businessunitid,
-          businessUnitName: team.businessunitid?.name,
-          isDisabled: team.isdisabled
+          businessUnitName: team.businessunitid?.name
         }));
 
         return {

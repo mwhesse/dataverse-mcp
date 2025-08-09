@@ -1,0 +1,88 @@
+%% ========================================
+%% GENERATED MERMAID DIAGRAM
+%% ========================================
+%% This file was automatically generated using the Dataverse MCP Server
+%% Tool: generate_mermaid_diagram
+
+%% GENERATION PARAMETERS:
+%% - schemaPath: pet-store-schema-basic.json
+%% - outputPath: pet-store-diagram.mmd
+%% - includeColumns: true
+%% - includeRelationships: true
+%% - tableNameFilter: none (all tables included)
+
+%% SCHEMA INFORMATION:
+%% - Total tables in schema: 6
+%% - Tables in this diagram: 6
+%% - Generated at: 2025-08-09T15:46:43.851Z
+%% - Solution: Pet Store Solution (petstoresolution)
+%% - Publisher prefix: pets
+
+%% USAGE:
+%% This diagram can be used with:
+%% - Mermaid Live Editor (https://mermaid.live)
+%% - VS Code Mermaid Preview extension
+%% - GitHub/GitLab (native Mermaid support)
+%% - Documentation tools that support Mermaid diagrams
+
+%% To regenerate this diagram, use the Dataverse MCP Server with:
+%% generate_mermaid_diagram({
+%%   "schemaPath": "pet-store-schema-basic.json",
+%%   "outputPath": "pet-store-diagram.mmd",
+%%   "includeColumns": true,
+%%   "includeRelationships": true
+%% })
+
+erDiagram
+    account {
+        uuid accountid PK "NOT NULL"
+        uuid address1_addressid PK
+        uuid address2_addressid PK
+    }
+
+    contact {
+        uuid address1_addressid PK
+        uuid address2_addressid PK
+        uuid address3_addressid PK
+        uuid contactid PK "NOT NULL"
+    }
+
+    pets_animal {
+        int pets_age
+        uuid pets_animalid PK "NOT NULL"
+        string pets_animalname "Primary Name NOT NULL"
+        datetime pets_birthdate
+        uuid pets_customerid FK "Lookup (pets_customer)"
+        string pets_customeridname
+        string pets_description
+        decimal pets_height
+        boolean pets_isavailable
+        string pets_isavailablename
+        int pets_microchipid
+        string pets_notes
+        string pets_petname "NOT NULL"
+        decimal pets_price
+        decimal pets_price_base
+        int pets_status
+        string pets_statusname
+        decimal pets_weight
+    }
+
+    pets_customer {
+        uuid pets_customerid PK "NOT NULL"
+        string pets_customername "Primary Name NOT NULL"
+    }
+
+    pets_category {
+        uuid pets_categoryid PK "NOT NULL"
+        string pets_categoryname "Primary Name NOT NULL"
+    }
+
+    pets_animal_category {
+        uuid pets_animal_categoryid PK "NOT NULL"
+    }
+
+    pets_animal }o--o{ pets_category : "pets_animal_category"
+    pets_customer ||--o{ pets_animal : "pets_customer_animal"
+
+%% End of diagram - 6 tables processed

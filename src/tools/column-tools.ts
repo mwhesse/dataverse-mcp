@@ -121,9 +121,7 @@ export function createColumnTool(server: McpServer, client: DataverseClient) {
             // Remove Format property for now to avoid enum issues
             if (params.minValue !== undefined) attributeDefinition.MinValue = params.minValue;
             if (params.maxValue !== undefined) attributeDefinition.MaxValue = params.maxValue;
-            if (params.defaultValue && typeof params.defaultValue === "number") {
-              attributeDefinition.DefaultValue = params.defaultValue;
-            }
+            // Note: IntegerAttributeMetadata doesn't support DefaultValue property
             break;
 
           case "Decimal":
@@ -318,41 +316,55 @@ export function updateColumnTool(server: McpServer, client: DataverseClient) {
     },
     async (params) => {
       try {
-        const updateData: any = {};
+        // First, retrieve the current attribute definition
+        const currentAttribute = await client.getMetadata<AttributeMetadata>(
+          `EntityDefinitions(LogicalName='${params.entityLogicalName}')/Attributes(LogicalName='${params.logicalName}')`
+        );
 
+        // Create the updated attribute definition by merging current with new values
+        const updatedAttribute: any = {
+          ...currentAttribute,
+          "@odata.type": currentAttribute["@odata.type"]
+        };
+
+        // Update only the specified properties
         if (params.displayName) {
-          updateData.DisplayName = createLocalizedLabel(params.displayName);
+          updatedAttribute.DisplayName = createLocalizedLabel(params.displayName);
         }
         if (params.description) {
-          updateData.Description = createLocalizedLabel(params.description);
+          updatedAttribute.Description = createLocalizedLabel(params.description);
         }
         if (params.requiredLevel) {
-          updateData.RequiredLevel = {
+          updatedAttribute.RequiredLevel = {
             Value: params.requiredLevel,
             CanBeChanged: true,
             ManagedPropertyLogicalName: "canmodifyrequirementlevelsettings"
           };
         }
         if (params.isAuditEnabled !== undefined) {
-          updateData.IsAuditEnabled = {
+          updatedAttribute.IsAuditEnabled = {
             Value: params.isAuditEnabled,
             CanBeChanged: true,
             ManagedPropertyLogicalName: "canmodifyauditsettings"
           };
         }
         if (params.isValidForAdvancedFind !== undefined) {
-          updateData.IsValidForAdvancedFind = params.isValidForAdvancedFind;
+          updatedAttribute.IsValidForAdvancedFind = params.isValidForAdvancedFind;
         }
         if (params.isValidForCreate !== undefined) {
-          updateData.IsValidForCreate = params.isValidForCreate;
+          updatedAttribute.IsValidForCreate = params.isValidForCreate;
         }
         if (params.isValidForUpdate !== undefined) {
-          updateData.IsValidForUpdate = params.isValidForUpdate;
+          updatedAttribute.IsValidForUpdate = params.isValidForUpdate;
         }
 
-        await client.patchMetadata(
+        // Use PUT method with MSCRM.MergeLabels header as per Microsoft documentation
+        await client.putMetadata(
           `EntityDefinitions(LogicalName='${params.entityLogicalName}')/Attributes(LogicalName='${params.logicalName}')`,
-          updateData
+          updatedAttribute,
+          {
+            'MSCRM.MergeLabels': 'true'
+          }
         );
 
         return {
