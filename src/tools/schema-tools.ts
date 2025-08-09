@@ -23,7 +23,7 @@ export const generateMermaidDiagramSchema = z.object({
   outputPath: z.string().optional().describe('Path where to save the Mermaid diagram file (default: schema-diagram.mmd)'),
   includeColumns: z.boolean().optional().default(true).describe('Whether to include column details in the diagram'),
   includeRelationships: z.boolean().optional().default(true).describe('Whether to include relationships in the diagram'),
-  maxTablesPerDiagram: z.number().optional().describe('Maximum number of tables per diagram (creates multiple files if exceeded). If not specified, all tables will be included in a single diagram.')
+  tableNameFilter: z.array(z.string()).optional().describe('List of table logical names to include in the diagram. If not specified, all tables will be included.')
 });
 
 // Types for the schema export
@@ -532,7 +532,7 @@ export async function generateMermaidDiagram(
   args: z.infer<typeof generateMermaidDiagramSchema>
 ): Promise<string> {
   try {
-    const { schemaPath, outputPath = 'schema-diagram.mmd', includeColumns, includeRelationships, maxTablesPerDiagram } = args;
+    const { schemaPath, outputPath = 'schema-diagram.mmd', includeColumns, includeRelationships, tableNameFilter } = args;
     
     // Read and parse the schema JSON file
     if (!fs.existsSync(schemaPath)) {
@@ -561,177 +561,189 @@ export async function generateMermaidDiagram(
     
     log(`Generating Mermaid diagram from schema with ${schema.tables.length} tables`);
     
-    // Split tables into chunks if needed
-    const tableChunks: TableSchema[][] = [];
-    if (maxTablesPerDiagram && maxTablesPerDiagram > 0) {
-      // Split tables into chunks if maxTablesPerDiagram is specified
-      for (let i = 0; i < schema.tables.length; i += maxTablesPerDiagram) {
-        tableChunks.push(schema.tables.slice(i, i + maxTablesPerDiagram));
+    // Filter tables based on tableNameFilter if provided
+    let filteredTables = schema.tables;
+    if (tableNameFilter && tableNameFilter.length > 0) {
+      const filterSet = new Set(tableNameFilter.map(name => name.toLowerCase()));
+      filteredTables = schema.tables.filter(table =>
+        filterSet.has(table.logicalName.toLowerCase())
+      );
+      log(`Filtered to ${filteredTables.length} tables based on name filter: ${tableNameFilter.join(', ')}`);
+      
+      // Log which tables were found and which were not found
+      const foundTables = filteredTables.map(t => t.logicalName);
+      const notFoundTables = tableNameFilter.filter(name =>
+        !foundTables.some(found => found.toLowerCase() === name.toLowerCase())
+      );
+      
+      if (foundTables.length > 0) {
+        log(`Found tables: ${foundTables.join(', ')}`);
+      }
+      if (notFoundTables.length > 0) {
+        log(`Tables not found in schema: ${notFoundTables.join(', ')}`);
       }
     } else {
-      // Include all tables in a single diagram
-      tableChunks.push(schema.tables);
+      log('No table name filter specified, including all tables');
     }
     
     const outputFiles: string[] = [];
+    const tables = filteredTables;
     
-    for (let chunkIndex = 0; chunkIndex < tableChunks.length; chunkIndex++) {
-      const tables = tableChunks[chunkIndex];
-      const currentOutputPath = tableChunks.length > 1
-        ? outputPath.replace('.mmd', `_part${chunkIndex + 1}.mmd`)
-        : outputPath;
-      
-      log(`Generating diagram part ${chunkIndex + 1}/${tableChunks.length} with ${tables.length} tables`);
-      
-      // Generate Mermaid ERD syntax
-      let mermaidContent = 'erDiagram\n';
-      
-      // Add tables and their columns
-      for (const table of tables) {
-        const tableName = table.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
-        
-        if (includeColumns && table.columns && table.columns.length > 0) {
-          mermaidContent += `    ${tableName} {\n`;
-          
-          // Add columns
-          for (const column of table.columns) {
-            const columnType = mapDataverseTypeToMermaid(column.attributeType);
-            const isPrimaryKey = column.isPrimaryId;
-            const isPrimaryName = column.isPrimaryName;
-            const isRequired = column.requiredLevel === 'ApplicationRequired' || column.requiredLevel === 'SystemRequired';
-            const isLookup = column.attributeType === 'Lookup';
-            const columnName = column.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
-            
-            // Build column markers
-            const pkFkMarkers = [];
-            if (isPrimaryKey) {
-              pkFkMarkers.push('PK');
-            } else if (isLookup) {
-              pkFkMarkers.push('FK');
-            }
+    log(`Generating diagram with ${tables.length} tables`);
+    
+    // Generate Mermaid ERD syntax with comprehensive header comments
+    let mermaidContent = `%% ========================================
+%% GENERATED MERMAID DIAGRAM
+%% ========================================
+%% This file was automatically generated using the Dataverse MCP Server
+%% Tool: generate_mermaid_diagram
+%%
+%% GENERATION PARAMETERS:
+%% - schemaPath: ${schemaPath}
+%% - outputPath: ${outputPath}
+%% - includeColumns: ${includeColumns}
+%% - includeRelationships: ${includeRelationships}
+%% - tableNameFilter: ${tableNameFilter ? `[${tableNameFilter.join(', ')}]` : 'none (all tables included)'}
+%%
+%% SCHEMA INFORMATION:
+%% - Total tables in schema: ${schema.tables.length}
+%% - Tables in this diagram: ${tables.length}
+%% - Generated at: ${new Date().toISOString()}
+${schema.metadata.solutionUniqueName ? `%% - Solution: ${schema.metadata.solutionDisplayName} (${schema.metadata.solutionUniqueName})` : ''}
+${schema.metadata.publisherPrefix ? `%% - Publisher prefix: ${schema.metadata.publisherPrefix}` : ''}
+%%
+%% USAGE:
+%% This diagram can be used with:
+%% - Mermaid Live Editor (https://mermaid.live)
+%% - VS Code Mermaid Preview extension
+%% - GitHub/GitLab (native Mermaid support)
+%% - Documentation tools that support Mermaid diagrams
+%%
+%% To regenerate this diagram, use the Dataverse MCP Server with:
+%% generate_mermaid_diagram({
+%%   "schemaPath": "${schemaPath}",
+%%   "outputPath": "${outputPath}",
+%%   "includeColumns": ${includeColumns},
+%%   "includeRelationships": ${includeRelationships}${tableNameFilter ? `,\n%%   "tableNameFilter": [${tableNameFilter.map(t => `"${t}"`).join(', ')}]` : ''}
+%% })
+%% ========================================
 
-            const otherMarkers = [];
-            if (isPrimaryName) {
-              otherMarkers.push('Primary Name');
+erDiagram
+`;
+    
+    // Add tables and their columns
+    for (const table of tables) {
+      const tableName = table.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
+      
+      if (includeColumns && table.columns && table.columns.length > 0) {
+        mermaidContent += `    ${tableName} {\n`;
+        
+        // Add columns
+        for (const column of table.columns) {
+          const columnType = mapDataverseTypeToMermaid(column.attributeType);
+          const isPrimaryKey = column.isPrimaryId;
+          const isPrimaryName = column.isPrimaryName;
+          const isRequired = column.requiredLevel === 'ApplicationRequired' || column.requiredLevel === 'SystemRequired';
+          const isLookup = column.attributeType === 'Lookup';
+          const columnName = column.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
+          
+          // Build column markers
+          const pkFkMarkers = [];
+          if (isPrimaryKey) {
+            pkFkMarkers.push('PK');
+          } else if (isLookup) {
+            pkFkMarkers.push('FK');
+          }
+
+          const otherMarkers = [];
+          if (isPrimaryName) {
+            otherMarkers.push('Primary Name');
+          }
+          if (isLookup) {
+            // Include target table names in the lookup marker
+            if (column.targets && column.targets.length > 0) {
+              const targetNames = column.targets.join(', ');
+              otherMarkers.push(`Lookup (${targetNames})`);
+            } else {
+              otherMarkers.push('Lookup');
             }
-            if (isLookup) {
-              // Include target table names in the lookup marker
-              if (column.targets && column.targets.length > 0) {
-                const targetNames = column.targets.join(', ');
-                otherMarkers.push(`Lookup (${targetNames})`);
-              } else {
-                otherMarkers.push('Lookup');
-              }
-            }
-            if (isRequired) {
-              otherMarkers.push('NOT NULL');
-            }
-            
-            const pkFkMarkersStr = pkFkMarkers.length > 0 ? ` ${pkFkMarkers.join(' ')}` : '';
-            const otherMarkersStr = otherMarkers.length > 0 ? ` "${otherMarkers.join(' ')}"` : '';
-            mermaidContent += `        ${columnType} ${columnName}${pkFkMarkersStr}${otherMarkersStr}\n`;
+          }
+          if (isRequired) {
+            otherMarkers.push('NOT NULL');
           }
           
-          mermaidContent += '    }\n\n';
-        } else {
-          // Just add table name without columns
-          mermaidContent += `    ${tableName} {\n`;
-          mermaidContent += `        string id PK\n`;
-          mermaidContent += '    }\n\n';
+          const pkFkMarkersStr = pkFkMarkers.length > 0 ? ` ${pkFkMarkers.join(' ')}` : '';
+          const otherMarkersStr = otherMarkers.length > 0 ? ` "${otherMarkers.join(' ')}"` : '';
+          mermaidContent += `        ${columnType} ${columnName}${pkFkMarkersStr}${otherMarkersStr}\n`;
+        }
+        
+        mermaidContent += '    }\n\n';
+      } else {
+        // Just add table name without columns
+        mermaidContent += `    ${tableName} {\n`;
+        mermaidContent += `        string id PK\n`;
+        mermaidContent += '    }\n\n';
+      }
+    }
+    
+    // Add relationships if requested
+    if (includeRelationships) {
+      const tableNames = tables.map(t => t.logicalName);
+      const relationships: Array<{from: string, to: string, label: string}> = [];
+      
+      // First, add explicit relationships from schema if available
+      if (schema.relationships && schema.relationships.length > 0) {
+        log(`Adding ${schema.relationships.length} explicit relationships to diagram`);
+        
+        for (const relationship of schema.relationships) {
+          // Only include relationships where both entities are in filtered tables
+          if (relationship.relationshipType === 'OneToMany' &&
+              relationship.referencedEntity && relationship.referencingEntity) {
+            
+            if (tableNames.includes(relationship.referencedEntity) &&
+                tableNames.includes(relationship.referencingEntity)) {
+              
+              const referencedTable = relationship.referencedEntity.replace(/[^a-zA-Z0-9_]/g, '_');
+              const referencingTable = relationship.referencingEntity.replace(/[^a-zA-Z0-9_]/g, '_');
+              
+              relationships.push({
+                from: referencedTable,
+                to: referencingTable,
+                label: relationship.schemaName
+              });
+            }
+          } else if (relationship.relationshipType === 'ManyToMany' &&
+                     relationship.entity1LogicalName && relationship.entity2LogicalName) {
+            
+            if (tableNames.includes(relationship.entity1LogicalName) &&
+                tableNames.includes(relationship.entity2LogicalName)) {
+              
+              const entity1 = relationship.entity1LogicalName.replace(/[^a-zA-Z0-9_]/g, '_');
+              const entity2 = relationship.entity2LogicalName.replace(/[^a-zA-Z0-9_]/g, '_');
+              
+              // For many-to-many, we'll use a different syntax
+              mermaidContent += `    ${entity1} }o--o{ ${entity2} : "${relationship.schemaName}"\n`;
+            }
+          }
         }
       }
       
-      // Add relationships if requested
-      if (includeRelationships) {
-        const tableNames = tables.map(t => t.logicalName);
-        const relationships: Array<{from: string, to: string, label: string}> = [];
+      // Second, detect lookup columns and convert them to relationships using Targets property
+      log('Detecting lookup columns and converting to relationships...');
+      let lookupRelationshipsFound = 0;
+      
+      for (const table of tables) {
+        if (!table.columns) continue;
         
-        // First, add explicit relationships from schema if available
-        if (schema.relationships && schema.relationships.length > 0) {
-          log(`Adding ${schema.relationships.length} explicit relationships to diagram`);
-          
-          for (const relationship of schema.relationships) {
-            // Only include relationships where both entities are in current chunk
-            if (relationship.relationshipType === 'OneToMany' &&
-                relationship.referencedEntity && relationship.referencingEntity) {
-              
-              if (tableNames.includes(relationship.referencedEntity) &&
-                  tableNames.includes(relationship.referencingEntity)) {
-                
-                const referencedTable = relationship.referencedEntity.replace(/[^a-zA-Z0-9_]/g, '_');
-                const referencingTable = relationship.referencingEntity.replace(/[^a-zA-Z0-9_]/g, '_');
-                
-                relationships.push({
-                  from: referencedTable,
-                  to: referencingTable,
-                  label: relationship.schemaName
-                });
-              }
-            } else if (relationship.relationshipType === 'ManyToMany' &&
-                       relationship.entity1LogicalName && relationship.entity2LogicalName) {
-              
-              if (tableNames.includes(relationship.entity1LogicalName) &&
-                  tableNames.includes(relationship.entity2LogicalName)) {
-                
-                const entity1 = relationship.entity1LogicalName.replace(/[^a-zA-Z0-9_]/g, '_');
-                const entity2 = relationship.entity2LogicalName.replace(/[^a-zA-Z0-9_]/g, '_');
-                
-                // For many-to-many, we'll use a different syntax
-                mermaidContent += `    ${entity1} }o--o{ ${entity2} : "${relationship.schemaName}"\n`;
-              }
-            }
-          }
-        }
-        
-        // Second, detect lookup columns and convert them to relationships using Targets property
-        log('Detecting lookup columns and converting to relationships...');
-        let lookupRelationshipsFound = 0;
-        
-        for (const table of tables) {
-          if (!table.columns) continue;
-          
-          for (const column of table.columns) {
-            // Check if this is a lookup column with targets (and not the corresponding name field)
-            // Note: We need to be careful not to exclude legitimate lookup columns that end with 'name'
-            // The name fields are typically String type, not Lookup type, so we can rely on attributeType
-            if (column.attributeType === 'Lookup' && column.targets && column.targets.length > 0) {
-              log(`  Analyzing lookup column: ${table.logicalName}.${column.logicalName}`);
-              log(`    Targets: ${column.targets.join(', ')}`);
-              
-              // Create relationships for each target
-              for (const targetTable of column.targets) {
-                if (tableNames.includes(targetTable)) {
-                  const fromTable = targetTable.replace(/[^a-zA-Z0-9_]/g, '_');
-                  const toTable = table.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
-                  const relationshipLabel = column.displayName || column.logicalName;
-                  
-                  // Check if we already have this relationship (avoid duplicates)
-                  const existingRelationship = relationships.find(r =>
-                    r.from === fromTable && r.to === toTable && r.label === relationshipLabel
-                  );
-                  
-                  if (!existingRelationship) {
-                    relationships.push({
-                      from: fromTable,
-                      to: toTable,
-                      label: relationshipLabel
-                    });
-                    lookupRelationshipsFound++;
-                    log(`    ✓ Added relationship: ${targetTable} -> ${table.logicalName} (via ${column.logicalName})`);
-                  } else {
-                    log(`    - Relationship already exists: ${targetTable} -> ${table.logicalName}`);
-                  }
-                } else {
-                  log(`    - Target table ${targetTable} not in current diagram chunk`);
-                }
-              }
-            } else if (column.attributeType === 'Lookup' && !column.logicalName.endsWith('name')) {
-              // Fallback: try to infer target if no targets property available
-              log(`  Analyzing lookup column without targets: ${table.logicalName}.${column.logicalName}`);
-              
-              const targetTable = inferTargetTableFromLookupColumn(column.logicalName, tables, schema.tables);
-              
-              if (targetTable && tableNames.includes(targetTable)) {
+        for (const column of table.columns) {
+          // Check if this is a lookup column with targets
+          if (column.attributeType === 'Lookup' && column.targets && column.targets.length > 0) {
+            log(`  Analyzing lookup column: ${table.logicalName}.${column.logicalName}`);
+            log(`    Targets: ${column.targets.join(', ')}`);
+            
+            // Create relationships for each target
+            for (const targetTable of column.targets) {
+              if (tableNames.includes(targetTable)) {
                 const fromTable = targetTable.replace(/[^a-zA-Z0-9_]/g, '_');
                 const toTable = table.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
                 const relationshipLabel = column.displayName || column.logicalName;
@@ -748,46 +760,71 @@ export async function generateMermaidDiagram(
                     label: relationshipLabel
                   });
                   lookupRelationshipsFound++;
-                  log(`    ✓ Added inferred relationship: ${targetTable} -> ${table.logicalName} (via ${column.logicalName})`);
+                  log(`    ✓ Added relationship: ${targetTable} -> ${table.logicalName} (via ${column.logicalName})`);
+                } else {
+                  log(`    - Relationship already exists: ${targetTable} -> ${table.logicalName}`);
                 }
               } else {
-                log(`    - Could not determine target table for ${column.logicalName}`);
+                log(`    - Target table ${targetTable} not in filtered tables`);
               }
+            }
+          } else if (column.attributeType === 'Lookup' && !column.logicalName.endsWith('name')) {
+            // Fallback: try to infer target if no targets property available
+            log(`  Analyzing lookup column without targets: ${table.logicalName}.${column.logicalName}`);
+            
+            const targetTable = inferTargetTableFromLookupColumn(column.logicalName, tables, schema.tables);
+            
+            if (targetTable && tableNames.includes(targetTable)) {
+              const fromTable = targetTable.replace(/[^a-zA-Z0-9_]/g, '_');
+              const toTable = table.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
+              const relationshipLabel = column.displayName || column.logicalName;
+              
+              // Check if we already have this relationship (avoid duplicates)
+              const existingRelationship = relationships.find(r =>
+                r.from === fromTable && r.to === toTable && r.label === relationshipLabel
+              );
+              
+              if (!existingRelationship) {
+                relationships.push({
+                  from: fromTable,
+                  to: toTable,
+                  label: relationshipLabel
+                });
+                lookupRelationshipsFound++;
+                log(`    ✓ Added inferred relationship: ${targetTable} -> ${table.logicalName} (via ${column.logicalName})`);
+              }
+            } else {
+              log(`    - Could not determine target table for ${column.logicalName}`);
             }
           }
         }
-        
-        log(`Found ${lookupRelationshipsFound} lookup-based relationships`);
-        
-        // Add all relationships to the diagram
-        for (const rel of relationships) {
-          mermaidContent += `    ${rel.from} ||--o{ ${rel.to} : "${rel.label}"\n`;
-        }
-        
-        if (relationships.length > 0) {
-          log(`Added ${relationships.length} total relationships to diagram`);
-        }
       }
       
-      // Add metadata as comments
-      mermaidContent += `\n%% Generated from: ${schemaPath}\n`;
-      mermaidContent += `%% Generated at: ${new Date().toISOString()}\n`;
-      if (schema.metadata.solutionUniqueName) {
-        mermaidContent += `%% Solution: ${schema.metadata.solutionDisplayName} (${schema.metadata.solutionUniqueName})\n`;
-      }
-      mermaidContent += `%% Tables in this diagram: ${tables.length}\n`;
+      log(`Found ${lookupRelationshipsFound} lookup-based relationships`);
       
-      // Write the Mermaid file
-      const outputDir = path.dirname(currentOutputPath);
-      if (outputDir !== '.' && !fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
+      // Add all relationships to the diagram
+      for (const rel of relationships) {
+        mermaidContent += `    ${rel.from} ||--o{ ${rel.to} : "${rel.label}"\n`;
       }
       
-      fs.writeFileSync(currentOutputPath, mermaidContent, 'utf8');
-      outputFiles.push(currentOutputPath);
-      
-      log(`Generated Mermaid diagram: ${currentOutputPath}`);
+      if (relationships.length > 0) {
+        log(`Added ${relationships.length} total relationships to diagram`);
+      }
     }
+    
+    // Add end-of-diagram metadata comment
+    mermaidContent += `\n%% End of diagram - ${tables.length} tables processed\n`;
+    
+    // Write the Mermaid file
+    const outputDir = path.dirname(outputPath);
+    if (outputDir !== '.' && !fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(outputPath, mermaidContent, 'utf8');
+    outputFiles.push(outputPath);
+    
+    log(`Generated Mermaid diagram: ${outputPath}`);
     
     const totalTables = schema.tables.length;
     const totalColumns = schema.tables.reduce((sum, table) => sum + (table.columns?.length || 0), 0);
@@ -800,7 +837,8 @@ ${debugMessages.map(msg => `  ${msg}`).join('\n')}
 
 📊 **Diagram Summary:**
 - **Source Schema:** ${schemaPath}
-- **Tables Processed:** ${totalTables}
+- **Total Tables in Schema:** ${totalTables}
+- **Tables in Diagram:** ${tables.length}
 - **Columns Processed:** ${totalColumns}
 - **Relationships:** ${totalRelationships}
 - **Diagram Files:** ${outputFiles.length}
@@ -811,7 +849,7 @@ ${outputFiles.map(file => `- ${file} (${(fs.statSync(file).size / 1024).toFixed(
 🎨 **Diagram Features:**
 ${includeColumns ? '✅ Column details included' : '❌ Column details excluded'}
 ${includeRelationships ? '✅ Relationships included' : '❌ Relationships excluded'}
-${outputFiles.length > 1 ? `📄 Split into ${outputFiles.length} parts (max ${maxTablesPerDiagram || 'unlimited'} tables per diagram)` : '📄 Single diagram file'}
+${tableNameFilter && tableNameFilter.length > 0 ? `🎯 Table filter applied: ${tableNameFilter.join(', ')}` : '📄 All tables included'}
 
 💡 **Usage:**
 You can now use these .mmd files with:
@@ -992,7 +1030,7 @@ export function generateMermaidDiagramTool(server: McpServer, client: DataverseC
       outputPath: z.string().optional().describe('Path where to save the Mermaid diagram file (default: schema-diagram.mmd)'),
       includeColumns: z.boolean().optional().default(true).describe('Whether to include column details in the diagram'),
       includeRelationships: z.boolean().optional().default(true).describe('Whether to include relationships in the diagram'),
-      maxTablesPerDiagram: z.number().optional().describe('Maximum number of tables per diagram (creates multiple files if exceeded). If not specified, all tables will be included in a single diagram.')
+      tableNameFilter: z.array(z.string()).optional().describe('List of table logical names to include in the diagram. If not specified, all tables will be included.')
     },
     async (args) => {
       try {
