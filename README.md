@@ -90,6 +90,13 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
   - [Solution Context Management](#solution-context-management)
   - [Environment Promotion](#environment-promotion)
   - [Git Integration](#git-integration)
+- [Developer Notebook](#developer-notebook)
+  - [MCP Configuration Recommendations](#mcp-configuration-recommendations)
+  - [Read-Only Tools for alwaysAllow Configuration](#read-only-tools-for-alwaysallow-configuration)
+  - [Benefits of This Configuration](#benefits-of-this-configuration)
+  - [Common Development Workflows](#common-development-workflows)
+  - [Security Considerations](#security-considerations)
+  - [Advanced Configuration Tips](#advanced-configuration-tips)
 - [Contributing](#contributing)
 - [Releasing](#releasing)
   - [Creating a Release](#creating-a-release)
@@ -1924,6 +1931,154 @@ If you prefer to create releases manually:
 2. Update version: `npm version [patch|minor|major]`
 3. Push changes: `git push && git push --tags`
 4. The GitHub Actions workflow will handle the rest
+
+## Developer Notebook
+
+### MCP Configuration Recommendations
+
+This section provides real-world recommendations for configuring the Dataverse MCP server to accelerate development workflows.
+
+#### Read-Only Tools for `alwaysAllow` Configuration
+
+For faster development cycles, consider adding these read-only tools to your MCP server's `alwaysAllow` configuration. Since these tools only read data and don't make any changes to your Dataverse environment, they're safe to auto-approve and won't cause any side effects.
+
+**Recommended `alwaysAllow` configuration:**
+
+```json
+{
+  "mcpServers": {
+    "dataverse": {
+      "command": "cmd",
+      "args": ["/c", "node", "C:\\path\\to\\mcp-dataverse\\build\\index.js"],
+      "env": {
+        "DATAVERSE_URL": "https://yourorg.crm.dynamics.com",
+        "DATAVERSE_CLIENT_ID": "your-client-id",
+        "DATAVERSE_CLIENT_SECRET": "your-client-secret",
+        "DATAVERSE_TENANT_ID": "your-tenant-id"
+      },
+      "alwaysAllow": [
+        "get_dataverse_table",
+        "list_dataverse_tables",
+        "get_dataverse_column",
+        "list_dataverse_columns",
+        "get_dataverse_relationship",
+        "list_dataverse_relationships",
+        "get_dataverse_optionset",
+        "list_dataverse_optionsets",
+        "get_dataverse_optionset_options",
+        "get_dataverse_solution",
+        "get_dataverse_publisher",
+        "list_dataverse_solutions",
+        "list_dataverse_publishers",
+        "get_solution_context",
+        "get_dataverse_role",
+        "list_dataverse_roles",
+        "get_role_privileges",
+        "get_dataverse_team",
+        "list_dataverse_teams",
+        "get_team_members",
+        "get_dataverse_businessunit",
+        "list_dataverse_businessunits",
+        "get_businessunit_hierarchy",
+        "get_businessunit_users",
+        "get_businessunit_teams",
+        "export_solution_schema",
+        "generate_mermaid_diagram",
+        "generate_webapi_call",
+        "generate_powerpages_webapi_call"
+      ],
+      "timeout": 900
+    }
+  }
+}
+```
+
+#### Benefits of This Configuration
+
+**🚀 Accelerated Development:**
+- No approval prompts for schema exploration
+- Instant access to table and column information
+- Quick solution and publisher lookups
+- Immediate schema documentation generation
+
+**🔒 Zero Risk:**
+- All listed tools are read-only operations
+- No data modification or schema changes
+- Safe for production environment connections
+- No side effects or unintended consequences
+
+**📊 Enhanced Productivity:**
+- Faster debugging and troubleshooting
+- Instant schema validation and exploration
+- Quick relationship and dependency analysis
+- Seamless documentation generation workflow
+
+#### Common Development Workflows
+
+**Schema Exploration:**
+```typescript
+// These will execute immediately without approval prompts
+await use_mcp_tool("dataverse", "list_dataverse_tables", { customOnly: true });
+await use_mcp_tool("dataverse", "get_dataverse_table", { logicalName: "xyz_project" });
+await use_mcp_tool("dataverse", "list_dataverse_columns", { entityLogicalName: "xyz_project" });
+```
+
+**Solution Analysis:**
+```typescript
+// Instant solution context and publisher information
+await use_mcp_tool("dataverse", "get_solution_context", {});
+await use_mcp_tool("dataverse", "list_dataverse_solutions", { includeManaged: false });
+await use_mcp_tool("dataverse", "get_dataverse_publisher", { uniqueName: "xyzpublisher" });
+```
+
+**Documentation Generation:**
+```typescript
+// Generate schema documentation without approval delays
+await use_mcp_tool("dataverse", "export_solution_schema", {
+  outputPath: "current-schema.json"
+});
+await use_mcp_tool("dataverse", "generate_mermaid_diagram", {
+  schemaPath: "current-schema.json",
+  outputPath: "schema-diagram.mmd"
+});
+```
+
+**WebAPI Code Generation:**
+```typescript
+// Generate API calls instantly for development
+await use_mcp_tool("dataverse", "generate_webapi_call", {
+  operation: "retrieveMultiple",
+  entitySetName: "xyz_projects",
+  select: ["xyz_name", "xyz_status"]
+});
+```
+
+#### Security Considerations
+
+While these tools are read-only and safe, consider these security practices:
+
+- **Environment Separation**: Use different MCP configurations for dev/test/prod environments
+- **Credential Management**: Store sensitive credentials in secure environment variables
+- **Access Monitoring**: Regularly review which tools are in `alwaysAllow` lists
+- **Team Guidelines**: Establish team standards for MCP configuration management
+
+#### Advanced Configuration Tips
+
+**Selective Tool Enabling:**
+If you prefer more granular control, start with the most commonly used read-only tools:
+
+```json
+"alwaysAllow": [
+  "get_dataverse_table",
+  "list_dataverse_tables",
+  "get_dataverse_column",
+  "list_dataverse_columns",
+  "get_solution_context",
+  "export_solution_schema"
+]
+```
+
+This configuration approach significantly improves the developer experience while maintaining security through the separation of read-only and write operations.
 
 ## License
 
