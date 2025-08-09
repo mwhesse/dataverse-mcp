@@ -5,6 +5,33 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2]
+
+### Fixed
+- **Relationship Type Display Bug** - Fixed critical bug where OneToMany relationships were incorrectly displayed as ManyToMany
+  - **Root Cause Analysis**: Identified two primary issues in the relationship filtering logic:
+    1. **Incorrect Entity Filtering Logic**: Ternary operator incorrectly applied OneToMany filtering to all relationships when `relationshipType` was "All"
+    2. **Unreliable Relationship Type Detection**: Using `RelationshipType` enum values instead of property-based detection
+  - **Technical Implementation**:
+    - Implemented proper Dataverse WebAPI cast syntax using `Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata` and `Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata`
+    - Fixed entity filtering logic to properly handle "All" relationship types with separate API calls for each relationship type
+    - Improved relationship type detection based on property presence (`'ReferencedEntity' in relationship`) rather than unreliable enum values
+    - Enhanced entity filtering to work correctly with both OneToMany (`ReferencedEntity`/`ReferencingEntity`) and ManyToMany (`Entity1LogicalName`/`Entity2LogicalName`) properties
+  - **API Improvements**: Used proper cast syntax with separate endpoints for different relationship types instead of relying on filtering
+  - **Testing**: Comprehensive testing confirmed OneToMany relationships now correctly display as "OneToMany" instead of "ManyToMany"
+
+- **Metadata API Parameter Support** - Removed unsupported `top` parameter from all metadata list operations
+  - **Issue**: Dataverse metadata endpoints do not support the `top` parameter, causing API errors
+  - **Resolution**: Removed `top` parameter from `list_dataverse_relationships`, `list_dataverse_tables`, and `list_dataverse_columns` tool schemas
+  - **Impact**: All metadata operations now return complete result sets without artificial limits or API errors
+  - **Files Modified**: Updated schemas in `relationship-tools.ts`, `table-tools.ts`, and `column-tools.ts`
+
+### Technical Details
+- **Enhanced Relationship Filtering**: Implemented separate API calls for OneToMany and ManyToMany relationships using proper Dataverse WebAPI cast syntax
+- **Improved Type Detection**: Replaced unreliable enum-based detection with property-based relationship type identification
+- **API Compliance**: Ensured all metadata operations use only supported query parameters
+- **Comprehensive Testing**: Created test suite (`test/test-relationship-filtering-fix.cjs`) to verify the fix works correctly
+
 ## [0.2.1]
 
 ### Added

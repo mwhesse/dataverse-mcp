@@ -301,7 +301,6 @@ export function listTablesTool(server: McpServer, client: DataverseClient) {
     {
       customOnly: z.boolean().default(false).describe("Whether to list only custom tables"),
       includeManaged: z.boolean().default(false).describe("Whether to include managed tables"),
-      top: z.number().optional().describe("Maximum number of tables to return (default: 50)"),
       filter: z.string().optional().describe("OData filter expression")
     },
     async (params) => {

@@ -268,63 +268,88 @@ export function listRelationshipsTool(server: McpServer, client: DataverseClient
       relationshipType: z.enum(["OneToMany", "ManyToMany", "All"]).default("All").describe("Type of relationships to list"),
       customOnly: z.boolean().default(false).describe("Whether to list only custom relationships"),
       includeManaged: z.boolean().default(false).describe("Whether to include managed relationships"),
-      top: z.number().optional().describe("Maximum number of relationships to return (default: 50)"),
       filter: z.string().optional().describe("OData filter expression")
     },
     async (params) => {
       try {
-        let queryParams: Record<string, any> = {
-          $select: "SchemaName,RelationshipType,IsCustomRelationship,IsManaged,IsValidForAdvancedFind"
-        };
+        let allRelationships: (OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata)[] = [];
 
-        let filters: string[] = [];
-        
+        // Build base filters
+        const baseFilters = [];
         if (params.customOnly) {
-          filters.push("IsCustomRelationship eq true");
+          baseFilters.push("IsCustomRelationship eq true");
         }
-        
         if (!params.includeManaged) {
-          filters.push("IsManaged eq false");
+          baseFilters.push("IsManaged eq false");
         }
-
-        if (params.relationshipType !== "All") {
-          const typeFilter = params.relationshipType === "OneToMany" 
-            ? "RelationshipType eq Microsoft.Dynamics.CRM.RelationshipType'OneToManyRelationship'"
-            : "RelationshipType eq Microsoft.Dynamics.CRM.RelationshipType'ManyToManyRelationship'";
-          filters.push(typeFilter);
-        }
-
-        if (params.entityLogicalName) {
-          // For entity-specific relationships, we need to check both sides
-          const entityFilter = params.relationshipType === "ManyToMany" 
-            ? `(Entity1LogicalName eq '${params.entityLogicalName}' or Entity2LogicalName eq '${params.entityLogicalName}')`
-            : `(ReferencedEntity eq '${params.entityLogicalName}' or ReferencingEntity eq '${params.entityLogicalName}')`;
-          filters.push(entityFilter);
-        }
-
         if (params.filter) {
-          filters.push(params.filter);
+          baseFilters.push(params.filter);
         }
 
-        if (filters.length > 0) {
-          queryParams.$filter = filters.join(" and ");
+        // Handle different relationship type scenarios using the correct cast syntax
+        if (params.relationshipType === "OneToMany" || params.relationshipType === "All") {
+          // Query OneToMany relationships using cast syntax
+          const oneToManyFilters = [...baseFilters];
+          if (params.entityLogicalName) {
+            oneToManyFilters.push(`(ReferencedEntity eq '${params.entityLogicalName}' or ReferencingEntity eq '${params.entityLogicalName}')`);
+          }
+
+          const oneToManyParams: Record<string, any> = {
+            $select: "SchemaName,RelationshipType,IsCustomRelationship,IsManaged,IsValidForAdvancedFind,ReferencedEntity,ReferencingEntity,ReferencingAttribute,IsHierarchical"
+          };
+          
+          if (oneToManyFilters.length > 0) {
+            oneToManyParams.$filter = oneToManyFilters.join(" and ");
+          }
+
+
+          const oneToManyResult = await client.getMetadata<ODataResponse<OneToManyRelationshipMetadata>>(
+            "RelationshipDefinitions/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+            oneToManyParams
+          );
+          allRelationships.push(...oneToManyResult.value);
         }
 
-        const result = await client.getMetadata<ODataResponse<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>>(
-          "RelationshipDefinitions",
-          queryParams
-        );
+        if (params.relationshipType === "ManyToMany" || params.relationshipType === "All") {
+          // Query ManyToMany relationships using cast syntax
+          const manyToManyFilters = [...baseFilters];
+          if (params.entityLogicalName) {
+            manyToManyFilters.push(`(Entity1LogicalName eq '${params.entityLogicalName}' or Entity2LogicalName eq '${params.entityLogicalName}')`);
+          }
 
-        const relationshipList = result.value.map(relationship => {
+          const manyToManyParams: Record<string, any> = {
+            $select: "SchemaName,RelationshipType,IsCustomRelationship,IsManaged,IsValidForAdvancedFind,Entity1LogicalName,Entity2LogicalName,IntersectEntityName"
+          };
+          
+          if (manyToManyFilters.length > 0) {
+            manyToManyParams.$filter = manyToManyFilters.join(" and ");
+          }
+
+
+          const manyToManyResult = await client.getMetadata<ODataResponse<ManyToManyRelationshipMetadata>>(
+            "RelationshipDefinitions/Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata",
+            manyToManyParams
+          );
+          allRelationships.push(...manyToManyResult.value);
+        }
+
+        // Note: $top parameter is not supported by Dataverse metadata endpoints
+
+        const relationshipList = allRelationships.map(relationship => {
+          // Determine relationship type based on the presence of specific properties
+          // rather than the RelationshipType enum value
+          const isOneToMany = 'ReferencedEntity' in relationship && 'ReferencingEntity' in relationship;
+          const relationshipType = isOneToMany ? "OneToMany" : "ManyToMany";
+          
           const baseInfo = {
             schemaName: relationship.SchemaName,
-            relationshipType: relationship.RelationshipType === 0 ? "OneToMany" : "ManyToMany",
+            relationshipType: relationshipType,
             isCustom: relationship.IsCustomRelationship,
             isManaged: relationship.IsManaged,
             isValidForAdvancedFind: relationship.IsValidForAdvancedFind
           };
 
-          if (relationship.RelationshipType === 0) {
+          if (isOneToMany) {
             // OneToMany
             const oneToMany = relationship as OneToManyRelationshipMetadata;
             return {

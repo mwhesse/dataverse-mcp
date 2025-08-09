@@ -421,7 +421,6 @@ export function listColumnsTool(server: McpServer, client: DataverseClient) {
       entityLogicalName: z.string().describe("Logical name of the table"),
       customOnly: z.boolean().default(false).describe("Whether to list only custom columns"),
       includeManaged: z.boolean().default(false).describe("Whether to include managed columns"),
-      top: z.number().optional().describe("Maximum number of columns to return (default: 50)"),
       filter: z.string().optional().describe("OData filter expression")
     },
     async (params) => {

@@ -115,8 +115,8 @@ if (!DATAVERSE_URL || !CLIENT_ID || !CLIENT_SECRET || !TENANT_ID) {
 
 // Create MCP server
 const server = new McpServer({
-  name: "dataverse-server",
-  version: "0.1.0"
+  name: "dataverse-mcp",
+  version: "0.2.2"
 });
 
 // Initialize Dataverse client
