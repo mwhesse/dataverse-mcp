@@ -1038,10 +1038,11 @@ The Mermaid Diagram Generation tool converts exported JSON schemas into professi
 ### Key Features
 
 - **Professional ERD Generation**: Creates publication-ready Entity Relationship Diagrams
-- **Complete Relationship Visualization**: Shows all relationships between tables with proper cardinality
+- **Schema-Based Relationships**: Uses only exported relationship metadata for accurate representation
 - **Enhanced Column Markers**: Visual indicators for Primary Keys (PK), Foreign Keys (FK), Primary Names (PN), and required fields
 - **Lookup Target Display**: Shows which tables each lookup column references (e.g., "Lookup (contact, account)")
-- **Unlimited Table Support**: Handles schemas of any size with optional diagram splitting
+- **Table Filtering**: Filter diagrams to specific tables using `tableNameFilter` parameter
+- **Comprehensive Headers**: Generated files include complete context and regeneration instructions
 - **Mermaid Compatibility**: Works with Mermaid Live Editor, VS Code extensions, GitHub, and documentation tools
 
 ### Usage Examples
@@ -1063,13 +1064,22 @@ await use_mcp_tool("dataverse", "generate_mermaid_diagram", {
   includeRelationships: true
 });
 
-// Split large schemas into multiple diagrams
+// Generate diagram for specific tables only
 await use_mcp_tool("dataverse", "generate_mermaid_diagram", {
   schemaPath: "large-schema.json",
-  outputPath: "schema-diagram.mmd",
-  maxTablesPerDiagram: 10,
+  outputPath: "filtered-diagram.mmd",
+  tableNameFilter: ["its_customer", "its_bill", "its_payment"],
   includeColumns: true,
   includeRelationships: true
+});
+
+// Generate relationship-only diagram for architecture overview
+await use_mcp_tool("dataverse", "generate_mermaid_diagram", {
+  schemaPath: "schema-export.json",
+  outputPath: "relationships-only.mmd",
+  includeColumns: false,
+  includeRelationships: true,
+  tableNameFilter: ["contact", "account", "opportunity"]
 });
 ```
 

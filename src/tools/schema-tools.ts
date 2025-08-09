@@ -10,6 +10,7 @@ export const exportSolutionSchemaSchema = z.object({
   includeAllSystemTables: z.boolean().optional().default(false).describe('Whether to include all system tables in the export'),
   includeSystemColumns: z.boolean().optional().default(false).describe('Whether to include system columns in the export'),
   includeSystemOptionSets: z.boolean().optional().default(false).describe('Whether to include system option sets in the export'),
+  includeSystemRelationships: z.boolean().optional().default(false).describe('Whether to include system (non-custom) relationships in the export'),
   prefixOnly: z.boolean().optional().default(false).describe('Whether to export only tables that match the solution customization prefix (deprecated - use customizationPrefixes instead)'),
   customizationPrefixes: z.array(z.string()).optional().describe('List of customization prefixes to include (e.g., ["new", "xyz", "its"]). If not provided and prefixOnly is true, uses solution context prefix'),
   systemTablesToInclude: z.array(z.string()).optional().default(['contact', 'account']).describe('List of system tables to include when includeAllSystemTables is false (default: contact, account)'),
@@ -117,6 +118,7 @@ interface SolutionSchema {
     includeAllSystemTables: boolean;
     includeSystemColumns: boolean;
     includeSystemOptionSets: boolean;
+    includeSystemRelationships: boolean;
     prefixOnly: boolean;
     customizationPrefixes?: string[];
     systemTablesToInclude: string[];
@@ -137,6 +139,7 @@ export async function exportSolutionSchema(
       includeAllSystemTables,
       includeSystemColumns,
       includeSystemOptionSets,
+      includeSystemRelationships,
       prefixOnly,
       customizationPrefixes,
       systemTablesToInclude = ['contact', 'account'],
@@ -163,6 +166,7 @@ export async function exportSolutionSchema(
         includeAllSystemTables,
         includeSystemColumns,
         includeSystemOptionSets,
+        includeSystemRelationships,
         prefixOnly,
         customizationPrefixes,
         systemTablesToInclude,
@@ -469,8 +473,156 @@ export async function exportSolutionSchema(
       schema.tables.push(tableSchema);
     }
 
-    // Skip relationships for now to focus on basic table/column export
-    log('Skipping relationships for simplified export...');
+    // Export relationships - only include relationships between exported tables
+    log('Exporting relationships...');
+    try {
+      const exportedTableNames = schema.tables.map(t => t.logicalName);
+      const exportedTableSet = new Set(exportedTableNames);
+      
+      log(`Filtering relationships to only include those between exported tables: ${exportedTableNames.join(', ')}`);
+      
+      // Use a more efficient approach to avoid 414 URI Too Long errors
+      // Fetch relationships with minimal server-side filtering and apply comprehensive client-side filtering
+      
+      // Export OneToMany relationships using cast syntax
+      log('Exporting OneToMany relationships...');
+      const oneToManyFilters = [];
+      
+      // Only apply system/custom filtering on server side to avoid URI length issues
+      if (!includeSystemRelationships) {
+        oneToManyFilters.push("IsCustomRelationship eq true");
+      }
+      
+      const oneToManyParams: Record<string, any> = {
+        $select: "SchemaName,RelationshipType,IsCustomRelationship,IsManaged,IsValidForAdvancedFind,ReferencedEntity,ReferencingEntity,ReferencingAttribute,IsHierarchical,CascadeConfiguration"
+      };
+      
+      if (oneToManyFilters.length > 0) {
+        oneToManyParams.$filter = oneToManyFilters.join(" and ");
+      }
+      
+      const oneToManyResult = await client.getMetadata(
+        "RelationshipDefinitions/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+        oneToManyParams
+      );
+      
+      log(`Retrieved ${oneToManyResult.value.length} OneToMany relationships from server`);
+      
+      let oneToManyFiltered = 0;
+      for (const relationship of oneToManyResult.value) {
+        // CRITICAL: Only include relationships where BOTH entities are in the exported tables
+        if (!exportedTableSet.has(relationship.ReferencedEntity) ||
+            !exportedTableSet.has(relationship.ReferencingEntity)) {
+          continue;
+        }
+        
+        // Apply additional client-side filtering based on parameters
+        if (prefixOnly || (customizationPrefixes && customizationPrefixes.length > 0)) {
+          // Check if relationship involves tables with the specified prefixes
+          const prefixesToCheck = customizationPrefixes || (prefixOnly && solutionContext?.customizationPrefix ? [solutionContext.customizationPrefix] : []);
+          if (prefixesToCheck.length > 0) {
+            const referencedMatches = prefixesToCheck.some(prefix =>
+              relationship.ReferencedEntity.toLowerCase().startsWith(prefix.toLowerCase() + '_')
+            );
+            const referencingMatches = prefixesToCheck.some(prefix =>
+              relationship.ReferencingEntity.toLowerCase().startsWith(prefix.toLowerCase() + '_')
+            );
+            
+            // Include if either entity matches the prefix (relationships can cross prefix boundaries)
+            if (!referencedMatches && !referencingMatches) {
+              continue;
+            }
+          }
+        }
+        
+        const relationshipSchema: RelationshipSchema = {
+          schemaName: relationship.SchemaName,
+          relationshipType: "OneToMany",
+          referencedEntity: relationship.ReferencedEntity,
+          referencingEntity: relationship.ReferencingEntity,
+          referencingAttribute: relationship.ReferencingAttribute,
+          cascadeConfiguration: relationship.CascadeConfiguration,
+          isCustomRelationship: relationship.IsCustomRelationship,
+          isManaged: relationship.IsManaged
+        };
+        
+        schema.relationships.push(relationshipSchema);
+        oneToManyFiltered++;
+      }
+      
+      log(`Filtered to ${oneToManyFiltered} OneToMany relationships involving exported tables`);
+      
+      // Export ManyToMany relationships using cast syntax
+      log('Exporting ManyToMany relationships...');
+      const manyToManyFilters = [];
+      
+      // Only apply system/custom filtering on server side to avoid URI length issues
+      if (!includeSystemRelationships) {
+        manyToManyFilters.push("IsCustomRelationship eq true");
+      }
+      
+      const manyToManyParams: Record<string, any> = {
+        $select: "SchemaName,RelationshipType,IsCustomRelationship,IsManaged,IsValidForAdvancedFind,Entity1LogicalName,Entity2LogicalName,IntersectEntityName"
+      };
+      
+      if (manyToManyFilters.length > 0) {
+        manyToManyParams.$filter = manyToManyFilters.join(" and ");
+      }
+      
+      const manyToManyResult = await client.getMetadata(
+        "RelationshipDefinitions/Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata",
+        manyToManyParams
+      );
+      
+      log(`Retrieved ${manyToManyResult.value.length} ManyToMany relationships from server`);
+      
+      let manyToManyFiltered = 0;
+      for (const relationship of manyToManyResult.value) {
+        // CRITICAL: Only include relationships where BOTH entities are in the exported tables
+        if (!exportedTableSet.has(relationship.Entity1LogicalName) ||
+            !exportedTableSet.has(relationship.Entity2LogicalName)) {
+          continue;
+        }
+        
+        // Apply additional client-side filtering based on parameters
+        if (prefixOnly || (customizationPrefixes && customizationPrefixes.length > 0)) {
+          // Check if relationship involves tables with the specified prefixes
+          const prefixesToCheck = customizationPrefixes || (prefixOnly && solutionContext?.customizationPrefix ? [solutionContext.customizationPrefix] : []);
+          if (prefixesToCheck.length > 0) {
+            const entity1Matches = prefixesToCheck.some(prefix =>
+              relationship.Entity1LogicalName.toLowerCase().startsWith(prefix.toLowerCase() + '_')
+            );
+            const entity2Matches = prefixesToCheck.some(prefix =>
+              relationship.Entity2LogicalName.toLowerCase().startsWith(prefix.toLowerCase() + '_')
+            );
+            
+            // Include if either entity matches the prefix (relationships can cross prefix boundaries)
+            if (!entity1Matches && !entity2Matches) {
+              continue;
+            }
+          }
+        }
+        
+        const relationshipSchema: RelationshipSchema = {
+          schemaName: relationship.SchemaName,
+          relationshipType: "ManyToMany",
+          entity1LogicalName: relationship.Entity1LogicalName,
+          entity2LogicalName: relationship.Entity2LogicalName,
+          intersectEntityName: relationship.IntersectEntityName,
+          isCustomRelationship: relationship.IsCustomRelationship,
+          isManaged: relationship.IsManaged
+        };
+        
+        schema.relationships.push(relationshipSchema);
+        manyToManyFiltered++;
+      }
+      
+      log(`Filtered to ${manyToManyFiltered} ManyToMany relationships involving exported tables`);
+      log(`Completed relationship export. Total exported: ${schema.relationships.length}`);
+    } catch (error) {
+      log(`Warning: Could not export relationships: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Full relationship export error:', error);
+    }
 
     // Write the schema to file
     const jsonOutput = prettify ? JSON.stringify(schema, null, 2) : JSON.stringify(schema);
@@ -519,6 +671,7 @@ The schema has been exported as ${prettify ? 'formatted' : 'minified'} JSON and 
 ${includeAllSystemTables ? '⚠️ All system tables included' : (systemTablesToInclude.length > 0 ? `⚠️ Selected system tables included: ${systemTablesToInclude.join(', ')}` : '✅ Custom tables only')}
 ${includeSystemColumns ? '⚠️ System columns included' : '✅ Custom columns only'}
 ${includeSystemOptionSets ? '⚠️ System option sets included' : '✅ Custom option sets only'}
+${includeSystemRelationships ? '⚠️ System relationships included' : '✅ Custom relationships only'}
 ${prefixOnly && solutionContext?.customizationPrefix ? `🎯 Filtered to ${solutionContext.customizationPrefix}_ prefix only` : ''}`;
 
   } catch (error: any) {
@@ -597,28 +750,26 @@ export async function generateMermaidDiagram(
 %% ========================================
 %% This file was automatically generated using the Dataverse MCP Server
 %% Tool: generate_mermaid_diagram
-%%
+
 %% GENERATION PARAMETERS:
 %% - schemaPath: ${schemaPath}
 %% - outputPath: ${outputPath}
 %% - includeColumns: ${includeColumns}
 %% - includeRelationships: ${includeRelationships}
 %% - tableNameFilter: ${tableNameFilter ? `[${tableNameFilter.join(', ')}]` : 'none (all tables included)'}
-%%
+
 %% SCHEMA INFORMATION:
 %% - Total tables in schema: ${schema.tables.length}
 %% - Tables in this diagram: ${tables.length}
 %% - Generated at: ${new Date().toISOString()}
-${schema.metadata.solutionUniqueName ? `%% - Solution: ${schema.metadata.solutionDisplayName} (${schema.metadata.solutionUniqueName})` : ''}
-${schema.metadata.publisherPrefix ? `%% - Publisher prefix: ${schema.metadata.publisherPrefix}` : ''}
-%%
+${schema.metadata.solutionUniqueName ? `%% - Solution: ${schema.metadata.solutionDisplayName} (${schema.metadata.solutionUniqueName})\n` : ''}${schema.metadata.publisherPrefix ? `%% - Publisher prefix: ${schema.metadata.publisherPrefix}\n` : ''}
 %% USAGE:
 %% This diagram can be used with:
 %% - Mermaid Live Editor (https://mermaid.live)
 %% - VS Code Mermaid Preview extension
 %% - GitHub/GitLab (native Mermaid support)
 %% - Documentation tools that support Mermaid diagrams
-%%
+
 %% To regenerate this diagram, use the Dataverse MCP Server with:
 %% generate_mermaid_diagram({
 %%   "schemaPath": "${schemaPath}",
@@ -626,7 +777,6 @@ ${schema.metadata.publisherPrefix ? `%% - Publisher prefix: ${schema.metadata.pu
 %%   "includeColumns": ${includeColumns},
 %%   "includeRelationships": ${includeRelationships}${tableNameFilter ? `,\n%%   "tableNameFilter": [${tableNameFilter.map(t => `"${t}"`).join(', ')}]` : ''}
 %% })
-%% ========================================
 
 erDiagram
 `;
@@ -728,79 +878,8 @@ erDiagram
         }
       }
       
-      // Second, detect lookup columns and convert them to relationships using Targets property
-      log('Detecting lookup columns and converting to relationships...');
-      let lookupRelationshipsFound = 0;
-      
-      for (const table of tables) {
-        if (!table.columns) continue;
-        
-        for (const column of table.columns) {
-          // Check if this is a lookup column with targets
-          if (column.attributeType === 'Lookup' && column.targets && column.targets.length > 0) {
-            log(`  Analyzing lookup column: ${table.logicalName}.${column.logicalName}`);
-            log(`    Targets: ${column.targets.join(', ')}`);
-            
-            // Create relationships for each target
-            for (const targetTable of column.targets) {
-              if (tableNames.includes(targetTable)) {
-                const fromTable = targetTable.replace(/[^a-zA-Z0-9_]/g, '_');
-                const toTable = table.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
-                const relationshipLabel = column.displayName || column.logicalName;
-                
-                // Check if we already have this relationship (avoid duplicates)
-                const existingRelationship = relationships.find(r =>
-                  r.from === fromTable && r.to === toTable && r.label === relationshipLabel
-                );
-                
-                if (!existingRelationship) {
-                  relationships.push({
-                    from: fromTable,
-                    to: toTable,
-                    label: relationshipLabel
-                  });
-                  lookupRelationshipsFound++;
-                  log(`    ✓ Added relationship: ${targetTable} -> ${table.logicalName} (via ${column.logicalName})`);
-                } else {
-                  log(`    - Relationship already exists: ${targetTable} -> ${table.logicalName}`);
-                }
-              } else {
-                log(`    - Target table ${targetTable} not in filtered tables`);
-              }
-            }
-          } else if (column.attributeType === 'Lookup' && !column.logicalName.endsWith('name')) {
-            // Fallback: try to infer target if no targets property available
-            log(`  Analyzing lookup column without targets: ${table.logicalName}.${column.logicalName}`);
-            
-            const targetTable = inferTargetTableFromLookupColumn(column.logicalName, tables, schema.tables);
-            
-            if (targetTable && tableNames.includes(targetTable)) {
-              const fromTable = targetTable.replace(/[^a-zA-Z0-9_]/g, '_');
-              const toTable = table.logicalName.replace(/[^a-zA-Z0-9_]/g, '_');
-              const relationshipLabel = column.displayName || column.logicalName;
-              
-              // Check if we already have this relationship (avoid duplicates)
-              const existingRelationship = relationships.find(r =>
-                r.from === fromTable && r.to === toTable && r.label === relationshipLabel
-              );
-              
-              if (!existingRelationship) {
-                relationships.push({
-                  from: fromTable,
-                  to: toTable,
-                  label: relationshipLabel
-                });
-                lookupRelationshipsFound++;
-                log(`    ✓ Added inferred relationship: ${targetTable} -> ${table.logicalName} (via ${column.logicalName})`);
-              }
-            } else {
-              log(`    - Could not determine target table for ${column.logicalName}`);
-            }
-          }
-        }
-      }
-      
-      log(`Found ${lookupRelationshipsFound} lookup-based relationships`);
+      // Note: We now rely on exported relationships from the schema instead of extracting from lookup columns
+      // This provides more accurate relationship information including proper cascade configurations
       
       // Add all relationships to the diagram
       for (const rel of relationships) {
@@ -895,91 +974,7 @@ function mapDataverseTypeToMermaid(attributeType: string): string {
   }
 }
 
-function inferTargetTableFromLookupColumn(columnName: string, currentTables: TableSchema[], allTables: TableSchema[]): string | null {
-  // Common patterns for lookup column names:
-  // 1. Direct table name: "its_customername" -> "its_customer"
-  // 2. Prefixed table name: "new_mcttest_lookup" -> "new_mcttest"
-  // 3. Generic names: "its_accountnumber" -> "its_telephoneaccount" (based on context)
-  
-  // Remove common suffixes to get potential table name
-  const cleanColumnName = columnName.toLowerCase()
-    .replace(/name$/, '')
-    .replace(/id$/, '')
-    .replace(/lookup$/, '')
-    .replace(/reference$/, '')
-    .replace(/number$/, '');
-  
-  // Strategy 1: Direct match - look for table with exact name
-  let targetTable = allTables.find(table =>
-    table.logicalName.toLowerCase() === cleanColumnName
-  );
-  
-  if (targetTable) {
-    return targetTable.logicalName;
-  }
-  
-  // Strategy 2: Look for table that contains the column name pattern
-  // For example: "its_customername" should match "its_customer"
-  const prefix = columnName.split('_')[0];
-  const suffix = columnName.split('_').slice(1).join('_').toLowerCase();
-  
-  // Remove common lookup suffixes
-  const baseName = suffix
-    .replace(/name$/, '')
-    .replace(/id$/, '')
-    .replace(/lookup$/, '')
-    .replace(/reference$/, '');
-  
-  // Look for tables with the same prefix and similar base name
-  targetTable = allTables.find(table => {
-    const tableName = table.logicalName.toLowerCase();
-    const tablePrefix = tableName.split('_')[0];
-    const tableBase = tableName.split('_').slice(1).join('_');
-    
-    return tablePrefix === prefix && (
-      tableBase === baseName ||
-      tableBase.startsWith(baseName) ||
-      baseName.startsWith(tableBase)
-    );
-  });
-  
-  if (targetTable) {
-    return targetTable.logicalName;
-  }
-  
-  // Strategy 3: Special cases based on common naming patterns
-  const specialCases: Record<string, string> = {
-    // Account number usually refers to telephone account in this schema
-    'accountnumber': 'telephoneaccount',
-    'billnumber': 'bill',
-    'customername': 'customer'
-  };
-  
-  const baseNameOnly = baseName.replace(/^[a-z]+_/, ''); // Remove prefix
-  if (specialCases[baseNameOnly]) {
-    const expectedTableName = `${prefix}_${specialCases[baseNameOnly]}`;
-    targetTable = allTables.find(table =>
-      table.logicalName.toLowerCase() === expectedTableName
-    );
-    
-    if (targetTable) {
-      return targetTable.logicalName;
-    }
-  }
-  
-  // Strategy 4: For generic patterns, try to find the most likely match
-  // Look for tables that have this column as their primary name attribute
-  targetTable = allTables.find(table =>
-    table.primaryNameAttribute &&
-    table.primaryNameAttribute.toLowerCase() === cleanColumnName
-  );
-  
-  if (targetTable) {
-    return targetTable.logicalName;
-  }
-  
-  return null;
-}
+// Note: inferTargetTableFromLookupColumn function removed as we now use exported relationships from schema
 
 // Tool registration functions
 export function exportSolutionSchemaTool(server: McpServer, client: DataverseClient): void {
@@ -990,6 +985,7 @@ export function exportSolutionSchemaTool(server: McpServer, client: DataverseCli
       includeAllSystemTables: z.boolean().optional().default(false).describe('Whether to include all system tables in the export'),
       includeSystemColumns: z.boolean().optional().default(false).describe('Whether to include system columns in the export'),
       includeSystemOptionSets: z.boolean().optional().default(false).describe('Whether to include system option sets in the export'),
+      includeSystemRelationships: z.boolean().optional().default(false).describe('Whether to include system (non-custom) relationships in the export'),
       prefixOnly: z.boolean().optional().default(false).describe('Whether to export only tables that match the solution customization prefix (deprecated - use customizationPrefixes instead)'),
       customizationPrefixes: z.array(z.string()).optional().describe('List of customization prefixes to include (e.g., ["new", "xyz", "its"]). If not provided and prefixOnly is true, uses solution context prefix'),
       systemTablesToInclude: z.array(z.string()).optional().default(['contact', 'account']).describe('List of system tables to include when includeAllSystemTables is false (default: contact, account)'),

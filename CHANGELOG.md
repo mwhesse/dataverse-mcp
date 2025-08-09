@@ -5,6 +5,38 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3]
+
+### Added
+- **Schema Export Relationships** - Added comprehensive relationship export functionality to `export_solution_schema` tool
+  - Exports both OneToMany and ManyToMany relationships with complete metadata
+  - Includes cascade configurations, entity references, and relationship properties
+  - Uses improved filtering logic from relationship tools to avoid URI length limitations
+  - Hybrid approach: basic server-side filtering with efficient client-side filtering using Set-based lookups
+  - Properly filters relationships to only include those involving exported tables
+
+### Enhanced
+- **Mermaid Diagram Generation** - Enhanced `generate_mermaid_diagram` tool with major improvements
+  - **Parameter Replacement**: Replaced `maxTablesPerDiagram` with flexible `tableNameFilter` array parameter
+  - **Table Filtering**: Implemented case-insensitive table name matching with detailed logging
+  - **Comprehensive Headers**: Added extensive header comments to generated Mermaid files including:
+    - Tool parameters used for generation
+    - Schema information (total tables, filtered tables, generation timestamp)
+    - Usage instructions for various Mermaid-compatible tools
+    - Complete regeneration command with exact parameters for AI context understanding
+  - **Relationship Source Priority**: Updated Mermaid diagram tool to use only exported relationships from schema instead of inferring from lookup columns
+  - **Eliminated Redundancy**: Removed lookup column relationship extraction logic that was creating duplicate or inferred relationships
+  - **Improved Accuracy**: Now relies solely on actual Dataverse relationship metadata with proper cascade configurations
+  - **Better Performance**: Removed complex lookup column analysis logic for more efficient diagram generation
+  - **Enhanced Debugging**: Cleaner debug output showing only schema-based relationship processing
+  - **Better Documentation**: Generated files now serve as self-documenting artifacts
+
+### Technical Improvements
+- **URI Length Handling**: Resolved 414 "URI Too Long" errors in relationship export by avoiding large filter queries
+- **Performance Optimization**: Efficient Set-based client-side filtering for relationship matching
+- **Enhanced Logging**: Comprehensive debug output for relationship filtering and diagram generation
+- **AI Context**: Mermaid files now include complete context for AI tools to understand and regenerate diagrams
+
 ## [0.2.2]
 
 ### Fixed
