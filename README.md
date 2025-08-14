@@ -1226,7 +1226,7 @@ await use_mcp_tool("dataverse", "generate_webapi_call", {
   operation: "retrieve",
   entitySetName: "accounts",
   entityId: "12345678-1234-1234-1234-123456789012",
-  select: ["name", "emailaddress1", "telephone1"]
+  // When no select is provided, the generator includes primary id and primary name by default
 });
 
 // Generate a retrieve multiple with filtering and sorting
@@ -1312,6 +1312,8 @@ await use_mcp_tool("dataverse", "generate_webapi_call", {
 - **Solution Context**: Automatically includes current solution headers
 - **Authentication Placeholder**: Optional Bearer token placeholder
 - **OData Query Building**: Proper encoding of complex filter expressions
+- **@odata.bind Normalization**: Emits relative references (e.g., "/accounts(GUID)"), strips base URLs, upgrades mistaken logical-name keys to "<navigationProperty>@odata.bind"
+- **Schema Awareness**: Uses live metadata to infer primaryName, required fields, and correct navigation properties for lookups
 
 **Example Output:**
 ```
@@ -2030,6 +2032,7 @@ For a detailed history of changes, new features, and bug fixes, see the [CHANGEL
 
 ### Recent Updates
 
+- **v0.2.6**: Schema-aware WebAPI generator, @odata.bind normalization, and lookup auto-correction
 - **v0.1.2**: Added comprehensive Security Role Management system with 13 new tools
 - **v0.1.1**: Introduced Solution-Based Architecture with persistent context
 - **v0.1.0**: Initial release with core table, column, relationship, and option set operations

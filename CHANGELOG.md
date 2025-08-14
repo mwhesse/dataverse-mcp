@@ -5,6 +5,28 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6]
+
+### Added
+- Column metadata enrichment: get_dataverse_column now returns navigationProperty for Lookup columns to simplify @odata.bind usage.
+- Schema export enrichment: navigationProperty is included for Lookup columns by mapping ManyToOneRelationships (ReferencingAttribute -> ReferencingEntityNavigationPropertyName).
+
+### Changed
+- WebAPI generator is now schema-aware and produces payloads aligned to the actual table schema:
+  - Generates primary name and a small set of required fields when data is not provided (create), or updatable fields for update.
+  - Uses correct navigationProperty names for Lookup associations.
+  - Defaults retrieve/retrieveMultiple $select to include primary id and primary name when no select is provided.
+- @odata.bind output normalization:
+  - Always emits relative references (e.g., "/accounts(GUID)") without base URL.
+  - Normalizes absolute URLs and "/api/data/v9.2/..." forms to relative "/entityset(id)".
+- User payload correction for lookups:
+  - Detects when a payload mistakenly uses the Lookup attribute logical name instead of the navigation property.
+  - Rewrites keys to "<navigationProperty>@odata.bind" and normalizes values to relative references.
+  - Upgrades plain logical-name keys containing entity refs (e.g., "owningbusinessunit": "accounts(GUID)") to proper "<navigationProperty>@odata.bind" entries.
+
+### Fixed
+- More robust metadata retrieval for WebAPI generation (fallbacks for $select on singletons and attribute lists).
+- Ensures generation remains functional even when some metadata endpoints behave inconsistently by applying defensive fallbacks.
 ## [0.2.5]
 
 ### Enhanced
