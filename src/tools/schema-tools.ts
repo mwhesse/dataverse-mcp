@@ -74,6 +74,7 @@ interface ColumnSchema {
   defaultValue?: any;
   targetEntity?: string;
   targets?: string[]; // Array of target entity logical names for Lookup columns
+  navigationProperty?: string; // Navigation property name for @odata.bind syntax (lookup columns only)
   optionSet?: OptionSetSchema;
 }
 
@@ -100,6 +101,8 @@ interface RelationshipSchema {
   referencedEntity?: string;
   referencingEntity?: string;
   referencingAttribute?: string;
+  referencedEntityNavigationPropertyName?: string;
+  referencingEntityNavigationPropertyName?: string;
   entity1LogicalName?: string;
   entity2LogicalName?: string;
   intersectEntityName?: string;
@@ -377,6 +380,32 @@ export async function exportSolutionSchema(
         columns: []
       };
 
+      // Get relationship information for this table to populate navigation properties for lookup columns
+      let relationshipMap: Map<string, string> = new Map(); // Maps referencing attribute to navigation property name
+      try {
+        const relationshipsUrl = `EntityDefinitions(LogicalName='${table.LogicalName}')/ManyToOneRelationships?$select=ReferencingAttribute,ReferencingEntityNavigationPropertyName`;
+        log(`    Querying ManyToOneRelationships for ${table.LogicalName}: ${relationshipsUrl}`);
+        const relationshipsResponse = await client.getMetadata(relationshipsUrl);
+        
+        log(`    Retrieved ${relationshipsResponse.value?.length || 0} ManyToOneRelationships for ${table.LogicalName}`);
+        
+        for (const relationship of relationshipsResponse.value) {
+          log(`    Processing relationship: ReferencingAttribute=${relationship.ReferencingAttribute}, NavigationProperty=${relationship.ReferencingEntityNavigationPropertyName}`);
+          if (relationship.ReferencingAttribute && relationship.ReferencingEntityNavigationPropertyName) {
+            relationshipMap.set(relationship.ReferencingAttribute, relationship.ReferencingEntityNavigationPropertyName);
+            log(`    Added to map: ${relationship.ReferencingAttribute} -> ${relationship.ReferencingEntityNavigationPropertyName}`);
+          }
+        }
+        
+        if (relationshipMap.size > 0) {
+          log(`    Found ${relationshipMap.size} navigation properties for lookup columns`);
+        } else {
+          log(`    No navigation properties found for ${table.LogicalName}`);
+        }
+      } catch (relationshipError) {
+        log(`    Warning: Could not get relationship info for navigation properties: ${relationshipError instanceof Error ? relationshipError.message : 'Unknown error'}`);
+      }
+
       // Export columns for this table - Remove $select to get all properties including Targets
       // Always include Primary Key columns (IsPrimaryId eq true) even when system columns are excluded
       const columnsFilter = includeSystemColumns
@@ -416,12 +445,18 @@ export async function exportSolutionSchema(
           isPrimaryName: column.IsPrimaryName
         };
 
-        // Add targets for Lookup columns - try multiple approaches
+        // Add targets and navigation property for Lookup columns
         if (column.AttributeType === 'Lookup') {
+          // Add navigation property from relationship map
+          const navigationProperty = relationshipMap.get(column.LogicalName);
+          if (navigationProperty) {
+            columnSchema.navigationProperty = navigationProperty;
+          }
+          
           // Approach 1: Direct Targets property
           if (column.Targets && Array.isArray(column.Targets)) {
             columnSchema.targets = column.Targets;
-            log(`    Found lookup column ${column.LogicalName} with targets: ${column.Targets.join(', ')}`);
+            log(`    Found lookup column ${column.LogicalName} with targets: ${column.Targets.join(', ')}${navigationProperty ? `, navigationProperty: ${navigationProperty}` : ''}`);
           } else {
             // Approach 2: Try to get relationship information
             try {
@@ -433,13 +468,13 @@ export async function exportSolutionSchema(
                 const targets = relationshipsResponse.value.map((rel: any) => rel.ReferencedEntity);
                 if (targets.length > 0) {
                   columnSchema.targets = targets;
-                  log(`    Found lookup column ${column.LogicalName} with targets from relationships: ${targets.join(', ')}`);
+                  log(`    Found lookup column ${column.LogicalName} with targets from relationships: ${targets.join(', ')}${navigationProperty ? `, navigationProperty: ${navigationProperty}` : ''}`);
                 }
               } else {
-                log(`    Lookup column ${column.LogicalName} has no relationship information`);
+                log(`    Lookup column ${column.LogicalName} has no relationship information${navigationProperty ? `, but has navigationProperty: ${navigationProperty}` : ''}`);
               }
             } catch (relationshipError) {
-              log(`    Could not get relationship info for ${column.LogicalName}: ${relationshipError instanceof Error ? relationshipError.message : 'Unknown error'}`);
+              log(`    Could not get relationship info for ${column.LogicalName}: ${relationshipError instanceof Error ? relationshipError.message : 'Unknown error'}${navigationProperty ? `, but has navigationProperty: ${navigationProperty}` : ''}`);
             }
           }
         }
@@ -494,7 +529,7 @@ export async function exportSolutionSchema(
       }
       
       const oneToManyParams: Record<string, any> = {
-        $select: "SchemaName,RelationshipType,IsCustomRelationship,IsManaged,IsValidForAdvancedFind,ReferencedEntity,ReferencingEntity,ReferencingAttribute,IsHierarchical,CascadeConfiguration"
+        $select: "SchemaName,RelationshipType,IsCustomRelationship,IsManaged,IsValidForAdvancedFind,ReferencedEntity,ReferencingEntity,ReferencingAttribute,ReferencedEntityNavigationPropertyName,ReferencingEntityNavigationPropertyName,IsHierarchical,CascadeConfiguration"
       };
       
       if (oneToManyFilters.length > 0) {
@@ -541,6 +576,8 @@ export async function exportSolutionSchema(
           referencedEntity: relationship.ReferencedEntity,
           referencingEntity: relationship.ReferencingEntity,
           referencingAttribute: relationship.ReferencingAttribute,
+          referencedEntityNavigationPropertyName: relationship.ReferencedEntityNavigationPropertyName,
+          referencingEntityNavigationPropertyName: relationship.ReferencingEntityNavigationPropertyName,
           cascadeConfiguration: relationship.CascadeConfiguration,
           isCustomRelationship: relationship.IsCustomRelationship,
           isManaged: relationship.IsManaged

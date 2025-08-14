@@ -170,6 +170,8 @@ export interface OneToManyRelationshipMetadata extends RelationshipMetadataBase 
   ReferencedAttribute: string;
   ReferencingEntity: string;
   ReferencingAttribute: string;
+  ReferencedEntityNavigationPropertyName?: string;
+  ReferencingEntityNavigationPropertyName?: string;
   CascadeConfiguration: CascadeConfiguration;
   AssociatedMenuConfiguration: AssociatedMenuConfiguration;
   IsHierarchical: boolean;
