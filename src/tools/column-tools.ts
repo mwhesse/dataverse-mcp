@@ -281,15 +281,50 @@ export function getColumnTool(server: McpServer, client: DataverseClient) {
     },
     async (params) => {
       try {
-        const result = await client.getMetadata<AttributeMetadata>(
+        // Retrieve the base attribute metadata
+        const attribute = await client.getMetadata<AttributeMetadata>(
           `EntityDefinitions(LogicalName='${params.entityLogicalName}')/Attributes(LogicalName='${params.logicalName}')`
         );
+
+        // Prepare enhanced payload that can include navigationProperty when applicable
+        const enhanced: any = { ...attribute };
+
+        // Determine if this is a Lookup attribute using multiple heuristics for robustness
+        const attrType: any = (attribute as any)?.AttributeType;
+        const odataType: string | undefined = (attribute as any)?.["@odata.type"];
+        const isLookup =
+          (typeof attrType === "string" && attrType.toLowerCase() === "lookup") ||
+          (typeof attrType === "number" && attrType === 6) || // AttributeTypeCode.Lookup
+          (typeof odataType === "string" && odataType.toLowerCase().includes("lookupattributemetadata"));
+
+        if (isLookup) {
+          try {
+            // Query ManyToOneRelationships for this entity to map ReferencingAttribute -> ReferencingEntityNavigationPropertyName
+            const relationshipsUrl =
+              `EntityDefinitions(LogicalName='${params.entityLogicalName}')/ManyToOneRelationships?$select=ReferencingAttribute,ReferencingEntityNavigationPropertyName`;
+
+            const relationshipsResponse: any = await client.getMetadata(relationshipsUrl);
+
+            // Find the relationship entry that matches the current attribute logical name
+            const match = relationshipsResponse?.value?.find(
+              (rel: any) =>
+                typeof rel?.ReferencingAttribute === "string" &&
+                rel.ReferencingAttribute.toLowerCase() === params.logicalName.toLowerCase()
+            );
+
+            if (match?.ReferencingEntityNavigationPropertyName) {
+              enhanced.navigationProperty = match.ReferencingEntityNavigationPropertyName;
+            }
+          } catch (relError) {
+            // Do not fail the tool for relationship lookup issues; just omit navigationProperty
+          }
+        }
 
         return {
           content: [
             {
               type: "text",
-              text: `Column information for '${params.logicalName}' in table '${params.entityLogicalName}':\n\n${JSON.stringify(result, null, 2)}`
+              text: `Column information for '${params.logicalName}' in table '${params.entityLogicalName}':\n\n${JSON.stringify(enhanced, null, 2)}`
             }
           ]
         };
