@@ -97,6 +97,14 @@ import {
   managePowerPagesWebAPIConfigTool
 } from "./tools/powerpages-config-tools.js";
 import {
+  createAutoNumberColumnTool,
+  updateAutoNumberFormatTool,
+  setAutoNumberSeedTool,
+  getAutoNumberColumnTool,
+  listAutoNumberColumnsTool,
+  convertToAutoNumberTool
+} from "./tools/autonumber-tools.js";
+import {
   registerWebAPIResources
 } from "./resources/webapi-resources.js";
 import {
@@ -227,6 +235,14 @@ generatePowerPagesWebAPICallTool(server, dataverseClient);
 
 // Register PowerPages configuration management tool
 managePowerPagesWebAPIConfigTool(server, dataverseClient);
+
+// Register AutoNumber column tools
+createAutoNumberColumnTool(server, dataverseClient);
+updateAutoNumberFormatTool(server, dataverseClient);
+setAutoNumberSeedTool(server, dataverseClient);
+getAutoNumberColumnTool(server, dataverseClient);
+listAutoNumberColumnsTool(server, dataverseClient);
+convertToAutoNumberTool(server, dataverseClient);
 
 // Register WebAPI code generation resources
 registerWebAPIResources(server, dataverseClient);

@@ -72,7 +72,8 @@ export function createTableTool(server: McpServer, client: DataverseClient) {
         isConnectionsEnabled: z.boolean().default(false).describe("Whether connections are enabled"),
         isMailMergeEnabled: z.boolean().default(false).describe("Whether mail merge is enabled"),
         isDocumentManagementEnabled: z.boolean().default(false).describe("Whether document management is enabled"),
-        primaryNameAttribute: z.string().optional().describe("Logical name of the primary name attribute (will be auto-generated if not provided)")
+        primaryNameAttribute: z.string().optional().describe("Logical name of the primary name attribute (will be auto-generated if not provided)"),
+        primaryNameAutoNumberFormat: z.string().optional().describe("AutoNumber format for the primary name column using placeholders like 'PREFIX-{SEQNUM:4}-{RANDSTRING:3}-{DATETIMEUTC:yyyyMMdd}'. If specified, the primary name column will be created as an AutoNumber column.")
       }
     },
     async (params) => {
@@ -112,16 +113,17 @@ export function createTableTool(server: McpServer, client: DataverseClient) {
               LogicalName: primaryNameLogicalName,
               SchemaName: primaryNameSchemaName,
               DisplayName: createLocalizedLabel("Name"),
-              Description: createLocalizedLabel("Primary name attribute"),
+              Description: createLocalizedLabel(params.primaryNameAutoNumberFormat ? "Primary name attribute (AutoNumber)" : "Primary name attribute"),
               RequiredLevel: {
                 Value: "ApplicationRequired",
                 CanBeChanged: false,
                 ManagedPropertyLogicalName: "canmodifyrequirementlevelsettings"
               },
-              MaxLength: 100,
+              MaxLength: params.primaryNameAutoNumberFormat ? 200 : 100, // Increase max length for AutoNumber to allow for format expansion
               Format: "Text",
               IsPrimaryName: true,
-              IsCustomAttribute: true
+              IsCustomAttribute: true,
+              ...(params.primaryNameAutoNumberFormat && { AutoNumberFormat: params.primaryNameAutoNumberFormat })
             }
           ]
         };
@@ -132,7 +134,7 @@ export function createTableTool(server: McpServer, client: DataverseClient) {
           content: [
             {
               type: "text",
-              text: `Successfully created table '${logicalName}' with display name '${params.displayName}'.\n\nGenerated names:\n- Logical Name: ${logicalName}\n- Schema Name: ${schemaName}\n- Display Collection Name: ${displayCollectionName}\n- Primary Name Attribute: ${primaryNameLogicalName}\n\nResponse: ${JSON.stringify(result, null, 2)}`
+              text: `Successfully created table '${logicalName}' with display name '${params.displayName}'.\n\nGenerated names:\n- Logical Name: ${logicalName}\n- Schema Name: ${schemaName}\n- Display Collection Name: ${displayCollectionName}\n- Primary Name Attribute: ${primaryNameLogicalName}${params.primaryNameAutoNumberFormat ? `\n- AutoNumber Format: ${params.primaryNameAutoNumberFormat}` : ''}\n\nResponse: ${JSON.stringify(result, null, 2)}`
             }
           ]
         };

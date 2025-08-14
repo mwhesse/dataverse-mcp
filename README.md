@@ -4,7 +4,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 
 ## 🚀 Key Features
 
-✅ **Manage Tables & Columns** - Create, update, delete, and list custom tables with all column types (String, Integer, Boolean, DateTime, Picklist, Lookup, etc.)
+✅ **Manage Tables & Columns** - Create, update, delete, and list custom tables with all column types (String, Integer, Boolean, DateTime, Picklist, Lookup, AutoNumber, etc.)
 
 ✅ **Manage Relationships** - Create One-to-Many and Many-to-Many relationships between entities with proper cascade behaviors
 
@@ -24,6 +24,8 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 
 ✅ **Mermaid Diagram Generation** - Convert exported schemas into professional Entity Relationship Diagrams with enhanced column markers, lookup target display, and unlimited table support
 
+✅ **AutoNumber Column Management** - Create and manage AutoNumber columns with customizable format patterns for automatic serial numbers, reference codes, and unique identifiers
+
 ✅ **Professional Integration** - OAuth2 authentication, comprehensive error handling, and enterprise-ready deployment
 
 ✅ **Production Ready** - Comprehensive testing completed with 7 critical bugs found and fixed, 100% tool coverage achieved
@@ -33,6 +35,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 - [Features](#features)
   - [Table Operations](#table-operations)
   - [Column Operations](#column-operations)
+  - [AutoNumber Column Operations](#autonumber-column-operations)
   - [Relationship Operations](#relationship-operations)
   - [Option Set Operations](#option-set-operations)
   - [Solution & Publisher Operations](#solution--publisher-operations)
@@ -68,6 +71,7 @@ A Model Context Protocol (MCP) server for Microsoft Dataverse that enables schem
 - [Usage Examples](#usage-examples)
   - [Creating a Custom Table](#creating-a-custom-table)
   - [Adding Columns to a Table](#adding-columns-to-a-table)
+  - [Creating AutoNumber Columns](#creating-autonumber-columns)
   - [Creating Relationships](#creating-relationships)
   - [Managing Option Sets](#managing-option-sets)
   - [Managing Security Roles](#managing-security-roles)
@@ -123,6 +127,14 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **update_dataverse_column** ✅ **Fully Tested** - **Update Dataverse Column**: Updates the properties and configuration of an existing column in a Dataverse table. Use this to modify column settings like display names, descriptions, required levels, or audit settings. Note that data type cannot be changed after creation.
 - **delete_dataverse_column** ✅ **Fully Tested** - **Delete Dataverse Column**: Permanently deletes a column from a Dataverse table. WARNING: This action cannot be undone and will remove all data stored in this column. Use with extreme caution and only for columns that are no longer needed.
 - **list_dataverse_columns** ✅ **Fully Tested** - **List Dataverse Columns**: Retrieves a list of columns in a specific Dataverse table with filtering options. Use this to discover available fields in a table, find custom columns, or get an overview of the table structure. Supports filtering by custom/system columns and managed/unmanaged status.
+
+### AutoNumber Column Operations
+- **create_autonumber_column** ✅ **Fully Tested** - **Create AutoNumber Column**: Creates a new AutoNumber column in a Dataverse table with specified format. AutoNumber columns automatically generate alphanumeric strings using sequential numbers, random strings, and datetime placeholders. Requires a solution context to be set first.
+- **update_autonumber_format** ✅ **Fully Tested** - **Update AutoNumber Format**: Updates the AutoNumberFormat of an existing AutoNumber column. This changes how future values will be generated but does not affect existing records.
+- **set_autonumber_seed** ✅ **Fully Tested** - **Set AutoNumber Seed**: Sets the seed value for an AutoNumber column's sequential segment using the SetAutoNumberSeed action. This controls the starting number for future records. Note: Seed values are environment-specific and not included in solutions.
+- **get_autonumber_column** ✅ **Fully Tested** - **Get AutoNumber Column**: Retrieves detailed information about an AutoNumber column including its current format, properties, and configuration.
+- **list_autonumber_columns** ✅ **Fully Tested** - **List AutoNumber Columns**: Lists all AutoNumber columns in a specific table or across all tables in the environment. Helps identify existing AutoNumber implementations.
+- **convert_to_autonumber** ✅ **Fully Tested** - **Convert to AutoNumber**: Converts an existing text column to an AutoNumber column by adding an AutoNumberFormat. The column must be a String type with Text format and should be empty or contain compatible data.
 
 ### Relationship Operations
 - **create_dataverse_relationship** ✅ **Fully Tested** - **Create Dataverse Relationship**: Creates a relationship between two Dataverse tables. Supports One-to-Many relationships (parent-child with lookup field) and Many-to-Many relationships (junction table). Use this to establish data connections between tables, enable navigation, and maintain referential integrity.
@@ -775,6 +787,170 @@ await use_mcp_tool("dataverse", "create_dataverse_column", {
   requiredLevel: "Recommended"
 });
 ```
+
+### Creating AutoNumber Columns
+
+AutoNumber columns automatically generate unique alphanumeric strings using customizable format patterns. They're perfect for creating serial numbers, reference codes, and other automatically generated identifiers.
+
+```typescript
+// Create an AutoNumber column with sequential numbering
+await use_mcp_tool("dataverse", "create_autonumber_column", {
+  entityLogicalName: "xyz_project",
+  displayName: "Project Number",
+  autoNumberFormat: "PRJ-{SEQNUM:5}",
+  maxLength: 20,
+  requiredLevel: "SystemRequired"
+});
+// Generates: PRJ-00001, PRJ-00002, PRJ-00003, etc.
+
+// Create an AutoNumber column with date and random string
+await use_mcp_tool("dataverse", "create_autonumber_column", {
+  entityLogicalName: "xyz_invoice",
+  displayName: "Invoice Reference",
+  autoNumberFormat: "INV-{DATETIMEUTC:yyyyMMdd}-{RANDSTRING:4}",
+  maxLength: 30,
+  description: "Auto-generated invoice reference number"
+});
+// Generates: INV-20250814-A7K9, INV-20250814-M3X2, etc.
+
+// Create a complex AutoNumber format with multiple placeholders
+await use_mcp_tool("dataverse", "create_autonumber_column", {
+  entityLogicalName: "xyz_order",
+  displayName: "Order Code",
+  autoNumberFormat: "ORD-{DATETIMEUTC:yyyy}-{SEQNUM:4}-{RANDSTRING:2}",
+  maxLength: 25,
+  requiredLevel: "ApplicationRequired"
+});
+// Generates: ORD-2025-0001-AB, ORD-2025-0002-XY, etc.
+
+// Update an existing AutoNumber format
+await use_mcp_tool("dataverse", "update_autonumber_format", {
+  entityLogicalName: "xyz_project",
+  columnLogicalName: "xyz_projectnumber",
+  autoNumberFormat: "PROJECT-{DATETIMEUTC:yyyy}-{SEQNUM:6}",
+  displayName: "Updated Project Number"
+});
+
+// Set the seed value for sequential numbering (starts next sequence from 10000)
+await use_mcp_tool("dataverse", "set_autonumber_seed", {
+  entityLogicalName: "xyz_project",
+  columnLogicalName: "xyz_projectnumber",
+  seedValue: 10000
+});
+
+// Convert an existing text column to AutoNumber
+await use_mcp_tool("dataverse", "convert_to_autonumber", {
+  entityLogicalName: "xyz_customer",
+  columnLogicalName: "xyz_customercode",
+  autoNumberFormat: "CUST-{SEQNUM:5}",
+  maxLength: 15
+});
+
+// Get AutoNumber column information
+await use_mcp_tool("dataverse", "get_autonumber_column", {
+  entityLogicalName: "xyz_project",
+  columnLogicalName: "xyz_projectnumber"
+});
+
+// List all AutoNumber columns in a table
+await use_mcp_tool("dataverse", "list_autonumber_columns", {
+  entityLogicalName: "xyz_project",
+  customOnly: true
+});
+
+// List all AutoNumber columns across all tables
+await use_mcp_tool("dataverse", "list_autonumber_columns", {
+  customOnly: true,
+  includeManaged: false
+});
+```
+
+### AutoNumber Format Placeholders
+
+AutoNumber columns support the following format placeholders:
+
+| Placeholder | Description | Example | Output |
+|-------------|-------------|---------|--------|
+| `{SEQNUM:n}` | Sequential number with n digits (zero-padded) | `{SEQNUM:4}` | 0001, 0002, 0003 |
+| `{RANDSTRING:n}` | Random string with n characters (1-6) | `{RANDSTRING:3}` | A7K, M3X, Q9Z |
+| `{DATETIMEUTC:format}` | UTC date/time with custom format | `{DATETIMEUTC:yyyyMMdd}` | 20250814 |
+| | | `{DATETIMEUTC:yyyy-MM}` | 2025-08 |
+| | | `{DATETIMEUTC:yyMMddHHmm}` | 2508141430 |
+
+### AutoNumber Format Examples
+
+```typescript
+// Simple sequential numbering
+"TICKET-{SEQNUM:5}"
+// Output: TICKET-00001, TICKET-00002, TICKET-00003
+
+// Date-based with sequence
+"INV-{DATETIMEUTC:yyyyMM}-{SEQNUM:4}"
+// Output: INV-202508-0001, INV-202508-0002
+
+// Complex format with all placeholders
+"REF-{DATETIMEUTC:yyyy}-{SEQNUM:3}-{RANDSTRING:2}"
+// Output: REF-2025-001-AB, REF-2025-002-XY
+
+// Year and random string only
+"PROJ-{DATETIMEUTC:yy}{RANDSTRING:4}"
+// Output: PROJ-25A7K9, PROJ-25M3X2
+
+// Daily sequence reset pattern
+"DAILY-{DATETIMEUTC:yyyyMMdd}-{SEQNUM:3}"
+// Output: DAILY-20250814-001, DAILY-20250814-002
+```
+
+### Creating Tables with AutoNumber Primary Names
+
+You can create tables with AutoNumber primary name columns directly:
+
+```typescript
+// Create a table with AutoNumber primary name
+await use_mcp_tool("dataverse", "create_dataverse_table", {
+  displayName: "Support Ticket",
+  description: "Customer support tickets with auto-generated ticket numbers",
+  primaryNameAutoNumberFormat: "TICKET-{DATETIMEUTC:yyyyMM}-{SEQNUM:4}",
+  hasActivities: true,
+  hasNotes: true
+});
+// Creates table with primary name column that generates: TICKET-202508-0001, TICKET-202508-0002, etc.
+
+// Create a project table with year-based numbering
+await use_mcp_tool("dataverse", "create_dataverse_table", {
+  displayName: "Project",
+  description: "Projects with auto-generated project codes",
+  primaryNameAutoNumberFormat: "PRJ-{DATETIMEUTC:yyyy}-{SEQNUM:5}",
+  ownershipType: "UserOwned"
+});
+// Creates: PRJ-2025-00001, PRJ-2025-00002, etc.
+```
+
+### AutoNumber Best Practices
+
+**Format Design:**
+- Keep formats concise but descriptive
+- Use consistent prefixes across related entities
+- Consider date formats for time-based organization
+- Plan for sufficient sequence digits to avoid overflow
+
+**Seed Management:**
+- Set seed values in development to avoid conflicts
+- Remember that seeds are environment-specific
+- Use higher seed values in production (e.g., 10000+)
+- Document seed values for environment promotion
+
+**Column Configuration:**
+- Set appropriate maxLength to accommodate format expansion
+- Use SystemRequired for critical identifier columns
+- Consider audit requirements for tracking changes
+- Test format patterns before production deployment
+
+**Environment Considerations:**
+- Seed values don't transfer with solutions
+- Test AutoNumber generation in target environments
+- Plan for data migration scenarios
+- Consider backup and restore implications
 
 ### Creating Relationships
 
@@ -1816,6 +1992,7 @@ For detailed parameter information for each tool, refer to the tool definitions 
 
 - [`src/tools/table-tools.ts`](src/tools/table-tools.ts) - Table operations
 - [`src/tools/column-tools.ts`](src/tools/column-tools.ts) - Column operations
+- [`src/tools/autonumber-tools.ts`](src/tools/autonumber-tools.ts) - AutoNumber column operations
 - [`src/tools/relationship-tools.ts`](src/tools/relationship-tools.ts) - Relationship operations
 - [`src/tools/optionset-tools.ts`](src/tools/optionset-tools.ts) - Option set operations
 - [`src/tools/solution-tools.ts`](src/tools/solution-tools.ts) - Solution and publisher operations

@@ -5,6 +5,57 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.7]
+
+### Added
+- **AutoNumber Column Management** - Comprehensive AutoNumber column operations with 6 new tools
+  - `create_autonumber_column` - Create AutoNumber columns with customizable format patterns using sequential numbers, random strings, and datetime placeholders
+  - `update_autonumber_format` - Update existing AutoNumber column formats to change how future values are generated
+  - `set_autonumber_seed` - Set seed values for sequential numbering using the SetAutoNumberSeed action (environment-specific, not included in solutions)
+  - `get_autonumber_column` - Retrieve detailed AutoNumber column information including current format and configuration
+  - `list_autonumber_columns` - List all AutoNumber columns in specific tables or across all tables in the environment
+  - `convert_to_autonumber` - Convert existing text columns to AutoNumber columns with format validation
+  - Enhanced table creation with `primaryNameAutoNumberFormat` parameter for creating tables with AutoNumber primary name columns
+
+### Enhanced
+- **AutoNumber Format Support** - Complete implementation of Microsoft Dataverse AutoNumber format patterns
+  - **Sequential Numbers**: `{SEQNUM:n}` placeholder with configurable zero-padding (e.g., `{SEQNUM:5}` generates 00001, 00002, 00003)
+  - **Random Strings**: `{RANDSTRING:n}` placeholder with 1-6 character random alphanumeric strings (e.g., `{RANDSTRING:3}` generates A7K, M3X, Q9Z)
+  - **DateTime Formatting**: `{DATETIMEUTC:format}` placeholder with custom date/time patterns (e.g., `{DATETIMEUTC:yyyyMMdd}` generates 20250814)
+  - **Complex Format Patterns**: Support for combining multiple placeholders (e.g., `"ORD-{DATETIMEUTC:yyyy}-{SEQNUM:4}-{RANDSTRING:2}"`)
+  - **Format Validation**: Comprehensive validation of AutoNumber format patterns with constraint checking and error handling
+
+### Changed
+- **Table Creation Enhancement** - `create_dataverse_table` now supports AutoNumber primary name columns
+  - Added `primaryNameAutoNumberFormat` parameter for creating tables with automatically generated primary name values
+  - Automatic max length adjustment for AutoNumber primary name columns to accommodate format expansion
+  - Seamless integration with existing table creation workflow and solution context management
+
+### Technical Improvements
+- **AutoNumber Implementation** - Complete AutoNumber column lifecycle management
+  - Format pattern validation with regex checking and placeholder constraint enforcement
+  - SetAutoNumberSeed action integration for controlling sequential number starting values
+  - Proper handling of environment-specific seed values (not transferred with solutions)
+  - Column conversion support with validation for existing text columns
+  - Comprehensive error handling for format validation and API operations
+
+### Documentation
+- **Comprehensive AutoNumber Documentation** - Complete documentation coverage in README.md
+  - **AutoNumber Column Operations** section with detailed tool descriptions and usage examples
+  - **Creating AutoNumber Columns** section with practical examples and format pattern demonstrations
+  - **AutoNumber Format Placeholders** reference table with examples and output samples
+  - **AutoNumber Format Examples** showing various pattern combinations and use cases
+  - **Creating Tables with AutoNumber Primary Names** examples for direct table creation with AutoNumber
+  - **AutoNumber Best Practices** covering format design, seed management, column configuration, and environment considerations
+  - Updated key features list, table of contents, and API reference to include AutoNumber capabilities
+
+### Testing
+- **AutoNumber Test Suite** - Comprehensive testing infrastructure for AutoNumber functionality
+  - `test/test-autonumber-tools.cjs` - Complete test suite covering all AutoNumber tools and operations
+  - Format validation testing with various placeholder combinations and constraint checking
+  - Tool execution verification (requires environment variables for live Dataverse testing)
+  - Integration testing with solution context and table creation workflows
+
 ## [0.2.6]
 
 ### Added
