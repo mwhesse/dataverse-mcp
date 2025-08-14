@@ -85,7 +85,7 @@ The server supports flexible configuration with environment variable precedence:
 
 1. **Create environment file:**
    ```bash
-   cd /Users/martin/code/mcp-dataverse
+   cd /Users/martin/code/dataverse-mcp
    cp .env.example .env
    ```
 
@@ -116,7 +116,7 @@ The server supports flexible configuration with environment variable precedence:
      "mcpServers": {
        "dataverse": {
          "command": "node",
-         "args": ["/Users/martin/code/mcp-dataverse/build/index.js"],
+         "args": ["/Users/martin/code/dataverse-mcp/build/index.js"],
          "disabled": false,
          "alwaysAllow": [],
          "disabledTools": []
@@ -134,7 +134,7 @@ Configure environment variables directly in MCP settings. **These will override 
   "mcpServers": {
     "dataverse": {
       "command": "node",
-      "args": ["/Users/martin/code/mcp-dataverse/build/index.js"],
+      "args": ["/Users/martin/code/dataverse-mcp/build/index.js"],
       "env": {
         "DATAVERSE_URL": "https://your-actual-org.crm.dynamics.com",
         "DATAVERSE_CLIENT_ID": "your-actual-client-id",
@@ -165,7 +165,7 @@ DATAVERSE_TENANT_ID=common-tenant-id
   "mcpServers": {
     "dataverse": {
       "command": "node",
-      "args": ["/Users/martin/code/mcp-dataverse/build/index.js"],
+      "args": ["/Users/martin/code/dataverse-mcp/build/index.js"],
       "env": {
         "DATAVERSE_URL": "https://prod-org.crm.dynamics.com",
         "DATAVERSE_CLIENT_ID": "prod-client-id",
@@ -187,7 +187,7 @@ DATAVERSE_TENANT_ID=common-tenant-id
 
 Run the server directly to test:
 ```bash
-cd /Users/martin/code/mcp-dataverse
+cd /Users/martin/code/dataverse-mcp
 DATAVERSE_URL="your-url" \
 DATAVERSE_CLIENT_ID="your-client-id" \
 DATAVERSE_CLIENT_SECRET="your-client-secret" \

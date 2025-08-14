@@ -373,7 +373,7 @@ export function setSolutionContextTool(server: McpServer, client: DataverseClien
           content: [
             {
               type: "text",
-              text: `Solution context set to '${context.solutionUniqueName}' (${context.solutionDisplayName}). All subsequent metadata operations will be associated with this solution.\n\nPublisher: ${context.publisherDisplayName} (${context.publisherUniqueName})\nPrefix: ${context.customizationPrefix}\n\nContext has been persisted to .mcp-dataverse file.`
+              text: `Solution context set to '${context.solutionUniqueName}' (${context.solutionDisplayName}). All subsequent metadata operations will be associated with this solution.\n\nPublisher: ${context.publisherDisplayName} (${context.publisherUniqueName})\nPrefix: ${context.customizationPrefix}\n\nContext has been persisted to .dataverse-mcp file.`
             }
           ]
         };
@@ -456,7 +456,7 @@ export function clearSolutionContextTool(server: McpServer, client: DataverseCli
             {
               type: "text",
               text: previousContext
-                ? `Solution context cleared. Previously set to '${previousContext.solutionUniqueName}'. Metadata operations will no longer be associated with any specific solution.\n\n.mcp-dataverse file has been removed.`
+                ? `Solution context cleared. Previously set to '${previousContext.solutionUniqueName}'. Metadata operations will no longer be associated with any specific solution.\n\n.dataverse-mcp file has been removed.`
                 : "Solution context cleared (no context was previously set)."
             }
           ]

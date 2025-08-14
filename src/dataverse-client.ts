@@ -47,7 +47,7 @@ export class DataverseClient {
 
   constructor(config: DataverseConfig) {
     this.config = config;
-    this.contextFilePath = path.join(process.cwd(), '.mcp-dataverse');
+    this.contextFilePath = path.join(process.cwd(), '.dataverse-mcp');
     
     // Load persisted solution context on startup
     this.loadSolutionContext();
@@ -130,7 +130,7 @@ export class DataverseClient {
         }
       }
     } catch (error) {
-      console.warn('Failed to load solution context from .mcp-dataverse file:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn('Failed to load solution context from .dataverse-mcp file:', error instanceof Error ? error.message : 'Unknown error');
       // Reset context on error
       this.solutionContext = null;
       this.solutionUniqueName = null;
@@ -148,7 +148,7 @@ export class DataverseClient {
         }
       }
     } catch (error) {
-      console.warn('Failed to save solution context to .mcp-dataverse file:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn('Failed to save solution context to .dataverse-mcp file:', error instanceof Error ? error.message : 'Unknown error');
     }
   }
 

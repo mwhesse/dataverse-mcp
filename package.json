@@ -1,11 +1,11 @@
 {
-  "name": "mcp-dataverse-server",
+  "name": "dataverse-mcp-server",
   "version": "0.2.5",
   "description": "MCP server for Dataverse schema operations",
   "type": "module",
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\" && touch build/index.js",
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "dev": "tsc --watch",
     "start": "node build/index.js",
     "test:server": "node test-server.cjs",

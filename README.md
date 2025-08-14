@@ -208,7 +208,7 @@ The MCP server implements enterprise-grade solution management following Microso
 - **Professional Schema Naming**: Uses publisher-based customization prefixes
 - **Solution Association**: All schema changes are automatically associated with the active solution
 - **ALM Support**: Enables proper solution packaging and deployment across environments
-- **Persistent Context**: Solution context survives server restarts via `.mcp-dataverse` file
+- **Persistent Context**: Solution context survives server restarts via `.dataverse-mcp` file
 - **Enterprise Governance**: Supports multiple publishers and solutions with proper isolation
 
 ### Solution Workflow
@@ -261,7 +261,7 @@ await use_mcp_tool("dataverse", "create_dataverse_column", {
 
 ### Persistent Solution Context
 
-The server automatically persists solution context to a `.mcp-dataverse` file in the project root:
+The server automatically persists solution context to a `.dataverse-mcp` file in the project root:
 
 ```json
 {
@@ -503,7 +503,7 @@ npm run build
 
 3. Copy the full path to the built `index.js` file:
    - The server will be built to the `build/` directory
-   - Copy the complete file path (e.g., `/Users/yourname/path/to/mcp-dataverse/build/index.js`)
+   - Copy the complete file path (e.g., `/Users/yourname/path/to/dataverse-mcp/build/index.js`)
    - You'll use this path in your MCP configuration file
 
 4. Configure the MCP server in your MCP settings file using the copied path (see [Configuration](#configuration) section below for details)
@@ -528,7 +528,7 @@ For Windows users, the MCP configuration requires using `cmd` with the `/c` flag
       "args": [
         "/c",
         "node",
-        "C:\\DEV\\projects\\mcp-dataverse\\build\\index.js"
+        "C:\\DEV\\projects\\dataverse-mcp\\build\\index.js"
       ],
       "env": {
         "DATAVERSE_URL": "https://yourorg.crm.dynamics.com",
@@ -575,7 +575,7 @@ cp .env.example .env
   "mcpServers": {
     "dataverse": {
       "command": "node",
-      "args": ["/path/to/mcp-dataverse/build/index.js"],
+      "args": ["/path/to/dataverse-mcp/build/index.js"],
       "disabled": false,
       "alwaysAllow": [],
       "disabledTools": [],
@@ -596,7 +596,7 @@ You can configure environment variables directly in the MCP settings. This is th
   "mcpServers": {
     "dataverse": {
       "command": "node",
-      "args": ["/path/to/mcp-dataverse/build/index.js"],
+      "args": ["/path/to/dataverse-mcp/build/index.js"],
       "env": {
         "DATAVERSE_URL": "https://yourorg.crm.dynamics.com",
         "DATAVERSE_CLIENT_ID": "your-client-id",
@@ -637,7 +637,7 @@ DATAVERSE_TENANT_ID=common-tenant-id
   "mcpServers": {
     "dataverse": {
       "command": "node",
-      "args": ["/path/to/mcp-dataverse/build/index.js"],
+      "args": ["/path/to/dataverse-mcp/build/index.js"],
       "env": {
         "DATAVERSE_URL": "https://prod-org.crm.dynamics.com",
         "DATAVERSE_CLIENT_ID": "prod-client-id",
@@ -1859,11 +1859,11 @@ await use_mcp_tool("dataverse", "clear_solution_context", {});
 
 ### Git Integration
 
-The `.mcp-dataverse` file is automatically excluded from version control:
+The `.dataverse-mcp` file is automatically excluded from version control:
 
 ```gitignore
 # MCP Dataverse context file
-.mcp-dataverse
+.dataverse-mcp
 ```
 
 This allows each developer to maintain their own solution context while preventing accidental sharing of environment-specific settings.
@@ -1885,7 +1885,7 @@ For faster development cycles, consider adding these read-only tools to your MCP
   "mcpServers": {
     "dataverse": {
       "command": "cmd",
-      "args": ["/c", "node", "C:\\path\\to\\mcp-dataverse\\build\\index.js"],
+      "args": ["/c", "node", "C:\\path\\to\\dataverse-mcp\\build\\index.js"],
       "env": {
         "DATAVERSE_URL": "https://yourorg.crm.dynamics.com",
         "DATAVERSE_CLIENT_ID": "your-client-id",

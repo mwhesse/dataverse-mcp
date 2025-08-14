@@ -490,7 +490,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Solution-Based Architecture** - Enterprise-grade solution management
-  - Persistent solution context via `.mcp-dataverse` file
+  - Persistent solution context via `.dataverse-mcp` file
   - Automatic customization prefix handling
   - Solution context survives server restarts
   - Publisher-based schema naming conventions

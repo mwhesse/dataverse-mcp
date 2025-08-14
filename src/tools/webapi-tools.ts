@@ -90,6 +90,69 @@ function formatEntitySetName(entityName: string): string {
   return entityName.endsWith('s') ? entityName : `${entityName}s`;
 }
 
+// Helper function to detect @odata.bind properties in request data
+function hasODataBindProperties(data: any): boolean {
+  if (!data || typeof data !== 'object') return false;
+  return Object.keys(data).some(key => key.includes('@odata.bind'));
+}
+
+// Helper function to validate and format @odata.bind values
+function processODataBindProperties(data: any, baseUrl: string): any {
+  if (!data || typeof data !== 'object') return data;
+  
+  const processedData = { ...data };
+  
+  Object.keys(processedData).forEach(key => {
+    if (key.includes('@odata.bind')) {
+      const value = processedData[key];
+      
+      // Handle null values for disassociation
+      if (value === null) {
+        return; // Keep null values as-is for disassociation
+      }
+      
+      // Validate and format @odata.bind values
+      if (typeof value === 'string') {
+        // If it's already a full URL, keep it as-is
+        if (value.startsWith('http')) {
+          return;
+        }
+        
+        // If it starts with '/', it's a relative path - make it absolute
+        if (value.startsWith('/')) {
+          processedData[key] = `${baseUrl}/api/data/v9.2${value}`;
+        } else {
+          // If it's just an entity reference like "accounts(id)", add the full path
+          processedData[key] = `${baseUrl}/api/data/v9.2/${value}`;
+        }
+      }
+    }
+  });
+  
+  return processedData;
+}
+
+// Helper function to extract navigation property examples from @odata.bind usage
+function extractNavigationPropertyExamples(data: any): string[] {
+  if (!data || typeof data !== 'object') return [];
+  
+  const examples: string[] = [];
+  Object.keys(data).forEach(key => {
+    if (key.includes('@odata.bind')) {
+      const navigationProperty = key.replace('@odata.bind', '');
+      const value = data[key];
+      
+      if (value === null) {
+        examples.push(`// Disassociate relationship: "${navigationProperty}@odata.bind": null`);
+      } else {
+        examples.push(`// Associate with ${navigationProperty}: "${key}": "${value}"`);
+      }
+    }
+  });
+  
+  return examples;
+}
+
 // Helper function to format the complete WebAPI call
 function formatWebAPICall(
   baseUrl: string,
@@ -236,7 +299,8 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
             }
             method = 'POST';
             endpoint = formattedEntitySetName;
-            body = params.data;
+            // Process @odata.bind properties for associations on create
+            body = processODataBindProperties(params.data, baseUrl);
             break;
             
           case 'update':
@@ -245,7 +309,8 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
             }
             method = 'PATCH';
             endpoint = `${formattedEntitySetName}(${params.entityId})`;
-            body = params.data;
+            // Process @odata.bind properties for associations/disassociations on update
+            body = processODataBindProperties(params.data, baseUrl);
             break;
             
           case 'delete':
@@ -336,6 +401,25 @@ export function generateWebAPICallTool(server: McpServer, client: DataverseClien
         
         if (params.entityId) {
           additionalInfo += `Entity ID: ${params.entityId}\n`;
+        }
+        
+        // Add @odata.bind information if present
+        if (body && hasODataBindProperties(body)) {
+          additionalInfo += '\n--- @odata.bind Usage Detected ---\n';
+          additionalInfo += 'This request uses @odata.bind syntax for relationship management:\n';
+          
+          const examples = extractNavigationPropertyExamples(body);
+          examples.forEach(example => {
+            additionalInfo += `${example}\n`;
+          });
+          
+          additionalInfo += '\n@odata.bind Syntax Guide:\n';
+          additionalInfo += '• Associate on Create/Update: "navigationProperty@odata.bind": "/entitysets(id)"\n';
+          additionalInfo += '• Disassociate: "navigationProperty@odata.bind": null\n';
+          additionalInfo += '• Single-valued navigation properties: For many-to-one relationships\n';
+          additionalInfo += '• Collection-valued navigation properties: Use /$ref endpoints instead\n';
+          additionalInfo += '• Full URL format: "https://org.crm.dynamics.com/api/data/v9.2/accounts(id)"\n';
+          additionalInfo += '• Relative format: "/accounts(id)" (automatically converted to full URL)\n';
         }
         
         // Include curl command

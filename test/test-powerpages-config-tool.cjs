@@ -20,7 +20,7 @@ async function testPowerPagesConfigTool() {
           arguments: {
             operation: 'check_config_status',
             tableName: 'cr7ae_creditcardses',
-            projectPath: '/Users/martin/code/mcp-dataverse-dotnet'
+            projectPath: '/Users/martin/code/dataverse-mcp-dotnet'
           }
         }
       }
@@ -35,7 +35,7 @@ async function testPowerPagesConfigTool() {
           name: 'manage_powerpages_webapi_config',
           arguments: {
             operation: 'list_webapi_configs',
-            projectPath: '/Users/martin/code/mcp-dataverse-dotnet'
+            projectPath: '/Users/martin/code/dataverse-mcp-dotnet'
           }
         }
       }
@@ -52,7 +52,7 @@ async function testPowerPagesConfigTool() {
             operation: 'add_webapi_config',
             tableName: 'contacts',
             fields: 'fullname,emailaddress1,telephone1',
-            projectPath: '/Users/martin/code/mcp-dataverse-dotnet'
+            projectPath: '/Users/martin/code/dataverse-mcp-dotnet'
           }
         }
       }
@@ -72,7 +72,7 @@ async function testPowerPagesConfigTool() {
             webRoleName: 'Authenticated Users',
             accessType: 'Global',
             privileges: ['Read'],
-            projectPath: '/Users/martin/code/mcp-dataverse-dotnet'
+            projectPath: '/Users/martin/code/dataverse-mcp-dotnet'
           }
         }
       }
@@ -87,7 +87,7 @@ async function testPowerPagesConfigTool() {
           name: 'manage_powerpages_webapi_config',
           arguments: {
             operation: 'list_table_permissions',
-            projectPath: '/Users/martin/code/mcp-dataverse-dotnet'
+            projectPath: '/Users/martin/code/dataverse-mcp-dotnet'
           }
         }
       }
@@ -104,7 +104,7 @@ async function testPowerPagesConfigTool() {
             operation: 'add_webapi_config',
             tableName: 'xyz_projects',
             fields: '*',
-            projectPath: '/Users/martin/code/mcp-dataverse-dotnet'
+            projectPath: '/Users/martin/code/dataverse-mcp-dotnet'
           }
         }
       }
@@ -124,7 +124,7 @@ async function testPowerPagesConfigTool() {
             webRoleName: 'Authenticated Users',
             accessType: 'Global',
             privileges: ['Read', 'Write', 'Create', 'Delete'],
-            projectPath: '/Users/martin/code/mcp-dataverse-dotnet'
+            projectPath: '/Users/martin/code/dataverse-mcp-dotnet'
           }
         }
       }
@@ -140,7 +140,7 @@ async function testPowerPagesConfigTool() {
           arguments: {
             operation: 'check_config_status',
             tableName: 'contacts',
-            projectPath: '/Users/martin/code/mcp-dataverse-dotnet'
+            projectPath: '/Users/martin/code/dataverse-mcp-dotnet'
           }
         }
       }
