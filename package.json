@@ -1,6 +1,6 @@
 {
   "name": "dataverse-mcp-server",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "MCP server for Dataverse schema operations",
   "type": "module",
   "main": "build/index.js",
