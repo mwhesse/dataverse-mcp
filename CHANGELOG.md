@@ -5,6 +5,42 @@ All notable changes to the Dataverse MCP Server project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.8]
+
+### Enhanced
+- **PowerPages WebAPI Generator** - Major enhancement with schema-aware capabilities and @odata.bind relationship management
+  - **Schema-Aware Operation**: Added `resolvePowerPagesEntityInfo()` function for automatic entity metadata retrieval and intelligent field selection
+  - **@odata.bind Support**: Complete relationship management with `processPowerPagesODataBindProperties()` function for creating, updating, and removing relationships
+  - **Intelligent Field Selection**: Automatically includes primary ID and primary name fields when no selection specified, eliminating manual field specification
+  - **Navigation Property Mapping**: Automatic mapping of lookup columns to correct navigation properties using live entity metadata
+  - **Payload Correction**: Automatically converts lookup attribute names to proper navigation properties (e.g., `accountid` → `accountid@odata.bind`)
+  - **Enhanced Code Generation**: Added `generatePowerPagesSampleBodyFromSchema()` for intelligent payload creation with schema validation
+  - **PowerPages URL Format**: Maintains PowerPages-specific `/_api/[logicalEntityName]s` format with automatic 's' suffix while adding schema awareness
+  - **React Component Enhancement**: Enhanced React components with relationship management, error handling, and schema information display
+  - **Authentication Integration**: Comprehensive PowerPages authentication patterns with user context access and request verification token handling
+
+### Added
+- **PowerPages Schema-Aware Features** - Complete schema-aware capabilities matching main WebAPI tool functionality
+  - **Metadata Retrieval**: Live entity metadata retrieval for accurate field names, navigation properties, and relationship information
+  - **Relationship Management**: Full @odata.bind support for creating, updating, and removing relationships in PowerPages environments
+  - **URL Normalization**: Ensures @odata.bind values use correct PowerPages-relative format for optimal compatibility
+  - **Schema Information Display**: Generated output now includes comprehensive entity schema information for developer reference
+  - **Enhanced Documentation**: Comprehensive examples showing schema-aware features, relationship management, and PowerPages-specific patterns
+  - **Testing Infrastructure**: Complete offline test suite verifying all 12 enhanced features including schema-aware capabilities and @odata.bind support
+
+### Changed
+- **PowerPages WebAPI Tool Architecture** - Enhanced tool implementation with advanced capabilities
+  - **Helper Functions**: Added three new helper functions (`resolvePowerPagesEntityInfo`, `processPowerPagesODataBindProperties`, `generatePowerPagesSampleBodyFromSchema`) for schema-aware operation
+  - **Output Enhancement**: Generated code now includes schema information, relationship examples, and comprehensive error handling patterns
+  - **React Examples**: Enhanced React component examples with relationship handling, authentication context, and modern development patterns
+  - **Documentation Updates**: Updated README.md with comprehensive PowerPages WebAPI Generator documentation showing new schema-aware capabilities
+
+### Technical Improvements
+- **PowerPages Integration**: Seamless integration with PowerPages authentication, security, and URL patterns while adding advanced schema capabilities
+- **Code Quality**: Generated code includes proper error handling, authentication patterns, and PowerPages best practices with schema validation
+- **Developer Experience**: Schema-aware features eliminate manual field specification and ensure accurate navigation properties for improved productivity
+- **Maintainability**: Schema-aware generation ensures code stays current with Dataverse schema changes, reducing maintenance overhead
+
 ## [0.2.7]
 
 ### Added

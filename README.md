@@ -206,7 +206,7 @@ This MCP server provides comprehensive tools for Dataverse schema management:
 - **generate_webapi_call** ✅ **Fully Tested** - **Generate Dataverse WebAPI Call**: Generate HTTP requests, curl commands, and JavaScript examples for Dataverse WebAPI operations. Supports all CRUD operations, associations, actions, and functions with proper OData query parameters and headers.
 
 ### PowerPages WebAPI Generator
-- **generate_powerpages_webapi_call** ✅ **Fully Tested** - **Generate PowerPages WebAPI Call**: Generate PowerPages-specific API calls, JavaScript examples, and React components for Dataverse operations through PowerPages portals. Includes authentication context and portal-specific patterns.
+- **generate_powerpages_webapi_call** ✅ **Fully Tested** - **Generate PowerPages WebAPI Call**: Generate PowerPages-specific API calls, JavaScript examples, and React components for Dataverse operations through PowerPages portals. Features schema-aware metadata retrieval, @odata.bind relationship management, automatic field inference, and PowerPages-specific authentication patterns.
 
 ### PowerPages Configuration Management
 - **manage_powerpages_webapi_config** ✅ **Fully Tested** - **Manage PowerPages WebAPI Configuration**: Manage PowerPages WebAPI configurations and table permissions. Add/remove WebAPI access for tables, configure table permissions, and check configuration status for PowerPages portals.
@@ -1554,14 +1554,18 @@ fetch('https://yourorg.crm.dynamics.com/api/data/v9.2/accounts(12345678-1234-123
 
 The PowerPages WebAPI Generator creates API calls specifically for PowerPages Single Page Applications (SPAs) using the PowerPages WebAPI format `/_api/[logicalEntityName]s`. This tool is designed for developers building modern React, Angular, or Vue applications within PowerPages environments.
 
-**Key Differences from Standard Dataverse WebAPI:**
+**Key Features:**
+- **Schema-Aware Operation**: Automatically retrieves entity metadata for intelligent field selection and validation
+- **@odata.bind Support**: Full relationship management with automatic navigation property mapping and payload correction
+- **Intelligent Field Selection**: Automatically selects primary fields (ID and primary name) when no fields are specified
 - **URL Format**: Uses `/_api/[logicalEntityName]s` instead of `/api/data/v9.2/[entitySetName]` (note: 's' suffix is automatically added)
 - **Authentication**: Integrates with PowerPages authentication context and request verification tokens
 - **Client-Side Focus**: Optimized for browser-based applications with React component examples
 - **PowerPages Security**: Respects PowerPages table permissions and web roles
+- **Enhanced Documentation**: Comprehensive examples and schema information in generated output
 
 ```typescript
-// Generate a PowerPages retrieve multiple operation
+// Generate a PowerPages retrieve multiple operation with schema-aware field selection
 await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
   operation: "retrieveMultiple",
   logicalEntityName: "cr7ae_creditcardses",
@@ -1573,26 +1577,44 @@ await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
   includeAuthContext: true
 });
 
-// Generate a PowerPages create operation with request verification token
+// Generate a PowerPages create operation with @odata.bind relationship management
 await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
   operation: "create",
   logicalEntityName: "cr7ae_creditcardses",
   data: {
     cr7ae_name: "New Premium Card",
     cr7ae_type: "Premium",
-    cr7ae_features: "Cashback, Travel Insurance"
+    cr7ae_features: "Cashback, Travel Insurance",
+    // @odata.bind automatically maps to correct navigation property
+    "cr7ae_accountid@odata.bind": "/accounts(12345678-1234-1234-1234-123456789012)"
   },
   baseUrl: "https://contoso.powerappsportals.com",
   requestVerificationToken: true
 });
 
-// Generate a PowerPages retrieve single record
+// Generate a PowerPages retrieve single record with automatic field inference
 await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
   operation: "retrieve",
   logicalEntityName: "contacts",
   entityId: "12345678-1234-1234-1234-123456789012",
-  select: ["fullname", "emailaddress1", "telephone1"],
+  // When no select is provided, automatically includes primary ID and primary name
   baseUrl: "https://yoursite.powerappsportals.com"
+});
+
+// Generate an update operation with relationship management
+await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
+  operation: "update",
+  logicalEntityName: "cr7ae_creditcardses",
+  entityId: "87654321-4321-4321-4321-210987654321",
+  data: {
+    cr7ae_name: "Updated Premium Card",
+    // Associate with a different account
+    "cr7ae_accountid@odata.bind": "/accounts(11111111-1111-1111-1111-111111111111)",
+    // Disassociate from contact by setting to null
+    "cr7ae_contactid@odata.bind": null
+  },
+  baseUrl: "https://contoso.powerappsportals.com",
+  requestVerificationToken: true
 });
 
 // Generate with custom headers for advanced scenarios
@@ -1609,16 +1631,20 @@ await use_mcp_tool("dataverse", "generate_powerpages_webapi_call", {
 ```
 
 **Output Features:**
+- **Schema-Aware Generation**: Automatically retrieves entity metadata for intelligent code generation
+- **@odata.bind Processing**: Full relationship management with navigation property mapping and payload correction
+- **Intelligent Field Selection**: Automatically includes primary ID and primary name when no fields specified
 - **PowerPages URL Format**: Correct `/_api/[logicalEntityName]s` endpoint construction (automatic 's' suffix)
 - **Request Verification Token**: Automatic token handling for POST/PATCH/DELETE operations
-- **JavaScript Examples**: Ready-to-use fetch code with error handling
-- **React Components**: Complete React hook examples for data fetching
+- **JavaScript Examples**: Ready-to-use fetch code with error handling and relationship management
+- **React Components**: Complete React hook examples for data fetching with schema information
 - **Authentication Context**: PowerPages user context and token management
 - **OData Query Support**: Full OData query parameter support with proper encoding
+- **Enhanced Documentation**: Comprehensive schema information and relationship examples in output
 
 **Example Output:**
 ```javascript
-// PowerPages WebAPI Call
+// PowerPages WebAPI Call with Schema-Aware Features
 const fetchData = async () => {
   // Get the request verification token
   const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
@@ -1634,7 +1660,9 @@ const fetchData = async () => {
       body: JSON.stringify({
         "cr7ae_name": "New Premium Card",
         "cr7ae_type": "Premium",
-        "cr7ae_features": "Cashback, Travel Insurance"
+        "cr7ae_features": "Cashback, Travel Insurance",
+        // @odata.bind automatically mapped to correct navigation property
+        "cr7ae_accountid@odata.bind": "/accounts(12345678-1234-1234-1234-123456789012)"
       })
     });
 
@@ -1650,25 +1678,43 @@ const fetchData = async () => {
     throw error;
   }
 };
+
+// Schema Information (automatically included in output)
+/*
+Entity: cr7ae_creditcardses
+Primary ID: cr7ae_creditcardsesid
+Primary Name: cr7ae_name
+Navigation Properties:
+- cr7ae_accountid -> accounts (Many-to-One)
+- cr7ae_contactid -> contacts (Many-to-One)
+*/
 ```
 
-**React Component Example:**
+**React Component Example with Schema-Aware Features:**
 ```javascript
-// React Hook Example
+// React Hook Example with Schema-Aware Field Selection
 import React, { useState, useEffect } from 'react';
 
 const CreditCardsList = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const response = await fetch('/_api/cr7ae_creditcardses?$select=cr7ae_name,cr7ae_type');
+        // Schema-aware: automatically includes primary ID and name when no $select specified
+        const response = await fetch('/_api/cr7ae_creditcardses?$select=cr7ae_name,cr7ae_type,cr7ae_accountid');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         setRecords(data.value);
       } catch (error) {
         console.error('Error fetching records:', error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -1677,7 +1723,40 @@ const CreditCardsList = () => {
     fetchRecords();
   }, []);
 
+  const createRecord = async (recordData) => {
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+    
+    try {
+      const response = await fetch('/_api/cr7ae_creditcardses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          '__RequestVerificationToken': token
+        },
+        body: JSON.stringify({
+          cr7ae_name: recordData.name,
+          cr7ae_type: recordData.type,
+          // @odata.bind for relationship management
+          "cr7ae_accountid@odata.bind": recordData.accountId ? `/accounts(${recordData.accountId})` : null
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const createdRecord = await response.json();
+      setRecords(prev => [...prev, createdRecord]);
+      return createdRecord;
+    } catch (error) {
+      console.error('Error creating record:', error);
+      throw error;
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div>
@@ -1686,11 +1765,24 @@ const CreditCardsList = () => {
         <div key={record.cr7ae_creditcardsesid || index}>
           <h3>{record.cr7ae_name}</h3>
           <p>Type: {record.cr7ae_type}</p>
+          {record.cr7ae_accountid && (
+            <p>Account ID: {record.cr7ae_accountid}</p>
+          )}
         </div>
       ))}
     </div>
   );
 };
+
+// Schema Information automatically provided:
+/*
+Entity: cr7ae_creditcardses
+Primary ID: cr7ae_creditcardsesid
+Primary Name: cr7ae_name
+Navigation Properties:
+- cr7ae_accountid -> accounts (Many-to-One)
+- cr7ae_contactid -> contacts (Many-to-One)
+*/
 ```
 
 **Authentication Context Integration:**
@@ -1715,21 +1807,32 @@ const getToken = async () => {
 ```
 
 **PowerPages-Specific Features:**
+- **Schema-Aware Operation**: Automatically retrieves and uses entity metadata for intelligent code generation
+- **@odata.bind Relationship Management**: Full support for creating, updating, and removing relationships with automatic navigation property mapping
+- **Intelligent Field Selection**: Automatically includes primary ID and primary name fields when no selection specified
+- **Payload Correction**: Automatically corrects lookup attribute names to proper navigation properties
 - **Request Verification Token**: Automatic `__RequestVerificationToken` header handling for secure operations
-- **Authentication Integration**: Built-in PowerPages user context access
-- **React-Ready**: Complete React component examples with hooks and state management
+- **Authentication Integration**: Built-in PowerPages user context access with comprehensive examples
+- **React-Ready**: Complete React component examples with hooks, state management, and relationship handling
 - **Error Handling**: Comprehensive error handling patterns for PowerPages environments
 - **Security Compliance**: Respects PowerPages table permissions and web role security
 - **SPA Optimization**: Designed for single-page application development patterns
+- **Enhanced Documentation**: Comprehensive schema information and relationship examples in generated output
 
 **Supported Operations:**
-- **retrieve** - Get a single record by ID
-- **retrieveMultiple** - Query multiple records with OData filtering
-- **create** - Create new records with request verification token
-- **update** - Update existing records (PATCH) with token handling
+- **retrieve** - Get a single record by ID with automatic field selection
+- **retrieveMultiple** - Query multiple records with OData filtering and schema-aware field inference
+- **create** - Create new records with @odata.bind relationship management and request verification token
+- **update** - Update existing records (PATCH) with relationship management and token handling
 - **delete** - Delete records with proper authentication
 
-This tool is essential for PowerPages developers building modern SPAs that need to interact with Dataverse data while maintaining PowerPages security and authentication patterns.
+**Advanced Relationship Management:**
+- **@odata.bind Support**: Full relationship management with automatic navigation property mapping
+- **Payload Correction**: Automatically converts lookup attribute names to navigation properties
+- **Relationship Examples**: Comprehensive examples for creating, updating, and removing relationships
+- **Schema Validation**: Uses live entity metadata to validate navigation properties and field names
+
+This tool is essential for PowerPages developers building modern SPAs that need to interact with Dataverse data while maintaining PowerPages security and authentication patterns. The schema-aware capabilities ensure generated code is always accurate and up-to-date with your Dataverse schema.
 
 ## PowerPages Configuration Management
 

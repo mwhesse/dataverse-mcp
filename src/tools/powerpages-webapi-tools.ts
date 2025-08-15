@@ -45,60 +45,392 @@ function buildPowerPagesODataQuery(options: {
   return params.length > 0 ? `?${params.join('&')}` : '';
 }
 
-// Helper function to generate headers for PowerPages
-function generatePowerPagesHeaders(options: {
-  contentType?: string;
-  accept?: string;
-  requestVerificationToken?: string;
-  customHeaders?: Record<string, string>;
-}): Record<string, string> {
-  const headers: Record<string, string> = {
-    'Content-Type': options.contentType || 'application/json',
-    'Accept': options.accept || 'application/json'
-  };
-  
-  if (options.requestVerificationToken) {
-    headers['__RequestVerificationToken'] = options.requestVerificationToken;
-  }
-  
-  if (options.customHeaders) {
-    Object.assign(headers, options.customHeaders);
-  }
-  
-  return headers;
+// Helper function to detect @odata.bind properties in request data
+function hasODataBindProperties(data: any): boolean {
+  if (!data || typeof data !== 'object') return false;
+  return Object.keys(data).some(key => key.includes('@odata.bind'));
 }
 
-// Helper function to ensure PowerPages entity name has proper suffix
-function formatPowerPagesEntityName(logicalEntityName: string): string {
-  // PowerPages API URLs require logical entity names to be suffixed with 's'
-  // If the name doesn't already end with 's', add it
-  return logicalEntityName.endsWith('s') ? logicalEntityName : `${logicalEntityName}s`;
+/**
+ * Validate, normalize, and fix @odata.bind values for PowerPages.
+ * - Keeps @odata.bind values RELATIVE (no base URL).
+ * - Normalizes absolute URLs or /_api/... to "/entityset(id)".
+ * - If the key uses the lookup attribute logical name instead of the navigation property,
+ *   it is rewritten to the correct "<navigationProperty>@odata.bind".
+ * - Also upgrades "attributeLogicalName" (without @odata.bind) when it looks like an entity ref.
+ */
+function processPowerPagesODataBindProperties(
+ data: any,
+ baseUrl: string,
+ entityInfo?: {
+   lookupNavMap?: Map<string, string>;
+   attributes?: any[];
+ }
+): any {
+ if (!data || typeof data !== 'object') return data;
+
+ const processedData: Record<string, any> = { ...data };
+
+ // Build quick lookup sets/maps for corrections
+ const hasSchema = !!entityInfo;
+ const navMap = entityInfo?.lookupNavMap || new Map<string, string>();
+ const attrToNavLower = new Map<string, string>();
+ for (const [attr, nav] of navMap.entries()) {
+   attrToNavLower.set(String(attr).toLowerCase(), String(nav));
+ }
+ const isLookupAttr = (logicalName: string): boolean => {
+   if (!entityInfo?.attributes) return false;
+   const ln = logicalName.toLowerCase();
+   const a = entityInfo.attributes.find((x: any) => String(x?.LogicalName).toLowerCase() === ln);
+   return !!a && String(a.AttributeType).toLowerCase() === 'lookup';
+ };
+
+ // Helper to normalize values to relative "/_api/entityset(id)" path for PowerPages
+ const normalizeBindValue = (val: string): string => {
+   if (!val || typeof val !== 'string') return val as any;
+   // Strip full base URL + /_api if present
+   if (val.startsWith('http')) {
+     const m = val.match(/\/_api\/([^?]+)$/i);
+     if (m && m[1]) {
+       return `/_api/${m[1]}`;
+     }
+     // Fallback: keep last path segment if it looks like "entityset(guid)"
+     const last = val.split('/').pop() || '';
+     if (/^[a-z0-9_]+\([^)]*\)$/i.test(last)) {
+       return `/_api/${last}`;
+     }
+     return val; // unknown absolute, return as-is
+   }
+   // Strip leading /_api if already present
+   if (val.startsWith('/_api/')) {
+     return val;
+   }
+   // Ensure leading /_api/
+   if (!val.startsWith('/')) {
+     return `/_api/${val}`;
+   }
+   return `/_api${val}`;
+ };
+
+ // First pass: correct keys that already use @odata.bind
+ for (const key of Object.keys(processedData)) {
+   if (!key.includes('@odata.bind')) continue;
+
+   const value = processedData[key];
+   // Keep null for disassociation
+   if (value === null) {
+     continue;
+   }
+
+   const rawProp = key.replace('@odata.bind', '');
+   let correctedProp = rawProp;
+
+   // If user used attribute logical name for a lookup instead of nav property, fix it
+   if (hasSchema) {
+     const nav = attrToNavLower.get(rawProp.toLowerCase());
+     if (nav && nav !== rawProp) {
+       correctedProp = nav;
+     }
+   }
+
+   // If corrected, move value under the corrected key
+   const targetKey = `${correctedProp}@odata.bind`;
+   if (targetKey !== key) {
+     // Only move if targetKey not already present
+     if (processedData[targetKey] === undefined) {
+       processedData[targetKey] = processedData[key];
+     }
+     delete processedData[key];
+   }
+ }
+
+ // Second pass: normalize values to relative paths and upgrade plain logical-name keys when possible
+ for (const key of Object.keys(processedData)) {
+   const val = processedData[key];
+
+   if (key.includes('@odata.bind')) {
+     if (typeof val === 'string') {
+       processedData[key] = normalizeBindValue(val);
+     }
+     continue;
+   }
+
+   // If user passed a lookup logical name without @odata.bind, and the value looks like an entity ref,
+   // upgrade to "<nav>@odata.bind": "/_api/entityset(guid)"
+   if (hasSchema && isLookupAttr(key)) {
+     const maybeStr = processedData[key];
+     if (typeof maybeStr === 'string') {
+       const looksLikeRef =
+         maybeStr.startsWith('http') ||
+         maybeStr.startsWith('/_api/') ||
+         maybeStr.startsWith('/') ||
+         /^[a-z0-9_]+\([^)]*\)$/i.test(maybeStr);
+
+       if (looksLikeRef) {
+         const nav = attrToNavLower.get(key.toLowerCase());
+         if (nav) {
+           const newKey = `${nav}@odata.bind`;
+           if (processedData[newKey] === undefined) {
+             processedData[newKey] = normalizeBindValue(maybeStr);
+             delete processedData[key];
+           }
+         }
+       }
+     }
+   }
+ }
+
+ return processedData;
 }
 
-// Helper function to format the complete PowerPages WebAPI call
-function formatPowerPagesWebAPICall(
-  baseUrl: string,
-  method: string,
-  endpoint: string,
-  headers: Record<string, string>,
-  body?: any
-): string {
-  const fullUrl = `${baseUrl}${endpoint}`;
+// Helper function to extract navigation property examples from @odata.bind usage
+function extractNavigationPropertyExamples(data: any): string[] {
+  if (!data || typeof data !== 'object') return [];
   
-  let result = `HTTP Method: ${method}\n`;
-  result += `URL: ${fullUrl}\n\n`;
-  result += `Headers:\n`;
-  
-  Object.entries(headers).forEach(([key, value]) => {
-    result += `  ${key}: ${value}\n`;
+  const examples: string[] = [];
+  Object.keys(data).forEach(key => {
+    if (key.includes('@odata.bind')) {
+      const navigationProperty = key.replace('@odata.bind', '');
+      const value = data[key];
+      
+      if (value === null) {
+        examples.push(`// Disassociate relationship: "${navigationProperty}@odata.bind": null`);
+      } else {
+        examples.push(`// Associate with ${navigationProperty}: "${key}": "${value}"`);
+      }
+    }
   });
   
-  if (body) {
-    result += `\nRequest Body:\n`;
-    result += JSON.stringify(body, null, 2);
+  return examples;
+}
+
+/**
+ * Resolve entity metadata (EntitySetName, primary fields) and attribute schema,
+ * including navigationProperty mapping for lookup columns.
+ * Accepts either a logical entity name or an entity set name and normalizes accordingly.
+ */
+async function resolvePowerPagesEntityInfo(client: DataverseClient, nameOrSet?: string): Promise<{
+  logicalName: string;
+  entitySetName: string;
+  primaryIdAttribute: string;
+  primaryNameAttribute?: string;
+  attributes: any[];
+  lookupNavMap: Map<string, string>;
+}> {
+  if (!nameOrSet) {
+    return {
+      logicalName: '',
+      entitySetName: '',
+      primaryIdAttribute: '',
+      primaryNameAttribute: undefined,
+      attributes: [],
+      lookupNavMap: new Map()
+    };
   }
-  
-  return result;
+
+  // Try to get by LogicalName directly with robust fallback
+  const tryGetByLogicalName = async (ln: string) => {
+    try {
+      return await client.getMetadata(
+        `EntityDefinitions(LogicalName='${ln}')?$select=EntitySetName,PrimaryIdAttribute,PrimaryNameAttribute,LogicalName`
+      );
+    } catch {
+      // Fallback without $select for environments that don't support it on singletons
+      return await client.getMetadata(
+        `EntityDefinitions(LogicalName='${ln}')`
+      );
+    }
+  };
+
+  // Try to get by EntitySetName (fallback)
+  const tryGetByEntitySetName = async (esn: string) => {
+    const resp = await client.getMetadata(
+      `EntityDefinitions?$select=EntitySetName,LogicalName,PrimaryIdAttribute,PrimaryNameAttribute&$filter=EntitySetName eq '${esn}'`
+    );
+    return resp?.value?.[0];
+  };
+
+  let def: any | null = null;
+  try {
+    def = await tryGetByLogicalName(nameOrSet);
+  } catch {
+    // If endsWith 's', try trimming 's' as a heuristic for logical name
+    if (nameOrSet.endsWith('s')) {
+      try {
+        def = await tryGetByLogicalName(nameOrSet.slice(0, -1));
+      } catch {
+        // ignore
+      }
+    }
+  }
+  if (!def) {
+    try {
+      def = await tryGetByEntitySetName(nameOrSet);
+    } catch {
+      // ignore
+    }
+  }
+  if (!def) {
+    // Last resort: return minimal info using naive pluralization
+    return {
+      logicalName: nameOrSet,
+      entitySetName: nameOrSet.endsWith('s') ? nameOrSet : `${nameOrSet}s`,
+      primaryIdAttribute: '',
+      primaryNameAttribute: undefined,
+      attributes: [],
+      lookupNavMap: new Map()
+    };
+  }
+
+  const logicalName: string = def.LogicalName;
+  const entitySetName: string = def.EntitySetName;
+
+  // Fetch attributes (robust with fallback: try $select, then full set)
+  let attributes: any[] = [];
+  try {
+    const attrsResp = await client.getMetadata(
+      `EntityDefinitions(LogicalName='${logicalName}')/Attributes?$select=LogicalName,AttributeType,IsValidForCreate,IsValidForUpdate,IsPrimaryId,IsPrimaryName,RequiredLevel,Targets`
+    );
+    attributes = attrsResp?.value || [];
+  } catch {
+    try {
+      const attrsRespFull = await client.getMetadata(
+        `EntityDefinitions(LogicalName='${logicalName}')/Attributes`
+      );
+      attributes = attrsRespFull?.value || [];
+    } catch {
+      attributes = [];
+    }
+  }
+
+  // Build lookup navigation property map
+  const navMap: Map<string, string> = new Map();
+  try {
+    const relResp = await client.getMetadata(
+      `EntityDefinitions(LogicalName='${logicalName}')/ManyToOneRelationships?$select=ReferencingAttribute,ReferencingEntityNavigationPropertyName`
+    );
+    for (const rel of relResp?.value || []) {
+      if (rel?.ReferencingAttribute && rel?.ReferencingEntityNavigationPropertyName) {
+        navMap.set(rel.ReferencingAttribute, rel.ReferencingEntityNavigationPropertyName);
+      }
+    }
+  } catch {
+    // ignore nav map errors
+  }
+
+  return {
+    logicalName,
+    entitySetName,
+    primaryIdAttribute: def.PrimaryIdAttribute,
+    primaryNameAttribute: def.PrimaryNameAttribute,
+    attributes,
+    lookupNavMap: navMap
+  };
+}
+
+/**
+ * Resolve the actual EntitySetName for a target logical entity name using metadata,
+ * with a fallback to naive pluralization. Results cached in the provided map.
+ */
+async function getPowerPagesTargetEntitySetName(
+  client: DataverseClient,
+  cache: Map<string, string>,
+  targetLogicalName: string
+): Promise<string> {
+  const key = targetLogicalName.toLowerCase();
+  if (cache.has(key)) return cache.get(key)!;
+  try {
+    const def = await client.getMetadata(
+      `EntityDefinitions(LogicalName='${targetLogicalName}')`,
+      { $select: 'EntitySetName' }
+    );
+    if (def?.EntitySetName) {
+      cache.set(key, def.EntitySetName);
+      return def.EntitySetName;
+    }
+  } catch {
+    // ignore and fallback
+  }
+  const fallback = targetLogicalName.endsWith('s') ? targetLogicalName : `${targetLogicalName}s`;
+  cache.set(key, fallback);
+  return fallback;
+}
+
+/**
+ * Generate a sample request body aligned to actual table schema for PowerPages.
+ * - Uses PrimaryNameAttribute when valid for create.
+ * - Includes a couple of required simple fields.
+ * - Emits correct @odata.bind keys for lookup attributes using navigationProperty.
+ */
+async function generatePowerPagesSampleBodyFromSchema(
+  entityInfo: {
+    logicalName: string;
+    primaryNameAttribute?: string;
+    attributes: any[];
+    lookupNavMap: Map<string, string>;
+  },
+  baseUrl: string,
+  resolveTargetSet: (targetLogicalName: string) => Promise<string>,
+  mode: 'create' | 'update' = 'create'
+): Promise<any> {
+  const body: Record<string, any> = {};
+
+  const validFlag = mode === 'create' ? 'IsValidForCreate' : 'IsValidForUpdate';
+
+  // Primary name first (if applicable to mode)
+  if (entityInfo.primaryNameAttribute) {
+    const primary = entityInfo.attributes.find(a =>
+      a?.LogicalName?.toLowerCase() === entityInfo.primaryNameAttribute!.toLowerCase()
+    );
+    if (primary && (primary as any)?.[validFlag] === true) {
+      body[entityInfo.primaryNameAttribute] = `Sample ${entityInfo.logicalName}`;
+    }
+  }
+
+  // Up to 2 simple attributes
+  const SIMPLE_TYPES = new Set(['string','memo','integer','decimal','double','money','boolean','datetime']);
+  const simpleCandidates = entityInfo.attributes.filter(a => {
+    const t = String(a?.AttributeType).toLowerCase();
+    if (!SIMPLE_TYPES.has(t)) return false;
+    if ((a as any)?.[validFlag] !== true) return false;
+    if (a?.IsPrimaryId === true) return false;
+    if (a?.IsPrimaryName === true) return false;
+    if (mode === 'create') {
+      const lvl = a?.RequiredLevel?.Value;
+      return lvl === 'ApplicationRequired' || lvl === 'SystemRequired';
+    }
+    return true; // update: any updatable simple field
+  }).slice(0, 2);
+
+  for (const attr of simpleCandidates) {
+    const t = String(attr.AttributeType).toLowerCase();
+    if (t === 'boolean') {
+      body[attr.LogicalName] = true;
+    } else if (t === 'datetime') {
+      body[attr.LogicalName] = new Date().toISOString();
+    } else if (t === 'integer' || t === 'decimal' || t === 'double' || t === 'money') {
+      body[attr.LogicalName] = 1;
+    } else {
+      body[attr.LogicalName] = `Example ${attr.LogicalName}`;
+    }
+  }
+
+  // Include up to 2 lookup associations using navigationProperty
+  const lookups = entityInfo.attributes.filter(a =>
+    String(a?.AttributeType).toLowerCase() === 'lookup' && (a as any)?.[validFlag] === true
+  ).slice(0, 2);
+
+  for (const attr of lookups) {
+    const navProp = entityInfo.lookupNavMap.get(attr.LogicalName);
+    if (!navProp) continue;
+    const targets: string[] = Array.isArray((attr as any)?.Targets) ? (attr as any).Targets : [];
+    const targetLogical = targets?.[0];
+    if (!targetLogical) continue;
+    const targetSet = await resolveTargetSet(targetLogical);
+    body[`${navProp}@odata.bind`] = `/_api/${targetSet}(00000000-0000-0000-0000-000000000000)`;
+  }
+
+  return body;
 }
 
 export function generatePowerPagesWebAPICallTool(server: McpServer, client: DataverseClient) {
@@ -140,227 +472,383 @@ export function generatePowerPagesWebAPICallTool(server: McpServer, client: Data
       try {
         const baseUrl = params.baseUrl || 'https://yoursite.powerappsportals.com';
         
-        let method = 'GET';
-        let endpoint = '';
-        let body: any = undefined;
+        // Resolve entity metadata for schema-aware capabilities
+        let entityInfo: any = null;
+        let entitySetName = '';
+        let targetSetCache = new Map<string, string>();
         
-        // Build headers
-        const headerOptions: any = {
-          customHeaders: params.customHeaders
-        };
-        
-        if (params.requestVerificationToken && (params.operation === 'create' || params.operation === 'update' || params.operation === 'delete')) {
-          headerOptions.requestVerificationToken = '{REQUEST_VERIFICATION_TOKEN}';
+        try {
+          entityInfo = await resolvePowerPagesEntityInfo(client, params.logicalEntityName);
+          entitySetName = entityInfo.entitySetName;
+        } catch (error) {
+          // Fallback to naive pluralization if metadata fails
+          entitySetName = params.logicalEntityName ? 
+            (params.logicalEntityName.endsWith('s') ? params.logicalEntityName : `${params.logicalEntityName}s`) : '';
         }
-        
-        const headers = generatePowerPagesHeaders(headerOptions);
-        
-        // Build endpoint based on operation type
-        // PowerPages API URLs require logical entity names to be suffixed with 's'
-        const formattedEntityName = formatPowerPagesEntityName(params.logicalEntityName);
-        
+
+        let url = `${baseUrl}/_api/${entitySetName}`;
+        let method = 'GET';
+        let body: any = null;
+        let headers: Record<string, string> = {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          ...params.customHeaders
+        };
+
+        // Add request verification token for POST operations if requested
+        if (params.requestVerificationToken && ['create', 'update', 'delete'].includes(params.operation)) {
+          headers['__RequestVerificationToken'] = '{{REQUEST_VERIFICATION_TOKEN}}';
+        }
+
+        // Helper to resolve target entity set names
+        const resolveTargetSet = async (targetLogicalName: string): Promise<string> => {
+          return await getPowerPagesTargetEntitySetName(client, targetSetCache, targetLogicalName);
+        };
+
         switch (params.operation) {
           case 'retrieve':
             if (!params.entityId) {
-              throw new Error('entityId is required for retrieve operation');
+              throw new Error("entityId is required for retrieve operation");
             }
-            method = 'GET';
-            endpoint = `/_api/${formattedEntityName}(${params.entityId})`;
+            url += `(${params.entityId})`;
             
-            const retrieveQuery = buildPowerPagesODataQuery({
-              select: params.select,
-              expand: params.expand
-            });
-            endpoint += retrieveQuery;
+            // Auto-select primary fields if no select specified and we have schema
+            let finalSelect = params.select;
+            if (!params.select && entityInfo && entityInfo.primaryIdAttribute) {
+              const autoFields = [entityInfo.primaryIdAttribute];
+              if (entityInfo.primaryNameAttribute) {
+                autoFields.push(entityInfo.primaryNameAttribute);
+              }
+              finalSelect = autoFields;
+            }
+            
+            const queryParams = buildPowerPagesODataQuery({ select: finalSelect, expand: params.expand });
+            if (queryParams) {
+              url += queryParams;
+            }
             break;
-            
+
           case 'retrieveMultiple':
-            method = 'GET';
-            endpoint = `/_api/${formattedEntityName}`;
-            
-            const retrieveMultipleQuery = buildPowerPagesODataQuery({
-              select: params.select,
-              filter: params.filter,
-              orderby: params.orderby,
-              top: params.top,
-              skip: params.skip,
-              expand: params.expand,
-              count: params.count
-            });
-            endpoint += retrieveMultipleQuery;
-            break;
-            
-          case 'create':
-            if (!params.data) {
-              throw new Error('data is required for create operation');
+            // Auto-select primary fields if no select specified and we have schema
+            let finalListSelect = params.select;
+            if (!params.select && entityInfo && entityInfo.primaryIdAttribute) {
+              const autoFields = [entityInfo.primaryIdAttribute];
+              if (entityInfo.primaryNameAttribute) {
+                autoFields.push(entityInfo.primaryNameAttribute);
+              }
+              finalListSelect = autoFields;
             }
-            method = 'POST';
-            endpoint = `/_api/${formattedEntityName}`;
-            body = params.data;
-            break;
             
+            const listQueryParams = buildPowerPagesODataQuery({ 
+              select: finalListSelect, 
+              filter: params.filter, 
+              orderby: params.orderby, 
+              top: params.top, 
+              skip: params.skip, 
+              expand: params.expand, 
+              count: params.count 
+            });
+            if (listQueryParams) {
+              url += listQueryParams;
+            }
+            break;
+
+          case 'create':
+            method = 'POST';
+            
+            // Process @odata.bind properties and generate sample if no data provided
+            if (params.data) {
+              body = processPowerPagesODataBindProperties(params.data, baseUrl, entityInfo);
+            } else if (entityInfo) {
+              // Generate schema-aware sample body
+              body = await generatePowerPagesSampleBodyFromSchema(entityInfo, baseUrl, resolveTargetSet, 'create');
+            } else {
+              body = {};
+            }
+            break;
+
           case 'update':
-            if (!params.entityId || !params.data) {
-              throw new Error('entityId and data are required for update operation');
+            if (!params.entityId) {
+              throw new Error("entityId is required for update operation");
             }
             method = 'PATCH';
-            endpoint = `/_api/${formattedEntityName}(${params.entityId})`;
-            body = params.data;
-            break;
+            url += `(${params.entityId})`;
             
+            // Process @odata.bind properties and generate sample if no data provided
+            if (params.data) {
+              body = processPowerPagesODataBindProperties(params.data, baseUrl, entityInfo);
+            } else if (entityInfo) {
+              // Generate schema-aware sample body
+              body = await generatePowerPagesSampleBodyFromSchema(entityInfo, baseUrl, resolveTargetSet, 'update');
+            } else {
+              body = {};
+            }
+            break;
+
           case 'delete':
             if (!params.entityId) {
-              throw new Error('entityId is required for delete operation');
+              throw new Error("entityId is required for delete operation");
             }
             method = 'DELETE';
-            endpoint = `/_api/${formattedEntityName}(${params.entityId})`;
+            url += `(${params.entityId})`;
             break;
-            
+
           default:
             throw new Error(`Unsupported operation: ${params.operation}`);
         }
-        
-        const webApiCall = formatPowerPagesWebAPICall(baseUrl, method, endpoint, headers, body);
-        
-        // Additional information
-        let additionalInfo = '\n\n--- Additional Information ---\n';
-        additionalInfo += `Operation Type: ${params.operation}\n`;
-        additionalInfo += `Entity: ${params.logicalEntityName}\n`;
-        additionalInfo += `Formatted Entity Name: ${formattedEntityName}\n`;
-        additionalInfo += `PowerPages WebAPI Format: /_api/[logicalEntityName]s (note: 's' suffix required)\n`;
-        
-        if (params.entityId) {
-          additionalInfo += `Entity ID: ${params.entityId}\n`;
+
+        // Generate examples
+        const examples = [];
+
+        // HTTP Request
+        const httpRequest = [
+          `${method} ${url} HTTP/1.1`,
+          `Host: ${new URL(baseUrl).host}`,
+          ...Object.entries(headers).map(([key, value]) => `${key}: ${value}`)
+        ];
+
+        if (body) {
+          httpRequest.push('');
+          httpRequest.push(JSON.stringify(body, null, 2));
         }
-        
-        // Include JavaScript fetch example for PowerPages
-        let fetchExample = `// PowerPages WebAPI Call\n`;
-        fetchExample += `const fetchData = async () => {\n`;
-        
-        if (params.requestVerificationToken && (params.operation === 'create' || params.operation === 'update' || params.operation === 'delete')) {
-          fetchExample += `  // Get the request verification token\n`;
-          fetchExample += `  const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;\n\n`;
-        }
-        
-        fetchExample += `  try {\n`;
-        fetchExample += `    const response = await fetch('${endpoint}', {\n`;
-        fetchExample += `      method: '${method}',\n`;
-        
-        // Build headers for fetch example
-        const fetchHeaders: Record<string, string> = { ...headers };
-        if (params.requestVerificationToken && (params.operation === 'create' || params.operation === 'update' || params.operation === 'delete')) {
-          fetchHeaders['__RequestVerificationToken'] = '${token}';
-        }
-        
-        fetchExample += `      headers: ${JSON.stringify(fetchHeaders, null, 8).replace(/"/g, "'").replace(/'(\$\{[^}]+\})'/g, '$1')},\n`;
+
+        examples.push({
+          title: "HTTP Request",
+          content: httpRequest.join('\n')
+        });
+
+        // cURL Command
+        const curlParts = [`curl -X ${method}`];
+        Object.entries(headers).forEach(([key, value]) => {
+          curlParts.push(`-H "${key}: ${value}"`);
+        });
         
         if (body) {
-          fetchExample += `      body: JSON.stringify(${JSON.stringify(body, null, 8)})\n`;
+          curlParts.push(`-d '${JSON.stringify(body)}'`);
         }
         
-        fetchExample += `    });\n\n`;
-        fetchExample += `    if (!response.ok) {\n`;
-        fetchExample += `      throw new Error(\`HTTP error! status: \${response.status}\`);\n`;
-        fetchExample += `    }\n\n`;
-        
-        if (params.operation === 'retrieveMultiple') {
-          fetchExample += `    const data = await response.json();\n`;
-          fetchExample += `    const records = data.value; // Array of records\n`;
-          fetchExample += `    console.log('Records:', records);\n`;
-          fetchExample += `    return records;\n`;
-        } else if (params.operation === 'retrieve') {
-          fetchExample += `    const record = await response.json();\n`;
-          fetchExample += `    console.log('Record:', record);\n`;
-          fetchExample += `    return record;\n`;
-        } else if (params.operation === 'create') {
-          fetchExample += `    const createdRecord = await response.json();\n`;
-          fetchExample += `    console.log('Created record:', createdRecord);\n`;
-          fetchExample += `    return createdRecord;\n`;
-        } else if (params.operation === 'update') {
-          fetchExample += `    console.log('Record updated successfully');\n`;
-          fetchExample += `    return true;\n`;
-        } else if (params.operation === 'delete') {
-          fetchExample += `    console.log('Record deleted successfully');\n`;
-          fetchExample += `    return true;\n`;
+        curlParts.push(`"${url}"`);
+
+        examples.push({
+          title: "cURL Command",
+          content: curlParts.join(' \\\n  ')
+        });
+
+        // JavaScript Fetch
+        const fetchOptions: any = {
+          method,
+          headers
+        };
+
+        if (body) {
+          fetchOptions.body = JSON.stringify(body);
         }
-        
-        fetchExample += `  } catch (error) {\n`;
-        fetchExample += `    console.error('Error:', error);\n`;
-        fetchExample += `    throw error;\n`;
-        fetchExample += `  }\n`;
-        fetchExample += `};\n\n`;
-        fetchExample += `// Call the function\n`;
-        fetchExample += `fetchData();`;
-        
-        additionalInfo += `\nPowerPages JavaScript Example:\n${fetchExample}\n`;
-        
-        // Include React example if applicable
-        if (params.operation === 'retrieveMultiple') {
-          let reactExample = `// React Hook Example\n`;
-          reactExample += `import React, { useState, useEffect } from 'react';\n\n`;
-          reactExample += `const ${params.logicalEntityName.charAt(0).toUpperCase() + params.logicalEntityName.slice(1)}List = () => {\n`;
-          reactExample += `  const [records, setRecords] = useState([]);\n`;
-          reactExample += `  const [loading, setLoading] = useState(true);\n\n`;
-          reactExample += `  useEffect(() => {\n`;
-          reactExample += `    const fetchRecords = async () => {\n`;
-          reactExample += `      try {\n`;
-          reactExample += `        const response = await fetch('${endpoint}');\n`;
-          reactExample += `        const data = await response.json();\n`;
-          reactExample += `        setRecords(data.value);\n`;
-          reactExample += `      } catch (error) {\n`;
-          reactExample += `        console.error('Error fetching records:', error);\n`;
-          reactExample += `      } finally {\n`;
-          reactExample += `        setLoading(false);\n`;
-          reactExample += `      }\n`;
-          reactExample += `    };\n\n`;
-          reactExample += `    fetchRecords();\n`;
-          reactExample += `  }, []);\n\n`;
-          reactExample += `  if (loading) return <div>Loading...</div>;\n\n`;
-          reactExample += `  return (\n`;
-          reactExample += `    <div>\n`;
-          reactExample += `      <h2>${params.logicalEntityName} Records</h2>\n`;
-          reactExample += `      {records.map((record, index) => (\n`;
-          reactExample += `        <div key={record.${params.logicalEntityName}id || index}>\n`;
-          reactExample += `          {/* Render record properties */}\n`;
-          reactExample += `          <pre>{JSON.stringify(record, null, 2)}</pre>\n`;
-          reactExample += `        </div>\n`;
-          reactExample += `      ))}\n`;
-          reactExample += `    </div>\n`;
-          reactExample += `  );\n`;
-          reactExample += `};\n\n`;
-          reactExample += `export default ${params.logicalEntityName.charAt(0).toUpperCase() + params.logicalEntityName.slice(1)}List;`;
-          
-          additionalInfo += `\nReact Component Example:\n${reactExample}\n`;
+
+        const jsCode = `
+// PowerPages WebAPI ${params.operation} operation
+fetch('${url}', ${JSON.stringify(fetchOptions, null, 2)})
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(\`HTTP error! status: \${response.status}\`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });`;
+
+        examples.push({
+          title: "JavaScript (Fetch API)",
+          content: jsCode.trim()
+        });
+
+        // React Component Example
+        const reactCode = `
+import React, { useState, useEffect } from 'react';
+
+const ${params.operation.charAt(0).toUpperCase() + params.operation.slice(1)}Component = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const perform${params.operation.charAt(0).toUpperCase() + params.operation.slice(1)} = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('${url}', ${JSON.stringify(fetchOptions, null, 6)});
+      
+      if (!response.ok) {
+        throw new Error(\`HTTP error! status: \${response.status}\`);
+      }
+      
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  ${params.operation === 'retrieveMultiple' || params.operation === 'retrieve' ? `
+  useEffect(() => {
+    perform${params.operation.charAt(0).toUpperCase() + params.operation.slice(1)}();
+  }, []);` : ''}
+
+  return (
+    <div>
+      <h3>${params.operation.charAt(0).toUpperCase() + params.operation.slice(1)} ${params.logicalEntityName || 'Entity'}</h3>
+      ${params.operation !== 'retrieveMultiple' && params.operation !== 'retrieve' ? `
+      <button onClick={perform${params.operation.charAt(0).toUpperCase() + params.operation.slice(1)}} disabled={loading}>
+        {loading ? 'Processing...' : '${params.operation.charAt(0).toUpperCase() + params.operation.slice(1)}'}
+      </button>` : ''}
+      
+      {loading && <p>Loading...</p>}
+      {error && <p style={{color: 'red'}}>Error: {error}</p>}
+      {data && (
+        <div>
+          <h4>Result:</h4>
+          <pre>{JSON.stringify(data, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ${params.operation.charAt(0).toUpperCase() + params.operation.slice(1)}Component;`;
+
+        examples.push({
+          title: "React Component",
+          content: reactCode.trim()
+        });
+
+        // Add @odata.bind examples if present in the body
+        if (body && hasODataBindProperties(body)) {
+          const bindExamples = extractNavigationPropertyExamples(body);
+          if (bindExamples.length > 0) {
+            const odataBindInfo = `
+## @odata.bind Relationship Examples
+
+The request body includes relationship associations using @odata.bind:
+
+\`\`\`javascript
+${bindExamples.join('\n')}
+\`\`\`
+
+### @odata.bind Usage Patterns:
+
+1. **Associate with existing record:**
+   \`"navigationProperty@odata.bind": "/_api/entityset(guid)"\`
+
+2. **Disassociate relationship:**
+   \`"navigationProperty@odata.bind": null\`
+
+3. **PowerPages URL Format:**
+   - Use relative paths: \`/_api/contacts(guid)\`
+   - Entity set names are typically plural: \`contacts\`, \`accounts\`, etc.
+
+### Navigation Property Names:
+${entityInfo && entityInfo.lookupNavMap.size > 0 ? 
+  Array.from(entityInfo.lookupNavMap.entries())
+    .map((entry: any) => {
+      const [attr, nav] = entry as [string, string];
+      return `- Lookup attribute \`${attr}\` → Navigation property \`${nav}\``;
+    })
+    .join('\n') :
+  '- Navigation properties are automatically resolved from table schema'}`;
+
+            examples.push({
+              title: "@odata.bind Relationships",
+              content: odataBindInfo.trim()
+            });
+          }
         }
-        
-        // Include authentication context information
+
+        // Authentication context if requested
         if (params.includeAuthContext) {
-          let authInfo = `\n--- Authentication Context ---\n`;
-          authInfo += `// Access user information in PowerPages\n`;
-          authInfo += `const user = window["Microsoft"]?.Dynamic365?.Portal?.User;\n`;
-          authInfo += `const userName = user?.userName || "";\n`;
-          authInfo += `const firstName = user?.firstName || "";\n`;
-          authInfo += `const lastName = user?.lastName || "";\n`;
-          authInfo += `const isAuthenticated = userName !== "";\n\n`;
-          authInfo += `// Get authentication token (if needed)\n`;
-          authInfo += `const getToken = async () => {\n`;
-          authInfo += `  try {\n`;
-          authInfo += `    const token = await window.shell.getTokenDeferred();\n`;
-          authInfo += `    return token;\n`;
-          authInfo += `  } catch (error) {\n`;
-          authInfo += `    console.error('Error fetching token:', error);\n`;
-          authInfo += `    return null;\n`;
-          authInfo += `  }\n`;
-          authInfo += `};\n`;
-          
-          additionalInfo += authInfo;
+          const authInfo = `
+## Authentication Context for PowerPages
+
+PowerPages uses different authentication mechanisms:
+
+1. **Anonymous Access**: No authentication required for public data
+2. **Authenticated Users**: Session-based authentication via portal login
+3. **Request Verification Token**: Anti-CSRF protection for state-changing operations
+
+### Getting Request Verification Token (JavaScript):
+\`\`\`javascript
+// Get the token from the page (usually in a hidden input or meta tag)
+const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ||
+              document.querySelector('meta[name="__RequestVerificationToken"]')?.content;
+
+// Include in headers for POST/PATCH/DELETE operations
+headers['__RequestVerificationToken'] = token;
+\`\`\`
+
+### User Context:
+\`\`\`javascript
+// Access current user information (if available)
+const userContext = {
+  isAuthenticated: window.Shell?.user?.isAuthenticated || false,
+  userId: window.Shell?.user?.id,
+  userName: window.Shell?.user?.displayName
+};
+\`\`\``;
+
+          examples.push({
+            title: "Authentication Information",
+            content: authInfo.trim()
+          });
         }
-        
+
+        // Add schema information if available
+        if (entityInfo && entityInfo.logicalName) {
+          const schemaInfo = `
+## Schema Information
+
+**Entity:** ${entityInfo.logicalName} (${entityInfo.entitySetName})
+**Primary ID:** ${entityInfo.primaryIdAttribute || 'Not available'}
+**Primary Name:** ${entityInfo.primaryNameAttribute || 'Not available'}
+
+### Available Fields:
+${entityInfo.attributes && entityInfo.attributes.length > 0 ?
+  entityInfo.attributes
+    .filter((attr: any) => attr?.LogicalName)
+    .slice(0, 10) // Show first 10 fields
+    .map((attr: any) => `- \`${attr.LogicalName}\` (${attr.AttributeType})`)
+    .join('\n') +
+  (entityInfo.attributes.length > 10 ? `\n- ... and ${entityInfo.attributes.length - 10} more fields` : '') :
+  'Schema information not available'}
+
+### Lookup Navigation Properties:
+${entityInfo.lookupNavMap && entityInfo.lookupNavMap.size > 0 ?
+  Array.from(entityInfo.lookupNavMap.entries())
+    .map((entry: any) => {
+      const [attr, nav] = entry as [string, string];
+      return `- \`${attr}\` → \`${nav}\``;
+    })
+    .join('\n') :
+  'No lookup relationships found'}`;
+
+          examples.push({
+            title: "Entity Schema",
+            content: schemaInfo.trim()
+          });
+        }
+
+        const result = examples.map(example =>
+          `## ${example.title}\n\n\`\`\`${example.title.includes('React') ? 'jsx' : example.title.includes('JavaScript') ? 'javascript' : example.title.includes('cURL') ? 'bash' : example.title.includes('@odata.bind') || example.title.includes('Schema') || example.title.includes('Authentication') ? 'markdown' : 'http'}\n${example.content}\n\`\`\``
+        ).join('\n\n');
+
         return {
           content: [
             {
               type: "text",
-              text: `${webApiCall}${additionalInfo}`
+              text: result
             }
           ]
         };
